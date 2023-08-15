@@ -10,6 +10,10 @@ import (
 	"strings"
 )
 
+const (
+	CtxWorkdir = "modmake_workdir"
+)
+
 func sigCtx() (context.Context, context.CancelFunc) {
 	ctx, cancel := context.WithCancel(context.Background())
 	sigs := make(chan os.Signal, 1)
@@ -55,6 +59,7 @@ Usage:
 
 There are specialized commands that can be used to introspect the build.
   - graph: Passing this command as the first argument will emit a step dependency graph with descriptions on standard out. This can also be generated with Build.Graph().
+  - steps: Prints the list of all steps in this build.
 
 See https://github.com/saylorsolutions/modmake for detailed usage information.
 
@@ -92,13 +97,19 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 	}()
 	ctx, cancel := sigCtx()
 	defer cancel()
+	ctx = context.WithValue(ctx, CtxWorkdir, flagWorkdir)
 	for i, stepName := range flags.Args() {
-		if i == 0 && stepName == "graph" {
+		switch {
+		case i == 0 && stepName == "graph":
 			b.Graph()
 			return nil
-		}
-		if err := b.Step(stepName).Run(ctx); err != nil {
-			return fmt.Errorf("error running build: %w", err)
+		case i == 0 && stepName == "steps":
+			fmt.Println(strings.Join(b.Steps(), "\n"))
+			return nil
+		default:
+			if err := b.Step(stepName).Run(ctx); err != nil {
+				return fmt.Errorf("error running build: %w", err)
+			}
 		}
 	}
 

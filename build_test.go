@@ -3,6 +3,7 @@ package modmake
 import (
 	"context"
 	"fmt"
+	"strings"
 )
 
 func ExampleBuild_Graph() {
@@ -53,4 +54,17 @@ func ExampleBuild_Execute() {
 	// Output:
 	// Running in tools
 	// Running in package
+}
+
+func ExampleBuild_Steps() {
+	b := NewBuild()
+	steps := b.Steps()
+	fmt.Println(strings.Join(steps, "\n"))
+	// Output:
+	// benchmark
+	// build
+	// generate
+	// package
+	// test
+	// tools
 }

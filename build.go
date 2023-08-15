@@ -2,6 +2,7 @@ package modmake
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -108,6 +109,12 @@ func (b *Build) Step(name string) *Step {
 func (b *Build) StepOk(name string) (*Step, bool) {
 	step, ok := b.stepNames[name]
 	return step, ok
+}
+
+func (b *Build) Steps() []string {
+	steps := keySlice(b.stepNames)
+	sort.Strings(steps)
+	return steps
 }
 
 func (b *Build) Graph() {
