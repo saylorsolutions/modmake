@@ -34,8 +34,11 @@ func (g *GoTools) goTool() string {
 
 func (g *GoTools) Test(pattern string) Runner {
 	return RunnerFunc(func(ctx context.Context) error {
-		val := ctx.Value(CtxWorkdir)
-		cmd := exec.Command(g.goTool(), "test", "-v", filepath.Join(val.(string), pattern))
+		val, err := getWorkdir(ctx)
+		if err != nil {
+			return err
+		}
+		cmd := exec.Command(g.goTool(), "test", "-v", filepath.Join(val, pattern))
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		return cmd.Run()
@@ -48,8 +51,10 @@ func (g *GoTools) TestAll() Runner {
 
 func (g *GoTools) Generate(pattern string) Runner {
 	return RunnerFunc(func(ctx context.Context) error {
-		valAny := ctx.Value(CtxWorkdir)
-		workdir := valAny.(string)
+		workdir, err := getWorkdir(ctx)
+		if err != nil {
+			return err
+		}
 		cmd := exec.Command(g.goTool(), "generate", filepath.Join(workdir, pattern))
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
@@ -63,8 +68,11 @@ func (g *GoTools) GenerateAll() Runner {
 
 func (g *GoTools) Benchmark(pattern string) Runner {
 	return RunnerFunc(func(ctx context.Context) error {
-		val := ctx.Value(CtxWorkdir)
-		cmd := exec.Command(g.goTool(), "bench", "-v", filepath.Join(val.(string), pattern))
+		val, err := getWorkdir(ctx)
+		if err != nil {
+			return err
+		}
+		cmd := exec.Command(g.goTool(), "bench", "-v", filepath.Join(val, pattern))
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		return cmd.Run()
@@ -293,8 +301,11 @@ func (b *GoBuild) Run(ctx context.Context) error {
 	if len(b.changeDir) > 0 {
 		args = append(args, "-C", b.changeDir)
 	} else {
-		val := ctx.Value(CtxWorkdir)
-		args = append(args, "-C", val.(string))
+		val, err := getWorkdir(ctx)
+		if err != nil {
+			return err
+		}
+		args = append(args, "-C", val)
 	}
 	if len(b.output) > 0 {
 		args = append(args, "-o", b.output)

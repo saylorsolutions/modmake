@@ -2,6 +2,7 @@ package modmake
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	flag "github.com/spf13/pflag"
 	"os"
@@ -12,6 +13,10 @@ import (
 
 const (
 	CtxWorkdir = "modmake_workdir"
+)
+
+var (
+	ErrMissingWorkdir = errors.New("missing workdir from context")
 )
 
 func sigCtx() (context.Context, context.CancelFunc) {
