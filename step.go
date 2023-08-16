@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 )
 
 // Runner is any type that may be executed.
@@ -96,7 +97,6 @@ func newStep(name, description string) *Step {
 	return &Step{
 		name:        name,
 		description: description,
-		operation:   NoOp(),
 	}
 }
 
@@ -135,6 +135,16 @@ func (s *Step) DependsOn(dependency *Step) *Step {
 	return s
 }
 
+func (s *Step) DependsOnRunner(name, description string, r Runner) *Step {
+	step := NewStep(name, description).Runs(r)
+	return s.DependsOn(step)
+}
+
+func (s *Step) DependsOnFunc(name string, description string, fn RunnerFunc) *Step {
+	step := NewStep(name, description).Runs(fn)
+	return s.DependsOn(step)
+}
+
 // Runs specifies the operation that should happen as a result of executing this Step.
 func (s *Step) Runs(operation Runner) *Step {
 	if operation == nil {
@@ -142,6 +152,10 @@ func (s *Step) Runs(operation Runner) *Step {
 	}
 	s.operation = operation
 	return s
+}
+
+func (s *Step) RunsFunc(fn RunnerFunc) *Step {
+	return s.Runs(fn)
 }
 
 // BeforeRun adds an operation that will execute before this Step.
@@ -186,6 +200,7 @@ func (s *Step) Run(ctx context.Context) error {
 
 	if len(s.beforeOp) > 0 {
 		log.Printf("[%s] Runnning before hooks...\n", s.name)
+		start := time.Now()
 		for _, before := range s.beforeOp {
 			if err := before.Run(ctx); err != nil {
 				log.Printf("[%s] Error running step: %v\n", s.name, err)
@@ -193,20 +208,24 @@ func (s *Step) Run(ctx context.Context) error {
 				return err
 			}
 		}
-		log.Printf("[%s] Before hooks ran successfully\n", s.name)
+		log.Printf("[%s] Before hooks ran successfully in %s\n", s.name, time.Since(start).Round(time.Millisecond).String())
 	}
-
-	log.Printf("[%s] Running step...\n", s.name)
-	if err := s.operation.Run(ctx); err != nil {
-		log.Printf("Error running step '%s': %v\n", s.name, err)
-		s.state = StateFailed
-		return err
-	}
-	log.Printf("[%s] Successfully ran step\n", s.name)
 	s.state = StateSuccessful
+
+	if s.operation != nil {
+		log.Printf("[%s] Running step...\n", s.name)
+		runStart := time.Now()
+		if err := s.operation.Run(ctx); err != nil {
+			log.Printf("Error running step '%s': %v\n", s.name, err)
+			s.state = StateFailed
+			return err
+		}
+		log.Printf("[%s] Successfully ran step in %s\n", s.name, time.Since(runStart).Round(time.Millisecond).String())
+	}
 
 	if len(s.afterOp) > 0 {
 		log.Printf("[%s] Runnning after hooks...\n", s.name)
+		start := time.Now()
 		for _, after := range s.afterOp {
 			if err := after.Run(ctx); err != nil {
 				log.Printf("[%s] Error running after hooks: %v", s.name, err)
@@ -214,7 +233,7 @@ func (s *Step) Run(ctx context.Context) error {
 				return err
 			}
 		}
-		log.Printf("[%s] Successfully ran after hooks\n", s.name)
+		log.Printf("[%s] Successfully ran after hooks in %s\n", s.name, time.Since(start).Round(time.Millisecond).String())
 	}
 	return nil
 }

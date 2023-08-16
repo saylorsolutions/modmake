@@ -80,7 +80,7 @@ func (b *Build) Generate() *Step {
 
 // Test allows easily referencing the test Step.
 func (b *Build) Test() *Step {
-	return b.toolsStep
+	return b.testStep
 }
 
 // Benchmark allows easily referencing the benchmark Step.

@@ -5,10 +5,12 @@ import (
 	"errors"
 	"fmt"
 	flag "github.com/spf13/pflag"
+	"log"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 const (
@@ -44,6 +46,7 @@ func (b *Build) Execute(args []string) (err error) {
 		flagSkipInstall  bool
 		flagSkipGenerate bool
 		flagWorkdir      string
+		flagTimeout      time.Duration
 	)
 
 	flags.BoolVarP(&flagHelp, "help", "h", false, "Prints this usage information")
@@ -52,6 +55,7 @@ func (b *Build) Execute(args []string) (err error) {
 	flags.BoolVar(&flagSkipInstall, "skip-tools", false, "Skips the tools install step, but not its dependencies.")
 	flags.BoolVar(&flagSkipGenerate, "skip-generate", false, "Skips the generate step, but not its dependencies.")
 	flags.StringVar(&flagWorkdir, "workdir", ".", "Sets the working directory for the build")
+	flags.DurationVar(&flagTimeout, "timeout", 0, "Sets a timeout duration for this build run")
 
 	flags.Usage = func() {
 		fmt.Printf(`Executes a modmake build from Go code.
@@ -103,6 +107,14 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 	ctx, cancel := sigCtx()
 	defer cancel()
 	ctx = context.WithValue(ctx, CtxWorkdir, flagWorkdir)
+
+	if flagTimeout > 0 {
+		var _cancel context.CancelFunc
+		ctx, _cancel = context.WithTimeout(ctx, flagTimeout)
+		defer _cancel()
+	}
+
+	start := time.Now()
 	for i, stepName := range flags.Args() {
 		switch {
 		case i == 0 && stepName == "graph":
@@ -118,5 +130,6 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 		}
 	}
 
+	log.Printf("Ran successfully in %s\n", time.Since(start).Round(time.Millisecond).String())
 	return nil
 }
