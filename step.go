@@ -68,6 +68,10 @@ var reservedStepNames = map[string]bool{
 	"benchmark": true,
 	"build":     true,
 	"package":   true,
+
+	// Reserved so they don't conflict with Execute commands.
+	"graph": true,
+	"steps": true,
 }
 
 // Step is a step in a Build.

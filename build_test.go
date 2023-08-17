@@ -50,7 +50,7 @@ func ExampleBuild_Execute() {
 		fmt.Println("Running in package")
 		return nil
 	})
-	if err := b.Execute([]string{"--skip-tools", "--skip-generate", "package", "print-tools"}); err != nil {
+	if err := b.Execute("--skip-tools", "--skip-generate", "package", "print-tools"); err != nil {
 		panic(err)
 	}
 	// Output:
@@ -60,7 +60,7 @@ func ExampleBuild_Execute() {
 
 func ExampleBuild_Steps() {
 	b := NewBuild()
-	err := b.Execute([]string{"steps"})
+	err := b.Execute("steps")
 	if err != nil {
 		panic(err)
 	}

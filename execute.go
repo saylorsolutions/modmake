@@ -36,7 +36,7 @@ func sigCtx() (context.Context, context.CancelFunc) {
 // Execute executes a Build as configured.
 // It takes string arguments to make it easy to run with 'go run'.
 // Run this with the -h flag to see usage information.
-func (b *Build) Execute(args []string) (err error) {
+func (b *Build) Execute(args ...string) (err error) {
 	if err := b.cyclesCheck(); err != nil {
 		return err
 	}
@@ -61,13 +61,12 @@ func (b *Build) Execute(args []string) (err error) {
 	flags.DurationVar(&flagTimeout, "timeout", 0, "Sets a timeout duration for this build run")
 
 	flags.Usage = func() {
-		fmt.Printf(`Executes a modmake build from Go code.
+		fmt.Printf(`Executes a modmake build
 
 Usage:
-    build := modmake.NewBuild()
-    // Make modifications to the build as needed.
-    args := os.Args()[1:]
-    build.Execute(args)
+    go run BUILD_FILE.go graph
+	go run BUILD_FILE.go steps
+	go run BUILD_FILE.go [FLAGS] STEP...
 
 There are specialized commands that can be used to introspect the build.
   - graph: Passing this command as the first argument will emit a step dependency graph with descriptions on standard out. This can also be generated with Build.Graph().
