@@ -37,6 +37,9 @@ func sigCtx() (context.Context, context.CancelFunc) {
 // It takes string arguments to make it easy to run with 'go run'.
 // Run this with the -h flag to see usage information.
 func (b *Build) Execute(args []string) (err error) {
+	if err := b.cyclesCheck(); err != nil {
+		return err
+	}
 	flags := flag.NewFlagSet("build", flag.ContinueOnError)
 
 	var (
@@ -72,7 +75,10 @@ There are specialized commands that can be used to introspect the build.
 
 See https://github.com/saylorsolutions/modmake for detailed usage information.
 
-%s`, flags.FlagUsages())
+%s
+
+`, flags.FlagUsages())
+		b.Graph()
 	}
 	if err := flags.Parse(args); err != nil {
 		return err
@@ -121,7 +127,11 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 			b.Graph()
 			return nil
 		case i == 0 && stepName == "steps":
-			fmt.Println(strings.Join(b.Steps(), "\n"))
+			steps := b.Steps()
+			for i := 0; i < len(steps); i++ {
+				steps[i] = steps[i] + " - " + b.Step(steps[i]).description
+			}
+			fmt.Println(strings.Join(steps, "\n"))
 			return nil
 		default:
 			if err := b.Step(stepName).Run(ctx); err != nil {

@@ -1,9 +1,14 @@
 package modmake
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
+)
+
+var (
+	ErrCycleDetected = errors.New("dependency cycle detected")
 )
 
 // Build is a collection of related Steps.
@@ -118,6 +123,9 @@ func (b *Build) Steps() []string {
 }
 
 func (b *Build) Graph() {
+	if err := b.cyclesCheck(); err != nil {
+		panic(err)
+	}
 	visited := map[string]bool{}
 	var buf strings.Builder
 	buf.WriteString("Printing build graph\n\n")
@@ -164,4 +172,28 @@ func (b *Build) graph(step *Step, indent int, buf *strings.Builder, visited map[
 		}
 		b.graph(dep, indent+2, buf, visited)
 	}
+}
+
+func (b *Build) cyclesCheck() error {
+	for name := range b.stepNames {
+		visited := map[string]bool{}
+		step := b.Step(name)
+		if found := b.findCycle(visited, step); len(found) > 0 {
+			return fmt.Errorf("%w: %s", ErrCycleDetected, found)
+		}
+	}
+	return nil
+}
+
+func (b *Build) findCycle(visited map[string]bool, step *Step) string {
+	if _, ok := visited[step.name]; ok {
+		return step.name
+	}
+	visited[step.name] = true
+	for _, dep := range step.dependencies {
+		if found := b.findCycle(visited, dep); len(found) > 0 {
+			return step.name + " -> " + found
+		}
+	}
+	return ""
 }

@@ -32,9 +32,9 @@ func TestGoTools_Build_File(t *testing.T) {
 		ForceRebuild().
 		RaceDetector()
 	b := NewBuild()
-	b.Generate().Runs(Go().GenerateAll())
-	b.Test().Runs(test)
-	b.Build().Runs(build)
+	b.Generate().Does(Go().GenerateAll())
+	b.Test().Does(test)
+	b.Build().Does(build)
 	b.Build().AfterRun(IfNotExists("testingbuild/blah.exe", RunnerFunc(func(ctx context.Context) error {
 		return errors.New("failed to build blah.exe")
 	})))
@@ -55,9 +55,9 @@ func TestGoTools_Build_ModulePath(t *testing.T) {
 		SetVariable(module+"/main", "TestVar", "blah").
 		RaceDetector()
 	b := NewBuild()
-	b.Generate().Runs(Go().GenerateAll())
-	b.Test().Runs(test)
-	b.Build().Runs(build)
+	b.Generate().Does(Go().GenerateAll())
+	b.Test().Does(test)
+	b.Build().Does(build)
 	b.Build().AfterRun(IfNotExists("testingbuild/blah.exe", RunnerFunc(func(ctx context.Context) error {
 		return errors.New("failed to build blah.exe")
 	})))

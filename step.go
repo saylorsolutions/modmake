@@ -112,8 +112,11 @@ func NewStep(name, description string) *Step {
 }
 
 func (s *Step) setBuild(build *Build) {
-	if _, ok := build.stepNames[s.name]; ok {
-		panic(fmt.Sprintf("duplicate step name '%s'", s.name))
+	if step, ok := build.stepNames[s.name]; ok {
+		if s != step {
+			panic(fmt.Sprintf("duplicate step name '%s'", s.name))
+		}
+		return
 	}
 	s.build = build
 	build.stepNames[s.name] = s
@@ -136,17 +139,17 @@ func (s *Step) DependsOn(dependency *Step) *Step {
 }
 
 func (s *Step) DependsOnRunner(name, description string, r Runner) *Step {
-	step := NewStep(name, description).Runs(r)
+	step := NewStep(name, description).Does(r)
 	return s.DependsOn(step)
 }
 
-func (s *Step) DependsOnFunc(name string, description string, fn RunnerFunc) *Step {
-	step := NewStep(name, description).Runs(fn)
+func (s *Step) DependsOnFunc(name, description string, fn RunnerFunc) *Step {
+	step := NewStep(name, description).Does(fn)
 	return s.DependsOn(step)
 }
 
-// Runs specifies the operation that should happen as a result of executing this Step.
-func (s *Step) Runs(operation Runner) *Step {
+// Does specifies the operation that should happen as a result of executing this Step.
+func (s *Step) Does(operation Runner) *Step {
 	if operation == nil {
 		return s
 	}
@@ -154,8 +157,9 @@ func (s *Step) Runs(operation Runner) *Step {
 	return s
 }
 
-func (s *Step) RunsFunc(fn RunnerFunc) *Step {
-	return s.Runs(fn)
+// DoesFunc specifies the RunnerFunc that should happen as a result of executing this Step.
+func (s *Step) DoesFunc(fn RunnerFunc) *Step {
+	return s.Does(fn)
 }
 
 // BeforeRun adds an operation that will execute before this Step.
@@ -193,7 +197,10 @@ func (s *Step) Run(ctx context.Context) error {
 		}
 	}
 
-	if s.shouldSkip || s.state != StateNotRun {
+	if s.state != StateNotRun {
+		return nil
+	}
+	if s.shouldSkip {
 		log.Printf("[%s] Skipping step\n", s.name)
 		return nil
 	}
