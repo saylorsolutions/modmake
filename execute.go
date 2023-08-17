@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 	"time"
 )
@@ -37,6 +38,12 @@ func sigCtx() (context.Context, context.CancelFunc) {
 // It takes string arguments to make it easy to run with 'go run'.
 // Run this with the -h flag to see usage information.
 func (b *Build) Execute(args ...string) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			stack := debug.Stack()
+			err = fmt.Errorf("caught panic while running build: %v\n%s", r, string(stack))
+		}
+	}()
 	if err := b.cyclesCheck(); err != nil {
 		return err
 	}
