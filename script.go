@@ -8,12 +8,12 @@ import (
 	"strings"
 )
 
-// Exec wraps execution of all commands in a Runner that executes them in a sequence, and returns the first error that occurs.
-func Exec(cmds ...RunnerFunc) Runner {
+// Script will execute each RunnerFunc in order, returning the first error.
+func Script(fns ...RunnerFunc) Runner {
 	return RunnerFunc(func(ctx context.Context) error {
-		for _, cmd := range cmds {
-			err := cmd(ctx)
-			if err != nil {
+		for _, fn := range fns {
+			run := ContextAware(fn)
+			if err := run.Run(ctx); err != nil {
 				return err
 			}
 		}

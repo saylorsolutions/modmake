@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -49,11 +48,7 @@ func (g *GoTools) Test(patterns ...string) Runner {
 		for i := 0; i < len(patterns); i++ {
 			patterns[i] = relativeOrModulePath(modPath, workdir, patterns[i])
 		}
-		args := append([]string{"test", "-v"}, patterns...)
-		cmd := exec.Command(g.goTool(), args...)
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		return cmd.Run()
+		return Exec(g.goTool(), "test", "-v").Arg(patterns...).Run(ctx)
 	})
 }
 
@@ -74,11 +69,7 @@ func (g *GoTools) Generate(patterns ...string) Runner {
 		for i := 0; i < len(patterns); i++ {
 			patterns[i] = relativeOrModulePath(modPath, workdir, patterns[i])
 		}
-		args := append([]string{"generate"}, patterns...)
-		cmd := exec.Command(g.goTool(), args...)
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		return cmd.Run()
+		return Exec(g.goTool(), "generate").Arg(patterns...).Run(ctx)
 	})
 }
 
@@ -99,11 +90,7 @@ func (g *GoTools) Benchmark(patterns ...string) Runner {
 		for i := 0; i < len(patterns); i++ {
 			patterns[i] = relativeOrModulePath(modPath, workdir, patterns[i])
 		}
-		args := append([]string{"test", "-bench", "-v"}, patterns...)
-		cmd := exec.Command(g.goTool(), args...)
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		return cmd.Run()
+		return Exec(g.goTool(), "test", "-bench", "-v").Arg(patterns...).Run(ctx)
 	})
 }
 
@@ -112,11 +99,7 @@ func (g *GoTools) BenchmarkAll() Runner {
 }
 
 type GoBuild struct {
-	goTool        string
-	err           error
-	goos          string
-	goarch        string
-	changeDir     string
+	*Command
 	output        string
 	forceRebuild  bool
 	dryRun        bool
@@ -136,7 +119,7 @@ type GoBuild struct {
 func (g *GoTools) NewBuild(targets ...string) *GoBuild {
 	if len(targets) == 0 {
 		return &GoBuild{
-			err: errors.New("no targets defined"),
+			Command: &Command{err: errors.New("no targets defined")},
 		}
 	}
 	_targets := map[string]bool{}
@@ -147,7 +130,7 @@ func (g *GoTools) NewBuild(targets ...string) *GoBuild {
 		}
 	}
 	return &GoBuild{
-		goTool:  g.goTool(),
+		Command: Exec(g.goTool(), "build"),
 		targets: _targets,
 		gcFlags: map[string]bool{},
 		ldFlags: map[string]bool{},
@@ -161,12 +144,7 @@ func (b *GoBuild) ChangeDir(newDir string) *GoBuild {
 	if b.err != nil {
 		return b
 	}
-	var err error
-	newDir, err = filepath.Abs(newDir)
-	if err != nil {
-		panic("unable to derive absolute path from newDir: " + newDir)
-	}
-	b.changeDir = newDir
+	b.WorkDir(newDir)
 	return b
 }
 
@@ -389,7 +367,7 @@ func (b *GoBuild) BuildOS(os string) *GoBuild {
 	if b.err != nil {
 		return b
 	}
-	b.goos = os
+	b.Env("GOOS", os)
 	return b
 }
 
@@ -398,7 +376,7 @@ func (b *GoBuild) BuildCpuArch(arch string) *GoBuild {
 	if b.err != nil {
 		return b
 	}
-	b.goarch = arch
+	b.Env("GOARCH", arch)
 	return b
 }
 
@@ -406,72 +384,46 @@ func (b *GoBuild) Run(ctx context.Context) error {
 	if b.err != nil {
 		return b.err
 	}
-	args := []string{"build"}
 
 	if len(b.output) > 0 {
-		args = append(args, "-o", b.output)
+		b.Arg("-o", b.output)
 	}
 	if b.forceRebuild {
-		args = append(args, "-a")
+		b.Arg("-a")
 	}
 	if b.dryRun {
-		args = append(args, "-n")
+		b.Arg("-n")
 	}
 	if b.detectRace {
-		args = append(args, "-race")
+		b.Arg("-race")
 	}
 	if b.memorySan {
-		args = append(args, "-msan")
+		b.Arg("-msan")
 	}
 	if b.addrSan {
-		args = append(args, "-asan")
+		b.Arg("-asan")
 	}
 	if b.printPackages {
-		args = append(args, "-v")
+		b.Arg("-v")
 	}
 	if b.printCommands {
-		args = append(args, "-x")
+		b.Arg("-x")
 	}
 	if len(b.buildMode) > 0 {
-		args = append(args, "-buildmode="+b.buildMode)
+		b.Arg("-buildmode=" + b.buildMode)
 	}
 	if len(b.gcFlags) > 0 {
-		args = append(args, fmt.Sprintf("-gcflags=%s", strings.Join(keySlice(b.gcFlags), " ")))
+		b.Arg(fmt.Sprintf("-gcflags=%s", strings.Join(keySlice(b.gcFlags), " ")))
 	}
 	if len(b.ldFlags) > 0 {
-		args = append(args, fmt.Sprintf("-ldflags=%s", strings.Join(keySlice(b.ldFlags), " ")))
+		b.Arg(fmt.Sprintf("-ldflags=%s", strings.Join(keySlice(b.ldFlags), " ")))
 	}
 	if len(b.tags) > 0 {
-		args = append(args, "-tags", strings.Join(keySlice(b.tags), ","))
+		b.Arg("-tags", strings.Join(keySlice(b.tags), ","))
 	}
 
-	workdir, err := getWorkdir(ctx)
-	if err != nil {
-		return err
-	}
-	args = append(args, keySlice(b.targets)...)
-	cmd := exec.Command(b.goTool, args...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Env = os.Environ()
-	cmd.Dir = workdir
-
-	if len(b.changeDir) > 0 {
-		cmd.Dir = b.changeDir
-	}
-
-	if len(b.goos) > 0 {
-		cmd.Env = append(cmd.Env, "GOOS="+b.goos)
-	}
-	if len(b.goarch) > 0 {
-		cmd.Env = append(cmd.Env, "GOARCH="+b.goarch)
-	}
-
-	if err := cmd.Run(); err != nil {
-		return err
-	}
-	return nil
+	b.Arg(keySlice(b.targets)...)
+	return b.Command.Run(ctx)
 }
 
 func keySlice[T any](set map[string]T) []string {

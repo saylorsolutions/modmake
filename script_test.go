@@ -12,7 +12,7 @@ import (
 )
 
 func TestExecScript(t *testing.T) {
-	err := Exec(
+	err := Script(
 		func(_ context.Context) error {
 			_, err := script.File("script.go").WriteFile("script.go.copy")
 			return err
