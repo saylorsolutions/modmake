@@ -35,6 +35,64 @@ func (g *GoTools) goTool() string {
 	return filepath.Join(g.rootDir, "bin", "go")
 }
 
+func (g *GoTools) Clean() *GoClean {
+	return &GoClean{
+		Command: Exec(g.goTool(), "clean"),
+	}
+}
+
+type GoClean struct {
+	*Command
+	buildCache bool
+	testCache  bool
+	modCache   bool
+	fuzzCache  bool
+}
+
+func (c *GoClean) BuildCache() *GoClean {
+	c.buildCache = true
+	return c
+}
+
+func (c *GoClean) TestCache() *GoClean {
+	c.testCache = true
+	return c
+}
+
+func (c *GoClean) ModCache() *GoClean {
+	c.modCache = true
+	return c
+}
+
+func (c *GoClean) FuzzCache() *GoClean {
+	c.fuzzCache = true
+	return c
+}
+
+func (c *GoClean) Run(ctx context.Context) error {
+	c.OptArg(c.buildCache, "-cache")
+	c.OptArg(c.testCache, "-testcache")
+	c.OptArg(c.modCache, "-modcache")
+	c.OptArg(c.fuzzCache, "-fuzzcache")
+	return c.Command.Run(ctx)
+}
+
+func (g *GoTools) Install(pkg string) Runner {
+	return Exec(g.goTool(), "install", pkg)
+}
+
+func (g *GoTools) Get(pkg string) Runner {
+	return Exec(g.goTool(), "get").Arg(pkg)
+}
+
+func (g *GoTools) GetUpdated(pkg string) Runner {
+	return Exec(g.goTool(), "get", "-u").Arg(pkg)
+}
+
+func (g *GoTools) ModTidy() Runner {
+	return Exec(g.goTool(), "mod", "tidy")
+}
+
 func (g *GoTools) Test(patterns ...string) Runner {
 	return RunnerFunc(func(ctx context.Context) error {
 		workdir, err := getWorkdir(ctx)
@@ -385,30 +443,14 @@ func (b *GoBuild) Run(ctx context.Context) error {
 		return b.err
 	}
 
-	if len(b.output) > 0 {
-		b.Arg("-o", b.output)
-	}
-	if b.forceRebuild {
-		b.Arg("-a")
-	}
-	if b.dryRun {
-		b.Arg("-n")
-	}
-	if b.detectRace {
-		b.Arg("-race")
-	}
-	if b.memorySan {
-		b.Arg("-msan")
-	}
-	if b.addrSan {
-		b.Arg("-asan")
-	}
-	if b.printPackages {
-		b.Arg("-v")
-	}
-	if b.printCommands {
-		b.Arg("-x")
-	}
+	b.OptArg(len(b.output) > 0, "-o", b.output)
+	b.OptArg(b.forceRebuild, "-a")
+	b.OptArg(b.dryRun, "-n")
+	b.OptArg(b.detectRace, "-race")
+	b.OptArg(b.memorySan, "-msan")
+	b.OptArg(b.addrSan, "-asan")
+	b.OptArg(b.printPackages, "-v")
+	b.OptArg(b.printCommands, "-x")
 	if len(b.buildMode) > 0 {
 		b.Arg("-buildmode=" + b.buildMode)
 	}
@@ -424,6 +466,10 @@ func (b *GoBuild) Run(ctx context.Context) error {
 
 	b.Arg(keySlice(b.targets)...)
 	return b.Command.Run(ctx)
+}
+
+func (g *GoTools) Run(target string, args ...string) Runner {
+	return Exec(g.goTool(), "run").Arg(target).Arg(args...).CaptureStdin()
 }
 
 func keySlice[T any](set map[string]T) []string {

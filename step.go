@@ -52,6 +52,13 @@ func Todo() Runner {
 	})
 }
 
+// Error will create a Runner returning an error, creating with passing msg and args to [fmt.Errorf].
+func Error(msg string, args ...any) Runner {
+	return RunnerFunc(func(ctx context.Context) error {
+		return fmt.Errorf(msg, args...)
+	})
+}
+
 // RunState indicates the state of a Step.
 type RunState int
 

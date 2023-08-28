@@ -3,6 +3,7 @@ package modmake
 import (
 	"context"
 	"github.com/bitfield/script"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -41,6 +42,28 @@ func IfExists(file string, r Runner) Runner {
 		if err := script.IfExists(file).Error(); err == nil {
 			return r.Run(ctx)
 		}
+		return nil
+	})
+}
+
+// IfError will create a Runner with an error handler Runner that is only executed if the base Runner returns an error.
+// If both the base Runner and the handler return an error, then the handler's error will be returned.
+func IfError(canErr Runner, handler Runner) Runner {
+	return RunnerFunc(func(ctx context.Context) error {
+		if err := canErr.Run(ctx); err != nil {
+			return handler.Run(ctx)
+		}
+		return nil
+	})
+}
+
+// Print will create a Runner that logs a message.
+func Print(msg string, args ...any) Runner {
+	return RunnerFunc(func(ctx context.Context) error {
+		if !strings.HasSuffix(msg, "\n") {
+			msg += "\n"
+		}
+		log.Printf(msg, args...)
 		return nil
 	})
 }

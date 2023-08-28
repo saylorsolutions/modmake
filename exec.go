@@ -48,6 +48,17 @@ func Exec(cmdAndInitArgs ...string) *Command {
 	return i
 }
 
+// OptArg will add the specified arg(s) if the condition evaluates to true.
+func (i *Command) OptArg(condition bool, args ...string) *Command {
+	if i.err != nil {
+		return i
+	}
+	if condition {
+		i.Arg(args...)
+	}
+	return i
+}
+
 // Arg adds the given arguments to the Command.
 func (i *Command) Arg(args ...string) *Command {
 	if i.err != nil {
@@ -94,8 +105,16 @@ func (i *Command) WorkDir(workdir string) *Command {
 
 // Silent will prevent command output.
 func (i *Command) Silent() *Command {
-	i.stderr = os.DevNull
-	i.stdout = os.DevNull
+	if i.err != nil {
+		return i
+	}
+	null, err := os.Open(os.DevNull)
+	if err != nil {
+		i.err = err
+		return i
+	}
+	i.stderr = null
+	i.stdout = null
 	return i
 }
 

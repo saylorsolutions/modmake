@@ -2,6 +2,7 @@ package modmake
 
 import (
 	"context"
+	"fmt"
 	"github.com/bitfield/script"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -139,4 +140,13 @@ func TestRelativeToWorkdir(t *testing.T) {
 	abs, err := filepath.Abs(".")
 	assert.NoError(t, err)
 	assert.Equal(t, abs, relativeToWorkdir("./test", abs))
+}
+
+func ExampleIfError() {
+	canError := Error("An error occurred!")
+	err := IfError(canError, Print("Error handled")).Run(context.Background())
+	if err != nil {
+		fmt.Println("Error should not have been returned:", err)
+	}
+	// Output:
 }
