@@ -7,18 +7,19 @@ It can be used to demonstrate the basic features of a build, and how to get more
 package main
 
 import (
-	. "github.com/saylorsolutions/modmake"
-	"log"
-	"os"
+  . "github.com/saylorsolutions/modmake"
+  "log"
+  "os"
 )
 
 func main() {
-	b := NewBuild()
-	b.Build().Does(Print("Hello, build!"))
+  b := NewBuild()
+  b.Test().Does(Print("Testing..."))
+  b.Build().Does(Print("Hello, modmake!"))
 
-	if err := b.Execute(os.Args[1:]...); err != nil {
-		log.Fatalf("Failed to execute build: %v\n", err)
-	}
+  if err := b.Execute(os.Args[1:]...); err != nil {
+    log.Fatalf("Failed to execute build: %v\n", err)
+  }
 }
 ```
 
