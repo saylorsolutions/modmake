@@ -9,7 +9,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"strings"
 )
 
@@ -211,9 +210,6 @@ func (b *GoBuild) ChangeDir(newDir string) *GoBuild {
 func (b *GoBuild) OutputFilename(filename string) *GoBuild {
 	if b.err != nil {
 		return b
-	}
-	if runtime.GOOS == "windows" && !strings.HasSuffix(filename, ".exe") {
-		filename += ".exe"
 	}
 	b.output = filename
 	return b
