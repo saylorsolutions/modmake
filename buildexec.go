@@ -89,6 +89,7 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 		b.Graph()
 	}
 	if err := flags.Parse(args); err != nil {
+		flags.Usage()
 		return err
 	}
 
