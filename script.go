@@ -2,16 +2,19 @@ package modmake
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"github.com/bitfield/script"
+	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
-// Script will execute each RunnerFunc in order, returning the first error.
-func Script(fns ...RunnerFunc) Runner {
-	return RunnerFunc(func(ctx context.Context) error {
+// Script will execute each RunFunc in order, returning the first error.
+func Script(fns ...RunFunc) Runner {
+	return RunFunc(func(ctx context.Context) error {
 		for _, fn := range fns {
 			run := ContextAware(fn)
 			if err := run.Run(ctx); err != nil {
@@ -25,7 +28,7 @@ func Script(fns ...RunnerFunc) Runner {
 // IfNotExists will skip executing the Runner if the given file exists, returning nil.
 // This is similar to the default Make behavior of skipping a task if the target file already exists.
 func IfNotExists(file string, r Runner) Runner {
-	return RunnerFunc(func(ctx context.Context) error {
+	return RunFunc(func(ctx context.Context) error {
 		if err := script.IfExists(file).Error(); err != nil {
 			if err == os.ErrNotExist {
 				return r.Run(ctx)
@@ -38,7 +41,7 @@ func IfNotExists(file string, r Runner) Runner {
 
 // IfExists will execute the Runner if the file exists, returning nil otherwise.
 func IfExists(file string, r Runner) Runner {
-	return RunnerFunc(func(ctx context.Context) error {
+	return RunFunc(func(ctx context.Context) error {
 		if err := script.IfExists(file).Error(); err == nil {
 			return r.Run(ctx)
 		}
@@ -49,7 +52,7 @@ func IfExists(file string, r Runner) Runner {
 // IfError will create a Runner with an error handler Runner that is only executed if the base Runner returns an error.
 // If both the base Runner and the handler return an error, then the handler's error will be returned.
 func IfError(canErr Runner, handler Runner) Runner {
-	return RunnerFunc(func(ctx context.Context) error {
+	return RunFunc(func(ctx context.Context) error {
 		if err := canErr.Run(ctx); err != nil {
 			return handler.Run(ctx)
 		}
@@ -59,7 +62,7 @@ func IfError(canErr Runner, handler Runner) Runner {
 
 // Print will create a Runner that logs a message.
 func Print(msg string, args ...any) Runner {
-	return RunnerFunc(func(ctx context.Context) error {
+	return RunFunc(func(ctx context.Context) error {
 		if !strings.HasSuffix(msg, "\n") {
 			msg += "\n"
 		}
@@ -72,7 +75,7 @@ func Print(msg string, args ...any) Runner {
 // The source and target file names are expected to be relative to the build's working directory, unless they are absolute paths.
 // The target file will be created or truncated as appropriate.
 func CopyFile(source, target string) Runner {
-	return RunnerFunc(func(ctx context.Context) error {
+	return RunFunc(func(ctx context.Context) error {
 		workdir, err := getWorkdir(ctx)
 		if err != nil {
 			return err
@@ -88,7 +91,7 @@ func CopyFile(source, target string) Runner {
 // The source and target file names are expected to be relative to the build's working directory, unless they are absolute paths.
 // The target file will be created or truncated as appropriate.
 func MoveFile(source, target string) Runner {
-	return RunnerFunc(func(ctx context.Context) error {
+	return RunFunc(func(ctx context.Context) error {
 		workdir, err := getWorkdir(ctx)
 		if err != nil {
 			return err
@@ -99,6 +102,60 @@ func MoveFile(source, target string) Runner {
 			return err
 		}
 		return os.Remove(source)
+	})
+}
+
+// Mkdir makes a directory named dir.
+// Any error encountered while making the directory is returned.
+func Mkdir(dir string, perm os.FileMode) Runner {
+	return RunFunc(func(ctx context.Context) error {
+		return os.Mkdir(dir, perm)
+	})
+}
+
+// MkdirAll makes the target directory, and any directories in between.
+// Any error encountered while making the directories is returned.
+func MkdirAll(dir string, perm os.FileMode) Runner {
+	return RunFunc(func(ctx context.Context) error {
+		return os.MkdirAll(dir, perm)
+	})
+}
+
+// Remove will remove the file specified from the filesystem.
+// If the file doesn't exist, then this returns nil.
+// Any other error encountered while removing the file is returned.
+func Remove(file string) Runner {
+	return RunFunc(func(ctx context.Context) error {
+		fi, err := os.Stat(file)
+		if err != nil {
+			if errors.Is(err, fs.ErrNotExist) {
+				return nil
+			}
+			return err
+		}
+		if fi.IsDir() {
+			return fmt.Errorf("file '%s' is a directory, use RemoveDir instead", file)
+		}
+		return os.Remove(file)
+	})
+}
+
+// RemoveDir will remove the directory specified from the filesystem.
+// If the directory doesn't exist, then this returns nil.
+// Any other error encountered while removing the directory is returned.
+func RemoveDir(file string) Runner {
+	return RunFunc(func(ctx context.Context) error {
+		fi, err := os.Stat(file)
+		if err != nil {
+			if errors.Is(err, fs.ErrNotExist) {
+				return nil
+			}
+			return err
+		}
+		if !fi.IsDir() {
+			return fmt.Errorf("file '%s' is a file, use Remove instead", file)
+		}
+		return os.RemoveAll(file)
 	})
 }
 

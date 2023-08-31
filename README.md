@@ -3,6 +3,10 @@
 An attempt at creating a build system for Go using Go code.
 Note that this is a work in progress, and probably shouldn't be used for anything serious yet.
 
+## Examples
+
+To see this in action, clone the repository and start with the [helloworld example](example/helloworld/README.md).
+
 ## Goals and justification
 
 * Reduce or eliminate the need for Makefiles for non-trivial builds.

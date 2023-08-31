@@ -55,6 +55,7 @@ func (b *Build) Execute(args ...string) (err error) {
 		flagSkipTests    bool
 		flagSkipInstall  bool
 		flagSkipGenerate bool
+		flagSkipDeps     bool
 		flagWorkdir      string
 		flagTimeout      time.Duration
 	)
@@ -64,14 +65,15 @@ func (b *Build) Execute(args ...string) (err error) {
 	flags.BoolVar(&flagSkipTests, "skip-test", false, "Skips the test step, but not its dependencies.")
 	flags.BoolVar(&flagSkipInstall, "skip-tools", false, "Skips the tools install step, but not its dependencies.")
 	flags.BoolVar(&flagSkipGenerate, "skip-generate", false, "Skips the generate step, but not its dependencies.")
+	flags.BoolVar(&flagSkipDeps, "skip-dependencies", false, "Skips running the named step's dependencies.")
 	flags.StringVar(&flagWorkdir, "workdir", ".", "Sets the working directory for the build")
 	flags.DurationVar(&flagTimeout, "timeout", 0, "Sets a timeout duration for this build run")
 
 	flags.Usage = func() {
-		fmt.Printf(`Executes a modmake build
+		fmt.Printf(`Executes this modmake build
 
 Usage:
-    go run BUILD_FILE.go graph
+	go run BUILD_FILE.go graph
 	go run BUILD_FILE.go steps
 	go run BUILD_FILE.go [FLAGS] STEP...
 
@@ -88,6 +90,11 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 	}
 	if err := flags.Parse(args); err != nil {
 		return err
+	}
+
+	if flagHelp {
+		flags.Usage()
+		return nil
 	}
 
 	if flagSkipTests {
@@ -110,10 +117,13 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 	if err != nil {
 		return fmt.Errorf("error getting absolute path for workdir: %w", err)
 	}
+	if err := os.Chdir(flagWorkdir); err != nil {
+		return fmt.Errorf("failed to change to workdir '%s': %w", flagWorkdir, err)
+	}
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("error running build: %v", r)
+			err = fmt.Errorf("error running build: %v\n%s", r, string(debug.Stack()))
 		}
 	}()
 	ctx, cancel := sigCtx()
@@ -140,7 +150,11 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 			fmt.Println(strings.Join(steps, "\n"))
 			return nil
 		default:
-			if err := b.Step(stepName).Run(ctx); err != nil {
+			step := b.Step(stepName)
+			if flagSkipDeps {
+				step.SkipDependencies()
+			}
+			if err := step.Run(ctx); err != nil {
 				return fmt.Errorf("error running build: %w", err)
 			}
 		}

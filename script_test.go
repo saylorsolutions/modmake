@@ -31,7 +31,7 @@ func TestExecScript(t *testing.T) {
 
 func TestIfNotExists(t *testing.T) {
 	var executed bool
-	err := IfNotExists("script.go", RunnerFunc(func(ctx context.Context) error {
+	err := IfNotExists("script.go", RunFunc(func(ctx context.Context) error {
 		executed = true
 		return nil
 	})).Run(context.Background())
@@ -41,7 +41,7 @@ func TestIfNotExists(t *testing.T) {
 
 func TestIfExists(t *testing.T) {
 	var executed bool
-	err := IfExists("script.go", RunnerFunc(func(ctx context.Context) error {
+	err := IfExists("script.go", RunFunc(func(ctx context.Context) error {
 		executed = true
 		return nil
 	})).Run(context.Background())

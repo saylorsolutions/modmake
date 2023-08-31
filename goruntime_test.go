@@ -25,7 +25,7 @@ func TestGoTools_Benchmark(t *testing.T) {
 
 func TestGoTools_Build_File(t *testing.T) {
 	test := Go().Test("testingtest/test_test.go")
-	build := Go().NewBuild("main.go").
+	build := Go().Build("main.go").
 		ChangeDir("testingbuild").
 		OutputFilename("blah.exe").
 		Verbose().
@@ -35,10 +35,10 @@ func TestGoTools_Build_File(t *testing.T) {
 	b.Generate().Does(Go().GenerateAll())
 	b.Test().Does(test)
 	b.Build().Does(build)
-	b.Build().AfterRun(IfNotExists("testingbuild/blah.exe", RunnerFunc(func(ctx context.Context) error {
+	b.Build().AfterRun(IfNotExists("testingbuild/blah.exe", RunFunc(func(ctx context.Context) error {
 		return errors.New("failed to build blah.exe")
 	})))
-	b.Build().AfterRun(RunnerFunc(func(ctx context.Context) error {
+	b.Build().AfterRun(RunFunc(func(ctx context.Context) error {
 		err := os.Remove("testingbuild/blah.exe")
 		return err
 	}))
@@ -48,7 +48,7 @@ func TestGoTools_Build_File(t *testing.T) {
 func TestGoTools_Build_ModulePath(t *testing.T) {
 	module := "github.com/saylorsolutions/modmake"
 	test := Go().Test(module + "/testingtest")
-	build := Go().NewBuild(module+"/testingbuild").
+	build := Go().Build(module+"/testingbuild").
 		OutputFilename("testingbuild/blah.exe").
 		StripDebugSymbols().
 		Tags("blah").
@@ -58,10 +58,10 @@ func TestGoTools_Build_ModulePath(t *testing.T) {
 	b.Generate().Does(Go().GenerateAll())
 	b.Test().Does(test)
 	b.Build().Does(build)
-	b.Build().AfterRun(IfNotExists("testingbuild/blah.exe", RunnerFunc(func(ctx context.Context) error {
+	b.Build().AfterRun(IfNotExists("testingbuild/blah.exe", RunFunc(func(ctx context.Context) error {
 		return errors.New("failed to build blah.exe")
 	})))
-	b.Build().AfterRun(RunnerFunc(func(ctx context.Context) error {
+	b.Build().AfterRun(RunFunc(func(ctx context.Context) error {
 		err := os.Remove("testingbuild/blah.exe")
 		return err
 	}))

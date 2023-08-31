@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	ErrCycleDetected = errors.New("dependency cycle detected")
+	ErrCycleDetected = errors.New("possible dependency cycle detected")
 )
 
 // Build is a collection of related Steps.
@@ -103,6 +103,22 @@ func (b *Build) Package() *Step {
 	return b.packageStep
 }
 
+func (b *Build) AddStep(step *Step) {
+	if step == nil {
+		panic("nil step")
+	}
+	name := strings.ToLower(step.name)
+	step.name = name
+	if reservedStepNames[step.name] {
+		panic(fmt.Errorf("step name '%s' is reserved", name))
+	}
+	if _, ok := b.stepNames[step.name]; ok {
+		panic(fmt.Errorf("step name '%s' already exists", name))
+	}
+	b.stepNames[name] = step
+	step.build = b
+}
+
 func (b *Build) Step(name string) *Step {
 	step, ok := b.stepNames[name]
 	if !ok {
@@ -136,6 +152,13 @@ func (b *Build) Graph() {
 	b.graph(b.benchStep, 0, &buf, visited)
 	b.graph(b.buildStep, 0, &buf, visited)
 	b.graph(b.packageStep, 0, &buf, visited)
+
+	for _, stepName := range b.Steps() {
+		if reservedStepNames[stepName] {
+			continue
+		}
+		b.graph(b.Step(stepName), 0, &buf, visited)
+	}
 
 	buf.WriteString("\n* - duplicate reference\n")
 	fmt.Print(buf.String())

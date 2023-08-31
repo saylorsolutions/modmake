@@ -15,18 +15,27 @@ type Runner interface {
 	Run(context.Context) error
 }
 
-// RunnerFunc is a convenient way to make a function that satisfies the Runner interface.
-type RunnerFunc func(ctx context.Context) error
+// RunFunc is a convenient way to make a function that satisfies the Runner interface.
+type RunFunc func(ctx context.Context) error
 
-func (fn RunnerFunc) Run(ctx context.Context) error {
+func (fn RunFunc) Run(ctx context.Context) error {
 	return fn(ctx)
+}
+
+func (fn RunFunc) Then(other RunFunc) RunFunc {
+	return func(ctx context.Context) error {
+		if err := fn(ctx); err != nil {
+			return err
+		}
+		return other(ctx)
+	}
 }
 
 // ContextAware creates a Runner that wraps the parameter with context handling logic.
 // In the event that the context is done, the context's error is returned.
 // This should not be used if custom [context.Context] handling is desired.
 func ContextAware(r Runner) Runner {
-	return RunnerFunc(func(ctx context.Context) error {
+	return RunFunc(func(ctx context.Context) error {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -38,7 +47,7 @@ func ContextAware(r Runner) Runner {
 
 // NoOp is a Runner placeholder that immediately returns nil.
 func NoOp() Runner {
-	return RunnerFunc(func(ctx context.Context) error {
+	return RunFunc(func(ctx context.Context) error {
 		return nil
 	})
 }
@@ -46,7 +55,7 @@ func NoOp() Runner {
 // Todo returns a Runner that prints "Not yet defined" with the standard logger.
 // This is intended to be used where a Runner should be defined, but hasn't yet, much like [context.TODO].
 func Todo() Runner {
-	return RunnerFunc(func(ctx context.Context) error {
+	return RunFunc(func(ctx context.Context) error {
 		log.Println("Not yet defined")
 		return nil
 	})
@@ -54,7 +63,7 @@ func Todo() Runner {
 
 // Error will create a Runner returning an error, creating with passing msg and args to [fmt.Errorf].
 func Error(msg string, args ...any) Runner {
-	return RunnerFunc(func(ctx context.Context) error {
+	return RunFunc(func(ctx context.Context) error {
 		return fmt.Errorf(msg, args...)
 	})
 }
@@ -144,6 +153,8 @@ func (s *Step) DependsOn(dependency *Step) *Step {
 	}
 	if s.build != nil {
 		dependency.setBuild(s.build)
+	} else if dependency.build != nil {
+		s.build = dependency.build
 	}
 	s.dependencies = append(s.dependencies, dependency)
 	return s
@@ -154,7 +165,7 @@ func (s *Step) DependsOnRunner(name, description string, r Runner) *Step {
 	return s.DependsOn(step)
 }
 
-func (s *Step) DependsOnFunc(name, description string, fn RunnerFunc) *Step {
+func (s *Step) DependsOnFunc(name, description string, fn RunFunc) *Step {
 	step := NewStep(name, description).Does(fn)
 	return s.DependsOn(step)
 }
@@ -168,8 +179,8 @@ func (s *Step) Does(operation Runner) *Step {
 	return s
 }
 
-// DoesFunc specifies the RunnerFunc that should happen as a result of executing this Step.
-func (s *Step) DoesFunc(fn RunnerFunc) *Step {
+// DoesFunc specifies the RunFunc that should happen as a result of executing this Step.
+func (s *Step) DoesFunc(fn RunFunc) *Step {
 	return s.Does(fn)
 }
 

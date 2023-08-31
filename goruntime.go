@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 )
 
@@ -94,7 +95,7 @@ func (g *GoTools) ModTidy() Runner {
 }
 
 func (g *GoTools) Test(patterns ...string) Runner {
-	return RunnerFunc(func(ctx context.Context) error {
+	return RunFunc(func(ctx context.Context) error {
 		workdir, err := getWorkdir(ctx)
 		if err != nil {
 			return err
@@ -115,7 +116,7 @@ func (g *GoTools) TestAll() Runner {
 }
 
 func (g *GoTools) Generate(patterns ...string) Runner {
-	return RunnerFunc(func(ctx context.Context) error {
+	return RunFunc(func(ctx context.Context) error {
 		workdir, err := getWorkdir(ctx)
 		if err != nil {
 			return err
@@ -136,7 +137,7 @@ func (g *GoTools) GenerateAll() Runner {
 }
 
 func (g *GoTools) Benchmark(patterns ...string) Runner {
-	return RunnerFunc(func(ctx context.Context) error {
+	return RunFunc(func(ctx context.Context) error {
 		workdir, err := getWorkdir(ctx)
 		if err != nil {
 			return err
@@ -173,8 +174,8 @@ type GoBuild struct {
 	targets       map[string]bool
 }
 
-// NewBuild creates a GoBuild to hold parameters for a new go build run.
-func (g *GoTools) NewBuild(targets ...string) *GoBuild {
+// Build creates a GoBuild to hold parameters for a new go build run.
+func (g *GoTools) Build(targets ...string) *GoBuild {
 	if len(targets) == 0 {
 		return &GoBuild{
 			Command: &Command{err: errors.New("no targets defined")},
@@ -210,6 +211,9 @@ func (b *GoBuild) ChangeDir(newDir string) *GoBuild {
 func (b *GoBuild) OutputFilename(filename string) *GoBuild {
 	if b.err != nil {
 		return b
+	}
+	if runtime.GOOS == "windows" && !strings.HasSuffix(filename, ".exe") {
+		filename += ".exe"
 	}
 	b.output = filename
 	return b
