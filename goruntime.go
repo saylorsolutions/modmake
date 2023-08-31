@@ -1,14 +1,11 @@
 package modmake
 
 import (
-	"bufio"
 	"context"
 	"errors"
 	"fmt"
-	"io/fs"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 )
 
@@ -22,7 +19,7 @@ func Go() *GoTools {
 	if instance == nil {
 		rootDir, ok := os.LookupEnv("GOROOT")
 		if !ok {
-			panic("Unable to resolve GOROOT. Is Go installed?")
+			panic("Unable to resolve environment variable GOROOT. Is Go installed correctly?")
 		}
 		instance = &GoTools{
 			rootDir: rootDir,
@@ -33,6 +30,10 @@ func Go() *GoTools {
 
 func (g *GoTools) goTool() string {
 	return filepath.Join(g.rootDir, "bin", "go")
+}
+
+func (g *GoTools) Command(command string, args ...string) *Command {
+	return Exec(g.goTool(), command).Arg(args...)
 }
 
 func (g *GoTools) Clean() *GoClean {
@@ -77,79 +78,40 @@ func (c *GoClean) Run(ctx context.Context) error {
 	return c.Command.Run(ctx)
 }
 
-func (g *GoTools) Install(pkg string) Runner {
+func (g *GoTools) Install(pkg string) *Command {
 	return Exec(g.goTool(), "install", pkg)
 }
 
-func (g *GoTools) Get(pkg string) Runner {
+func (g *GoTools) Get(pkg string) *Command {
 	return Exec(g.goTool(), "get").Arg(pkg)
 }
 
-func (g *GoTools) GetUpdated(pkg string) Runner {
+func (g *GoTools) GetUpdated(pkg string) *Command {
 	return Exec(g.goTool(), "get", "-u").Arg(pkg)
 }
 
-func (g *GoTools) ModTidy() Runner {
+func (g *GoTools) ModTidy() *Command {
 	return Exec(g.goTool(), "mod", "tidy")
 }
 
-func (g *GoTools) Test(patterns ...string) Runner {
-	return RunFunc(func(ctx context.Context) error {
-		workdir, err := getWorkdir(ctx)
-		if err != nil {
-			return err
-		}
-		modPath, err := getModPath(workdir)
-		if err != nil {
-			return err
-		}
-		for i := 0; i < len(patterns); i++ {
-			patterns[i] = relativeOrModulePath(modPath, workdir, patterns[i])
-		}
-		return Exec(g.goTool(), "test", "-v").Arg(patterns...).Run(ctx)
-	})
+func (g *GoTools) Test(patterns ...string) *Command {
+	return Exec(g.goTool(), "test", "-v").Arg(patterns...)
 }
 
 func (g *GoTools) TestAll() Runner {
 	return g.Test("...")
 }
 
-func (g *GoTools) Generate(patterns ...string) Runner {
-	return RunFunc(func(ctx context.Context) error {
-		workdir, err := getWorkdir(ctx)
-		if err != nil {
-			return err
-		}
-		modPath, err := getModPath(workdir)
-		if err != nil {
-			return err
-		}
-		for i := 0; i < len(patterns); i++ {
-			patterns[i] = relativeOrModulePath(modPath, workdir, patterns[i])
-		}
-		return Exec(g.goTool(), "generate").Arg(patterns...).Run(ctx)
-	})
+func (g *GoTools) Generate(patterns ...string) *Command {
+	return Exec(g.goTool(), "generate").Arg(patterns...)
 }
 
 func (g *GoTools) GenerateAll() Runner {
 	return g.Generate("...")
 }
 
-func (g *GoTools) Benchmark(patterns ...string) Runner {
-	return RunFunc(func(ctx context.Context) error {
-		workdir, err := getWorkdir(ctx)
-		if err != nil {
-			return err
-		}
-		modPath, err := getModPath(workdir)
-		if err != nil {
-			return err
-		}
-		for i := 0; i < len(patterns); i++ {
-			patterns[i] = relativeOrModulePath(modPath, workdir, patterns[i])
-		}
-		return Exec(g.goTool(), "test", "-bench", "-v").Arg(patterns...).Run(ctx)
-	})
+func (g *GoTools) Benchmark(patterns ...string) *Command {
+	return Exec(g.goTool(), "test", "-bench", "-v").Arg(patterns...)
 }
 
 func (g *GoTools) BenchmarkAll() Runner {
@@ -420,8 +382,8 @@ func (b *GoBuild) Tags(tags ...string) *GoBuild {
 	return b
 }
 
-// BuildOS sets the target OS for the go build command using the GOOS environment variable.
-func (b *GoBuild) BuildOS(os string) *GoBuild {
+// OS sets the target OS for the go build command using the GOOS environment variable.
+func (b *GoBuild) OS(os string) *GoBuild {
 	if b.err != nil {
 		return b
 	}
@@ -429,8 +391,8 @@ func (b *GoBuild) BuildOS(os string) *GoBuild {
 	return b
 }
 
-// BuildCpuArch will set the CPU architecture for the go build command using the GOARCH environment variable.
-func (b *GoBuild) BuildCpuArch(arch string) *GoBuild {
+// Arch will set the CPU architecture for the go build command using the GOARCH environment variable.
+func (b *GoBuild) Arch(arch string) *GoBuild {
 	if b.err != nil {
 		return b
 	}
@@ -478,83 +440,4 @@ func keySlice[T any](set map[string]T) []string {
 		keys = append(keys, key)
 	}
 	return keys
-}
-
-var modCache map[string]string
-
-func getModPath(workdir string) (string, error) {
-	if modCache == nil {
-		modCache = map[string]string{}
-	} else {
-		if mod, ok := modCache[workdir]; ok {
-			return mod, nil
-		}
-	}
-	var prev string
-	cur, err := filepath.Abs(workdir)
-	if err != nil {
-		return "", err
-	}
-	for cur != prev {
-		mod, found := walkForModPath(prev, cur)
-		if found {
-			modCache[workdir] = mod
-			return mod, nil
-		}
-		prev = cur
-		cur = filepath.Dir(cur)
-	}
-	return "", errors.New("unable to locate module")
-}
-
-var (
-	modPattern = regexp.MustCompile(`^module\s+(\S+)$`)
-	foundMod   = errors.New("module found")
-)
-
-func walkForModPath(prev, cur string) (string, bool) {
-	var module string
-	err := filepath.WalkDir(cur, func(path string, d fs.DirEntry, err error) error {
-		if d.IsDir() {
-			if path == prev {
-				return fs.SkipDir
-			}
-			return nil
-		}
-		if d.Name() == "go.mod" {
-			mod, err := os.Open(path)
-			if err != nil {
-				return err
-			}
-			defer func() {
-				_ = mod.Close()
-			}()
-			scanner := bufio.NewScanner(mod)
-			defer func() {
-				scanner = nil
-			}()
-			for scanner.Scan() {
-				line := strings.TrimSpace(scanner.Text())
-				if modPattern.MatchString(line) {
-					groups := modPattern.FindStringSubmatch(line)
-					module = groups[1]
-					return foundMod
-				}
-			}
-		}
-		return nil
-	})
-	if err != nil {
-		if errors.Is(err, foundMod) {
-			return module, true
-		}
-	}
-	return "", false
-}
-
-func relativeOrModulePath(modPath, workdir, file string) string {
-	if strings.HasPrefix(file, modPath) {
-		return file
-	}
-	return relativeToWorkdir(workdir, file)
 }
