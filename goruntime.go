@@ -36,18 +36,18 @@ func (g *GoTools) Command(command string, args ...string) *Command {
 	return Exec(g.goTool(), command).Arg(args...)
 }
 
-func (g *GoTools) Clean() *GoClean {
-	return &GoClean{
-		Command: Exec(g.goTool(), "clean"),
-	}
-}
-
 type GoClean struct {
 	*Command
 	buildCache bool
 	testCache  bool
 	modCache   bool
 	fuzzCache  bool
+}
+
+func (g *GoTools) Clean() *GoClean {
+	return &GoClean{
+		Command: Exec(g.goTool(), "clean"),
+	}
 }
 
 func (c *GoClean) BuildCache() *GoClean {
@@ -98,7 +98,7 @@ func (g *GoTools) Test(patterns ...string) *Command {
 	return Exec(g.goTool(), "test", "-v").Arg(patterns...)
 }
 
-func (g *GoTools) TestAll() Runner {
+func (g *GoTools) TestAll() *Command {
 	return g.Test("./...")
 }
 
@@ -106,7 +106,7 @@ func (g *GoTools) Generate(patterns ...string) *Command {
 	return Exec(g.goTool(), "generate").Arg(patterns...)
 }
 
-func (g *GoTools) GenerateAll() Runner {
+func (g *GoTools) GenerateAll() *Command {
 	return g.Generate("./...")
 }
 
@@ -114,7 +114,7 @@ func (g *GoTools) Benchmark(patterns ...string) *Command {
 	return Exec(g.goTool(), "test", "-bench", "-v").Arg(patterns...)
 }
 
-func (g *GoTools) BenchmarkAll() Runner {
+func (g *GoTools) BenchmarkAll() *Command {
 	return g.Benchmark("./...")
 }
 
@@ -430,7 +430,7 @@ func (b *GoBuild) Run(ctx context.Context) error {
 	return b.Command.Run(ctx)
 }
 
-func (g *GoTools) Run(target string, args ...string) Runner {
+func (g *GoTools) Run(target string, args ...string) *Command {
 	return Exec(g.goTool(), "run").Arg(target).Arg(args...).CaptureStdin()
 }
 
