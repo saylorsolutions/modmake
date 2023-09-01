@@ -99,7 +99,7 @@ func (g *GoTools) Test(patterns ...string) *Command {
 }
 
 func (g *GoTools) TestAll() Runner {
-	return g.Test("...")
+	return g.Test("./...")
 }
 
 func (g *GoTools) Generate(patterns ...string) *Command {
@@ -107,7 +107,7 @@ func (g *GoTools) Generate(patterns ...string) *Command {
 }
 
 func (g *GoTools) GenerateAll() Runner {
-	return g.Generate("...")
+	return g.Generate("./...")
 }
 
 func (g *GoTools) Benchmark(patterns ...string) *Command {
@@ -115,7 +115,7 @@ func (g *GoTools) Benchmark(patterns ...string) *Command {
 }
 
 func (g *GoTools) BenchmarkAll() Runner {
-	return g.Benchmark("...")
+	return g.Benchmark("./...")
 }
 
 type GoBuild struct {
