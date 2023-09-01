@@ -5,22 +5,15 @@ import (
 	"errors"
 	"github.com/stretchr/testify/assert"
 	"os"
-	"path/filepath"
 	"testing"
 )
 
 func TestGoTools_Test(t *testing.T) {
-	abs, err := filepath.Abs("./testingtest")
-	assert.NoError(t, err)
-	ctx := context.WithValue(context.Background(), CtxWorkdir, abs)
-	assert.NoError(t, Go().TestAll().Run(ctx))
+	assert.NoError(t, Go().TestAll().WorkDir("./testingtest").Run(context.Background()))
 }
 
 func TestGoTools_Benchmark(t *testing.T) {
-	abs, err := filepath.Abs("./testingtest")
-	assert.NoError(t, err)
-	ctx := context.WithValue(context.Background(), CtxWorkdir, abs)
-	assert.NoError(t, Go().BenchmarkAll().Run(ctx))
+	assert.NoError(t, Go().BenchmarkAll().WorkDir("./testingtest").Run(context.Background()))
 }
 
 func TestGoTools_Build_File(t *testing.T) {
