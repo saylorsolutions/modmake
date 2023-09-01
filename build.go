@@ -66,6 +66,12 @@ func NewBuild() *Build {
 	return b
 }
 
+// CallBuild allows easily referencing and calling another modmake build.
+// os.Chdir will be called before go-running the build file, so the buildFile parameter should be relative to the workdir.
+func CallBuild(workdir, buildFile string, args ...string) *Command {
+	return Go().Run(buildFile, args...).WorkDir(workdir)
+}
+
 // Workdir sets the working directory for running build steps.
 // Defaults to the current working directory of the calling executable.
 func (b *Build) Workdir(workdir string) *Build {

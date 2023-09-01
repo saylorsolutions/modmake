@@ -120,3 +120,8 @@ func TestCyclesCheck(t *testing.T) {
 		})
 	}
 }
+
+func TestCallBuild(t *testing.T) {
+	err := CallBuild("example/helloworld", "build.go", "--skip-dependencies", "build").Run(context.TODO())
+	assert.NoError(t, err)
+}
