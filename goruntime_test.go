@@ -28,9 +28,7 @@ func TestGoTools_Build_File(t *testing.T) {
 	b.Generate().Does(Go().GenerateAll())
 	b.Test().Does(test)
 	b.Build().Does(build)
-	b.Build().AfterRun(IfNotExists("testingbuild/blah.exe", RunFunc(func(ctx context.Context) error {
-		return errors.New("failed to build blah.exe")
-	})))
+	b.Build().AfterRun(IfNotExists("testingbuild/blah.exe", Error("failed to build blah.exe")))
 	b.Build().AfterRun(RunFunc(func(ctx context.Context) error {
 		err := os.Remove("testingbuild/blah.exe")
 		return err

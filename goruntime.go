@@ -119,7 +119,8 @@ func (g *GoTools) BenchmarkAll() *Command {
 }
 
 type GoBuild struct {
-	*Command
+	err           error
+	cmd           *Command
 	output        string
 	forceRebuild  bool
 	dryRun        bool
@@ -133,13 +134,14 @@ type GoBuild struct {
 	ldFlags       map[string]bool
 	tags          map[string]bool
 	targets       map[string]bool
+	private       []string
 }
 
 // Build creates a GoBuild to hold parameters for a new go build run.
 func (g *GoTools) Build(targets ...string) *GoBuild {
 	if len(targets) == 0 {
 		return &GoBuild{
-			Command: &Command{err: errors.New("no targets defined")},
+			cmd: &Command{err: errors.New("no targets defined")},
 		}
 	}
 	_targets := map[string]bool{}
@@ -150,7 +152,7 @@ func (g *GoTools) Build(targets ...string) *GoBuild {
 		}
 	}
 	return &GoBuild{
-		Command: Exec(g.goTool(), "build"),
+		cmd:     Exec(g.goTool(), "build"),
 		targets: _targets,
 		gcFlags: map[string]bool{},
 		ldFlags: map[string]bool{},
@@ -164,7 +166,7 @@ func (b *GoBuild) ChangeDir(newDir string) *GoBuild {
 	if b.err != nil {
 		return b
 	}
-	b.WorkDir(newDir)
+	b.cmd.WorkDir(newDir)
 	return b
 }
 
@@ -387,7 +389,7 @@ func (b *GoBuild) OS(os string) *GoBuild {
 	if b.err != nil {
 		return b
 	}
-	b.Env("GOOS", os)
+	b.cmd.Env("GOOS", os)
 	return b
 }
 
@@ -396,7 +398,50 @@ func (b *GoBuild) Arch(arch string) *GoBuild {
 	if b.err != nil {
 		return b
 	}
-	b.Env("GOARCH", arch)
+	b.cmd.Env("GOARCH", arch)
+	return b
+}
+
+// Private specifies private hosts that should not go through proxy.golang.org for resolution.
+func (b *GoBuild) Private(privateHosts ...string) *GoBuild {
+	if b.err != nil {
+		return b
+	}
+	for _, host := range privateHosts {
+		host = strings.TrimSpace(host)
+		if len(host) == 0 {
+			continue
+		}
+		b.private = append(b.private, host)
+	}
+	return b
+}
+
+// Adapting *Command stuff to *GoBuild
+// Specifically leaving out Arg, since I should be already enumerating the most relevant/common args for build.
+// If more control is needed, then Go().Command would be more useful.
+
+func (b *GoBuild) Env(key, value string) *GoBuild {
+	if b.err != nil {
+		return b
+	}
+	b.cmd.Env(key, value)
+	return b
+}
+
+func (b *GoBuild) Workdir(workdir string) *GoBuild {
+	if b.err != nil {
+		return b
+	}
+	b.cmd.WorkDir(workdir)
+	return b
+}
+
+func (b *GoBuild) Silent() *GoBuild {
+	if b.err != nil {
+		return b
+	}
+	b.cmd.Silent()
 	return b
 }
 
@@ -405,29 +450,32 @@ func (b *GoBuild) Run(ctx context.Context) error {
 		return b.err
 	}
 
-	b.OptArg(len(b.output) > 0, "-o", b.output)
-	b.OptArg(b.forceRebuild, "-a")
-	b.OptArg(b.dryRun, "-n")
-	b.OptArg(b.detectRace, "-race")
-	b.OptArg(b.memorySan, "-msan")
-	b.OptArg(b.addrSan, "-asan")
-	b.OptArg(b.printPackages, "-v")
-	b.OptArg(b.printCommands, "-x")
+	b.cmd.OptArg(len(b.output) > 0, "-o", b.output)
+	b.cmd.OptArg(b.forceRebuild, "-a")
+	b.cmd.OptArg(b.dryRun, "-n")
+	b.cmd.OptArg(b.detectRace, "-race")
+	b.cmd.OptArg(b.memorySan, "-msan")
+	b.cmd.OptArg(b.addrSan, "-asan")
+	b.cmd.OptArg(b.printPackages, "-v")
+	b.cmd.OptArg(b.printCommands, "-x")
 	if len(b.buildMode) > 0 {
-		b.Arg("-buildmode=" + b.buildMode)
+		b.cmd.Arg("-buildmode=" + b.buildMode)
 	}
 	if len(b.gcFlags) > 0 {
-		b.Arg(fmt.Sprintf("-gcflags=%s", strings.Join(keySlice(b.gcFlags), " ")))
+		b.cmd.Arg(fmt.Sprintf("-gcflags=%s", strings.Join(keySlice(b.gcFlags), " ")))
 	}
 	if len(b.ldFlags) > 0 {
-		b.Arg(fmt.Sprintf("-ldflags=%s", strings.Join(keySlice(b.ldFlags), " ")))
+		b.cmd.Arg(fmt.Sprintf("-ldflags=%s", strings.Join(keySlice(b.ldFlags), " ")))
 	}
 	if len(b.tags) > 0 {
-		b.Arg("-tags", strings.Join(keySlice(b.tags), ","))
+		b.cmd.Arg("-tags", strings.Join(keySlice(b.tags), ","))
+	}
+	if len(b.private) > 0 {
+		b.cmd.Env("GOPRIVATE", strings.Join(b.private, ","))
 	}
 
-	b.Arg(keySlice(b.targets)...)
-	return b.Command.Run(ctx)
+	b.cmd.Arg(keySlice(b.targets)...)
+	return b.cmd.Run(ctx)
 }
 
 func (g *GoTools) Run(target string, args ...string) *Command {
