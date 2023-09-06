@@ -207,15 +207,15 @@ func (b *Build) cyclesCheck() error {
 	for name := range b.stepNames {
 		visited := map[string]bool{}
 		step := b.Step(name)
-		if found := b.findCycle(visited, step); len(found) > 0 {
-			return fmt.Errorf("%w: %s", ErrCycleDetected, found)
+		if cycle := b.findCycle(visited, step); cycle != "" {
+			return fmt.Errorf("%w: %s", ErrCycleDetected, cycle)
 		}
 	}
 	return nil
 }
 
 func (b *Build) findCycle(visited map[string]bool, step *Step) string {
-	if _, ok := visited[step.name]; ok {
+	if visited[step.name] {
 		return step.name
 	}
 	visited[step.name] = true
@@ -223,6 +223,8 @@ func (b *Build) findCycle(visited map[string]bool, step *Step) string {
 		if found := b.findCycle(visited, dep); len(found) > 0 {
 			return step.name + " -> " + found
 		}
+		visited[dep.name] = false
 	}
+	visited[step.name] = false
 	return ""
 }

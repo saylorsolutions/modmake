@@ -77,7 +77,8 @@ func ExampleBuild_Steps() {
 
 func TestCyclesCheck(t *testing.T) {
 	tests := map[string]struct {
-		b func() *Build
+		b        func() *Build
+		noCycles bool
 	}{
 		"Self-dependence": {
 			b: func() *Build {
@@ -108,6 +109,15 @@ func TestCyclesCheck(t *testing.T) {
 				return b
 			},
 		},
+		"Dual dependency": {
+			b: func() *Build {
+				b := NewBuild()
+				b.Build().DependsOnRunner("echo", "Prints a message", Print("a message"))
+				b.Package().DependsOn(b.Step("echo"))
+				return b
+			},
+			noCycles: true,
+		},
 	}
 
 	for name, tc := range tests {
@@ -115,8 +125,12 @@ func TestCyclesCheck(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			b := tc.b()
 			err := b.cyclesCheck()
-			t.Log(err)
-			assert.ErrorIs(t, err, ErrCycleDetected)
+			if tc.noCycles {
+				assert.NoError(t, err)
+			} else {
+				t.Log(err)
+				assert.ErrorIs(t, err, ErrCycleDetected)
+			}
 		})
 	}
 }
@@ -124,4 +138,46 @@ func TestCyclesCheck(t *testing.T) {
 func TestCallBuild(t *testing.T) {
 	err := CallBuild("example/helloworld", "build.go", "--skip-dependencies", "build").Run(context.TODO())
 	assert.NoError(t, err)
+}
+
+func BenchmarkLargeCycle_1000(b *testing.B) {
+	build := func() *Build {
+		steps := make([]*Step, 1_000)
+		for i := 0; i < 1_000; i++ {
+			steps[i] = NewStep(strconv.FormatInt(int64(i), 10), "").Does(NoOp())
+			if i > 0 {
+				steps[i].DependsOn(steps[i-1])
+			}
+		}
+		b := NewBuild()
+		b.Tools().DependsOn(steps[999])
+		steps[0].DependsOn(b.Package())
+		return b
+	}()
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = build.cyclesCheck()
+	}
+}
+
+func BenchmarkLargeCycle_10000(b *testing.B) {
+	build := func() *Build {
+		steps := make([]*Step, 10_000)
+		for i := 0; i < 10_000; i++ {
+			steps[i] = NewStep(strconv.FormatInt(int64(i), 10), "").Does(NoOp())
+			if i > 0 {
+				steps[i].DependsOn(steps[i-1])
+			}
+		}
+		b := NewBuild()
+		b.Tools().DependsOn(steps[9999])
+		steps[0].DependsOn(b.Package())
+		return b
+	}()
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = build.cyclesCheck()
+	}
 }
