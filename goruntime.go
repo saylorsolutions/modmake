@@ -94,12 +94,12 @@ func (g *GoTools) ModTidy() *Command {
 	return Exec(g.goTool(), "mod", "tidy")
 }
 
-func (g *GoTools) Test(patterns ...string) *Command {
-	return Exec(g.goTool(), "test", "-v").Arg(patterns...)
+func (g *GoTools) Test(pattern string) *Command {
+	return Exec(g.goTool(), "test", "-bench=^$", "-run="+pattern, "-v")
 }
 
 func (g *GoTools) TestAll() *Command {
-	return g.Test("./...")
+	return g.Test(".")
 }
 
 func (g *GoTools) Generate(patterns ...string) *Command {
@@ -110,12 +110,12 @@ func (g *GoTools) GenerateAll() *Command {
 	return g.Generate("./...")
 }
 
-func (g *GoTools) Benchmark(patterns ...string) *Command {
-	return Exec(g.goTool(), "test", "-bench", "-v").Arg(patterns...)
+func (g *GoTools) Benchmark(pattern string) *Command {
+	return Exec(g.goTool(), "test", "-bench="+pattern, "-run=^$", "-v")
 }
 
 func (g *GoTools) BenchmarkAll() *Command {
-	return g.Benchmark("./...")
+	return g.Benchmark(".")
 }
 
 type GoBuild struct {
