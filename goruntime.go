@@ -94,12 +94,12 @@ func (g *GoTools) ModTidy() *Command {
 	return Exec(g.goTool(), "mod", "tidy")
 }
 
-func (g *GoTools) Test(pattern string) *Command {
-	return Exec(g.goTool(), "test", "-bench=^$", "-run="+pattern, "-v")
+func (g *GoTools) Test(patterns ...string) *Command {
+	return Exec(g.goTool(), "test", "-v").Arg(patterns...)
 }
 
 func (g *GoTools) TestAll() *Command {
-	return g.Test(".")
+	return g.Test("./...")
 }
 
 func (g *GoTools) Generate(patterns ...string) *Command {
