@@ -125,6 +125,7 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 	if err := os.Chdir(flagWorkdir); err != nil {
 		log.Fatalf("failed to change to workdir '%s': %v\n", flagWorkdir, err)
 	}
+	b.workdir = flagWorkdir
 
 	ctx, cancel := sigCtx()
 	defer cancel()
