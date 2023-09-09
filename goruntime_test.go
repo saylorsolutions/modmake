@@ -33,7 +33,7 @@ func TestGoTools_Build_File(t *testing.T) {
 		err := os.Remove("testingbuild/blah.exe")
 		return err
 	}))
-	assert.NoError(t, b.Execute("build", "package"))
+	b.Execute("build", "package")
 }
 
 func TestGoTools_Build_ModulePath(t *testing.T) {
@@ -56,7 +56,7 @@ func TestGoTools_Build_ModulePath(t *testing.T) {
 		err := os.Remove("testingbuild/blah.exe")
 		return err
 	}))
-	assert.NoError(t, b.Execute("build", "package"))
+	b.Execute("build", "package")
 }
 
 func TestGoBuild_Run(t *testing.T) {

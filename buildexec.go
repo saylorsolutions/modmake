@@ -34,18 +34,19 @@ func sigCtx() (context.Context, context.CancelFunc) {
 	return ctx, cancel
 }
 
-// Execute executes a Build as configured.
-// It takes string arguments to make it easy to run with 'go run'.
+// Execute executes a Build as configured, as if it were a CLI application.
+// It takes string arguments to allow overriding the default of capturing os.Args.
 // Run this with the -h flag to see usage information.
-func (b *Build) Execute(args ...string) (err error) {
+// If an error occurs within Execute, then the error will be logged and [os.Exit] will be called with a non-zero exit code.
+func (b *Build) Execute(args ...string) {
 	defer func() {
 		if r := recover(); r != nil {
 			stack := debug.Stack()
-			err = fmt.Errorf("caught panic while running build: %v\n%s", r, string(stack))
+			log.Fatalf("caught panic while running build: %v\n%s", r, string(stack))
 		}
 	}()
 	if err := b.cyclesCheck(); err != nil {
-		return err
+		log.Fatalln(err)
 	}
 	flags := flag.NewFlagSet("build", flag.ContinueOnError)
 
@@ -88,14 +89,17 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 `, flags.FlagUsages())
 		b.Graph()
 	}
+	if len(args) == 0 {
+		args = os.Args[1:]
+	}
 	if err := flags.Parse(args); err != nil {
 		flags.Usage()
-		return err
+		log.Fatalln(err)
 	}
 
-	if flagHelp {
+	if flags.NArg() == 0 || flagHelp {
 		flags.Usage()
-		return nil
+		return
 	}
 
 	if flagSkipTests {
@@ -114,19 +118,14 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 	if len(flagWorkdir) == 0 {
 		flagWorkdir = b.workdir
 	}
-	flagWorkdir, err = filepath.Abs(flagWorkdir)
+	flagWorkdir, err := filepath.Abs(flagWorkdir)
 	if err != nil {
-		return fmt.Errorf("error getting absolute path for workdir: %w", err)
+		log.Fatalf("error getting absolute path for workdir: %v\n", err)
 	}
 	if err := os.Chdir(flagWorkdir); err != nil {
-		return fmt.Errorf("failed to change to workdir '%s': %w", flagWorkdir, err)
+		log.Fatalf("failed to change to workdir '%s': %v\n", flagWorkdir, err)
 	}
 
-	defer func() {
-		if r := recover(); r != nil {
-			err = fmt.Errorf("error running build: %v\n%s", r, string(debug.Stack()))
-		}
-	}()
 	ctx, cancel := sigCtx()
 	defer cancel()
 	ctx = context.WithValue(ctx, CtxWorkdir, flagWorkdir)
@@ -142,25 +141,24 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 		switch {
 		case i == 0 && stepName == "graph":
 			b.Graph()
-			return nil
+			return
 		case i == 0 && stepName == "steps":
 			steps := b.Steps()
 			for i := 0; i < len(steps); i++ {
 				steps[i] = steps[i] + " - " + b.Step(steps[i]).description
 			}
 			fmt.Println(strings.Join(steps, "\n"))
-			return nil
+			return
 		default:
 			step := b.Step(stepName)
 			if flagSkipDeps {
 				step.SkipDependencies()
 			}
 			if err := step.Run(ctx); err != nil {
-				return fmt.Errorf("error running build: %w", err)
+				log.Fatalf("error running build: %v\n", err)
 			}
 		}
 	}
 
 	log.Printf("Ran successfully in %s\n", time.Since(start).Round(time.Millisecond).String())
-	return nil
 }
