@@ -176,3 +176,17 @@ func BenchmarkLargeCycle_10000(b *testing.B) {
 		_ = build.cyclesCheck()
 	}
 }
+
+func TestBuild_Import(t *testing.T) {
+	b := NewBuild()
+	other := NewBuild()
+	assert.NotPanics(t, func() {
+		other.AddStep(NewStep("print", "Prints a message").Does(Print("Printing!")))
+		other.Build().DependsOn(other.Step("print"))
+	}, "New step creation should not panic")
+	b.Import("other", other)
+	_, ok := b.stepNames["other:print"]
+	assert.True(t, ok, "Step 'other:print' should have been imported")
+	_, ok = b.stepNames["print"]
+	assert.False(t, ok, "Other 'print' step should not have been imported")
+}

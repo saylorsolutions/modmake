@@ -52,15 +52,6 @@ func NoOp() Runner {
 	})
 }
 
-// Todo returns a Runner that prints "Not yet defined" with the standard logger.
-// This is intended to be used where a Runner should be defined, but hasn't yet, much like [context.TODO].
-func Todo() Runner {
-	return RunFunc(func(ctx context.Context) error {
-		log.Println("Not yet defined")
-		return nil
-	})
-}
-
 // Error will create a Runner returning an error, creating with passing msg and args to [fmt.Errorf].
 func Error(msg string, args ...any) Runner {
 	return RunFunc(func(ctx context.Context) error {
@@ -127,6 +118,9 @@ func NewStep(name, description string) *Step {
 	name = strings.ToLower(name)
 	if ok := reservedStepNames[name]; ok {
 		panic(fmt.Sprintf("step name '%s' is reserved by the build system", name))
+	}
+	if strings.Contains(name, ":") {
+		panic(fmt.Sprintf("step name '%s' includes the character ':' reserved for import separators", name))
 	}
 	return newStep(name, description)
 }

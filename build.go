@@ -144,6 +144,15 @@ func (b *Build) Steps() []string {
 	return steps
 }
 
+// Import will import all steps in the given build, with the given prefix applied and a colon separator.
+// No dependencies on the imported steps will be applied to the current build, dependencies must be applied on the parent Build after importing.
+func (b *Build) Import(prefix string, other *Build) {
+	for name, step := range other.stepNames {
+		step.name = prefix + ":" + name
+		b.AddStep(step)
+	}
+}
+
 func (b *Build) Graph() {
 	if err := b.cyclesCheck(); err != nil {
 		panic(err)

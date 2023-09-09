@@ -22,3 +22,9 @@ func TestError(t *testing.T) {
 	err := r.Run(context.Background())
 	assert.Equal(t, "File 'step.go' should not exist", err.Error())
 }
+
+func TestNoColonInStepName(t *testing.T) {
+	assert.Panics(t, func() {
+		NewStep("test:step", "This should not be allowed")
+	}, "Colon characters should not be allowed in a base step name")
+}
