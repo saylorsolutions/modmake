@@ -3,12 +3,13 @@ package build
 import . "github.com/saylorsolutions/modmake"
 
 func Import() *Build {
+	mainPath := Go().ToModulePath("example/pingpong/client/main.go")
 	b := NewBuild()
 	b.Build().Does(
-		Go().Build("example/pingpong/client/main.go").OutputFilename("client_test"),
+		Go().Build(mainPath).OutputFilename("client_test"),
 	)
 	b.AddStep(NewStep("run", "Runs the client").Does(
-		Go().Run("example/pingpong/client/main.go")),
+		Go().Run(mainPath)),
 	)
 	return b
 }

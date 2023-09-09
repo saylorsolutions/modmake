@@ -1,35 +1,74 @@
 package modmake
 
 import (
+	"bufio"
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
 type GoTools struct {
-	rootDir string
+	goRootPath string
+	goModPath  string
+	moduleName string
 }
 
 var instance *GoTools
 
 func Go() *GoTools {
 	if instance == nil {
-		rootDir, ok := os.LookupEnv("GOROOT")
+		goRootDir, ok := os.LookupEnv("GOROOT")
 		if !ok {
 			panic("Unable to resolve environment variable GOROOT. Is Go installed correctly?")
 		}
+		modPath := locateModRoot()
+		moduleName, err := parseModuleName(modPath)
+		if err != nil {
+			panic(err)
+		}
 		instance = &GoTools{
-			rootDir: rootDir,
+			goRootPath: goRootDir,
+			goModPath:  modPath,
+			moduleName: moduleName,
 		}
 	}
 	return instance
 }
 
+// InvalidateCache will break the instance cache, forcing the next call to Go to scan the filesystem's information again.
+func (g *GoTools) InvalidateCache() {
+	instance = nil
+}
+
 func (g *GoTools) goTool() string {
-	return filepath.Join(g.rootDir, "bin", "go")
+	return filepath.Join(g.goRootPath, "bin", "go")
+}
+
+// ModuleRoot returns a filesystem path to the root of the current module.
+func (g *GoTools) ModuleRoot() string {
+	return filepath.Dir(g.goModPath)
+}
+
+// ToModulePath takes a path to a file or directory within the module, relative to the module root, and translates it to a module path.
+// If a path to a file is given, then a module path to the file's parent directory is returned.
+// If ToModulePath is unable to stat the given path, then this function will panic.
+//
+// For example, given a module name of 'github.com/example/mymodule', and a relative path of 'app/main.go', the module path 'github.com/example/mymodule/app' is returned.
+func (g *GoTools) ToModulePath(dir string) string {
+	test := filepath.Join(g.ModuleRoot(), dir)
+	fi, err := os.Stat(test)
+	if err != nil {
+		panic(fmt.Errorf("unable to stat path '%s': %w", test, err))
+	}
+	if !fi.IsDir() {
+		dir = filepath.Dir(dir)
+	}
+	return g.moduleName + "/" + filepath.ToSlash(dir)
 }
 
 func (g *GoTools) Command(command string, args ...string) *Command {
@@ -488,4 +527,71 @@ func keySlice[T any](set map[string]T) []string {
 		keys = append(keys, key)
 	}
 	return keys
+}
+
+var (
+	modFound       = errors.New("module was located")
+	modNamePattern = regexp.MustCompile(`^\s*module\s+(\S+)$`)
+)
+
+func locateModRoot() string {
+	dir, err := os.Getwd()
+	if err != nil {
+		panic("Unable to locate working directory")
+	}
+	modPath, found := scanGoMod(dir)
+	if !found {
+		panic(fmt.Sprintf("Unable to locate go.mod in '%s' or any parent directory", dir))
+	}
+	return modPath
+}
+
+func scanGoMod(root string) (string, bool) {
+	var found string
+	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+		if path == root {
+			return nil
+		}
+		if d.IsDir() {
+			return fs.SkipDir
+		}
+		if d.Name() == "go.mod" {
+			found = path
+			return modFound
+		}
+		return nil
+	})
+	if err != nil {
+		if errors.Is(err, modFound) {
+			return found, true
+		}
+		panic(err)
+	}
+	parent := filepath.Dir(root)
+	if parent == root {
+		return "", false
+	}
+	return scanGoMod(parent)
+}
+
+func parseModuleName(modPath string) (string, error) {
+	f, err := os.Open(modPath)
+	if err != nil {
+		return "", fmt.Errorf("failed to open '%s': %w", modPath, err)
+	}
+	defer func() {
+		_ = f.Close()
+	}()
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if modNamePattern.MatchString(line) {
+			groups := modNamePattern.FindStringSubmatch(line)
+			return groups[1], nil
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		return "", err
+	}
+	return "", errors.New("not a valid go.mod file")
 }

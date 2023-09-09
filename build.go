@@ -68,6 +68,9 @@ func NewBuild() *Build {
 
 // CallBuild allows easily referencing and calling another modmake build.
 // os.Chdir will be called before go-running the build file, so the buildFile parameter should be relative to the workdir.
+//
+// CallBuild is preferable over [Build.Import] for building separate go modules.
+// If you're building a component of the same go module, then use [Build.Import].
 func CallBuild(workdir, buildFile string, args ...string) *Command {
 	return Go().Run(buildFile, args...).WorkDir(workdir)
 }
@@ -146,6 +149,9 @@ func (b *Build) Steps() []string {
 
 // Import will import all steps in the given build, with the given prefix applied and a colon separator.
 // No dependencies on the imported steps will be applied to the current build, dependencies must be applied on the parent Build after importing.
+//
+// This is used to integrate build steps of components in the same go module.
+// For building a separate go module (like a Git submodule, for example), use CallBuild.
 func (b *Build) Import(prefix string, other *Build) {
 	for name, step := range other.stepNames {
 		step.name = prefix + ":" + name
