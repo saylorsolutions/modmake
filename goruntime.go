@@ -10,38 +10,64 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 )
 
+// GoTools provides some utility functions for interacting with the go tool chain.
+// To get an instance of GoTools, use the Go function.
+// Upon first invocation, Go will cache filesystem and module details for reference later.
+//
+// To invalidate this cache, use [GoTools.InvalidateCache].
+//
+// If your build logic needs to cross into another go module, try using CallBuild.
 type GoTools struct {
 	goRootPath string
 	goModPath  string
 	moduleName string
 }
 
-var instance *GoTools
+var (
+	instMux  sync.RWMutex
+	instance *GoTools
+)
 
+// Go will retrieve or initialize an instance of GoTools.
+// This indirection is desirable to support caching of tool chain, filesystem, and module details.
+// This function is concurrency safe, and may be called by multiple goroutines if desired.
 func Go() *GoTools {
-	if instance == nil {
-		goRootDir, ok := os.LookupEnv("GOROOT")
-		if !ok {
-			panic("Unable to resolve environment variable GOROOT. Is Go installed correctly?")
-		}
-		modPath := locateModRoot()
-		moduleName, err := parseModuleName(modPath)
-		if err != nil {
-			panic(err)
-		}
-		instance = &GoTools{
-			goRootPath: goRootDir,
-			goModPath:  modPath,
-			moduleName: moduleName,
-		}
+	instMux.RLock()
+	if instance != nil {
+		instance := instance
+		instMux.RUnlock()
+		return instance
+	}
+	instMux.RUnlock()
+	instMux.Lock()
+	defer instMux.Unlock()
+	if instance != nil {
+		return instance
+	}
+	goRootDir, ok := os.LookupEnv("GOROOT")
+	if !ok {
+		panic("Unable to resolve environment variable GOROOT. Is Go installed correctly?")
+	}
+	modPath := locateModRoot()
+	moduleName, err := parseModuleName(modPath)
+	if err != nil {
+		panic(err)
+	}
+	instance = &GoTools{
+		goRootPath: goRootDir,
+		goModPath:  modPath,
+		moduleName: moduleName,
 	}
 	return instance
 }
 
 // InvalidateCache will break the instance cache, forcing the next call to Go to scan the filesystem's information again.
 func (g *GoTools) InvalidateCache() {
+	instMux.Lock()
+	defer instMux.Unlock()
 	instance = nil
 }
 

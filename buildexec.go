@@ -2,24 +2,14 @@ package modmake
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	flag "github.com/spf13/pflag"
 	"log"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"runtime/debug"
 	"strings"
 	"time"
-)
-
-const (
-	CtxWorkdir = "modmake_workdir"
-)
-
-var (
-	ErrMissingWorkdir = errors.New("missing workdir from context")
 )
 
 func sigCtx() (context.Context, context.CancelFunc) {
@@ -38,6 +28,9 @@ func sigCtx() (context.Context, context.CancelFunc) {
 // It takes string arguments to allow overriding the default of capturing os.Args.
 // Run this with the -h flag to see usage information.
 // If an error occurs within Execute, then the error will be logged and [os.Exit] will be called with a non-zero exit code.
+//
+// Note that the build will attempt to change its working directory to the root of the module, so all filesystem paths should be relative to the root.
+// [GoTools.ToModulePath] may be useful to adhere to this constraint.
 func (b *Build) Execute(args ...string) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -45,6 +38,9 @@ func (b *Build) Execute(args ...string) {
 			log.Fatalf("caught panic while running build: %v\n%s", r, string(stack))
 		}
 	}()
+	if err := os.Chdir(Go().ModuleRoot()); err != nil {
+		panic("Failed to change working directory to module root: " + err.Error())
+	}
 	if err := b.cyclesCheck(); err != nil {
 		log.Fatalln(err)
 	}
@@ -57,7 +53,6 @@ func (b *Build) Execute(args ...string) {
 		flagSkipInstall  bool
 		flagSkipGenerate bool
 		flagSkipDeps     bool
-		flagWorkdir      string
 		flagTimeout      time.Duration
 	)
 
@@ -67,7 +62,6 @@ func (b *Build) Execute(args ...string) {
 	flags.BoolVar(&flagSkipInstall, "skip-tools", false, "Skips the tools install step, but not its dependencies.")
 	flags.BoolVar(&flagSkipGenerate, "skip-generate", false, "Skips the generate step, but not its dependencies.")
 	flags.BoolVar(&flagSkipDeps, "skip-dependencies", false, "Skips running the named step's dependencies.")
-	flags.StringVar(&flagWorkdir, "workdir", ".", "Sets the working directory for the build")
 	flags.DurationVar(&flagTimeout, "timeout", 0, "Sets a timeout duration for this build run")
 
 	flags.Usage = func() {
@@ -114,22 +108,9 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 	if flagDoBench {
 		b.benchStep.UnSkip()
 	}
-	flagWorkdir = strings.TrimSpace(flagWorkdir)
-	if len(flagWorkdir) == 0 {
-		flagWorkdir = b.workdir
-	}
-	flagWorkdir, err := filepath.Abs(flagWorkdir)
-	if err != nil {
-		log.Fatalf("error getting absolute path for workdir: %v\n", err)
-	}
-	if err := os.Chdir(flagWorkdir); err != nil {
-		log.Fatalf("failed to change to workdir '%s': %v\n", flagWorkdir, err)
-	}
-	b.workdir = flagWorkdir
 
 	ctx, cancel := sigCtx()
 	defer cancel()
-	ctx = context.WithValue(ctx, CtxWorkdir, flagWorkdir)
 
 	if flagTimeout > 0 {
 		var _cancel context.CancelFunc
