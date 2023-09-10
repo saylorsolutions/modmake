@@ -2,24 +2,14 @@ package modmake
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	flag "github.com/spf13/pflag"
 	"log"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"runtime/debug"
 	"strings"
 	"time"
-)
-
-const (
-	CtxWorkdir = "modmake_workdir"
-)
-
-var (
-	ErrMissingWorkdir = errors.New("missing workdir from context")
 )
 
 func sigCtx() (context.Context, context.CancelFunc) {
@@ -34,18 +24,25 @@ func sigCtx() (context.Context, context.CancelFunc) {
 	return ctx, cancel
 }
 
-// Execute executes a Build as configured.
-// It takes string arguments to make it easy to run with 'go run'.
+// Execute executes a Build as configured, as if it were a CLI application.
+// It takes string arguments to allow overriding the default of capturing os.Args.
 // Run this with the -h flag to see usage information.
-func (b *Build) Execute(args ...string) (err error) {
+// If an error occurs within Execute, then the error will be logged and [os.Exit] will be called with a non-zero exit code.
+//
+// Note that the build will attempt to change its working directory to the root of the module, so all filesystem paths should be relative to the root.
+// [GoTools.ToModulePath] may be useful to adhere to this constraint.
+func (b *Build) Execute(args ...string) {
 	defer func() {
 		if r := recover(); r != nil {
 			stack := debug.Stack()
-			err = fmt.Errorf("caught panic while running build: %v\n%s", r, string(stack))
+			log.Fatalf("caught panic while running build: %v\n%s", r, string(stack))
 		}
 	}()
+	if err := os.Chdir(Go().ModuleRoot()); err != nil {
+		panic("Failed to change working directory to module root: " + err.Error())
+	}
 	if err := b.cyclesCheck(); err != nil {
-		return err
+		log.Fatalln(err)
 	}
 	flags := flag.NewFlagSet("build", flag.ContinueOnError)
 
@@ -56,7 +53,6 @@ func (b *Build) Execute(args ...string) (err error) {
 		flagSkipInstall  bool
 		flagSkipGenerate bool
 		flagSkipDeps     bool
-		flagWorkdir      string
 		flagTimeout      time.Duration
 	)
 
@@ -66,7 +62,6 @@ func (b *Build) Execute(args ...string) (err error) {
 	flags.BoolVar(&flagSkipInstall, "skip-tools", false, "Skips the tools install step, but not its dependencies.")
 	flags.BoolVar(&flagSkipGenerate, "skip-generate", false, "Skips the generate step, but not its dependencies.")
 	flags.BoolVar(&flagSkipDeps, "skip-dependencies", false, "Skips running the named step's dependencies.")
-	flags.StringVar(&flagWorkdir, "workdir", ".", "Sets the working directory for the build")
 	flags.DurationVar(&flagTimeout, "timeout", 0, "Sets a timeout duration for this build run")
 
 	flags.Usage = func() {
@@ -88,14 +83,17 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 `, flags.FlagUsages())
 		b.Graph()
 	}
+	if len(args) == 0 {
+		args = os.Args[1:]
+	}
 	if err := flags.Parse(args); err != nil {
 		flags.Usage()
-		return err
+		log.Fatalln(err)
 	}
 
-	if flagHelp {
+	if flags.NArg() == 0 || flagHelp {
 		flags.Usage()
-		return nil
+		return
 	}
 
 	if flagSkipTests {
@@ -110,26 +108,9 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 	if flagDoBench {
 		b.benchStep.UnSkip()
 	}
-	flagWorkdir = strings.TrimSpace(flagWorkdir)
-	if len(flagWorkdir) == 0 {
-		flagWorkdir = b.workdir
-	}
-	flagWorkdir, err = filepath.Abs(flagWorkdir)
-	if err != nil {
-		return fmt.Errorf("error getting absolute path for workdir: %w", err)
-	}
-	if err := os.Chdir(flagWorkdir); err != nil {
-		return fmt.Errorf("failed to change to workdir '%s': %w", flagWorkdir, err)
-	}
 
-	defer func() {
-		if r := recover(); r != nil {
-			err = fmt.Errorf("error running build: %v\n%s", r, string(debug.Stack()))
-		}
-	}()
 	ctx, cancel := sigCtx()
 	defer cancel()
-	ctx = context.WithValue(ctx, CtxWorkdir, flagWorkdir)
 
 	if flagTimeout > 0 {
 		var _cancel context.CancelFunc
@@ -142,25 +123,24 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 		switch {
 		case i == 0 && stepName == "graph":
 			b.Graph()
-			return nil
+			return
 		case i == 0 && stepName == "steps":
 			steps := b.Steps()
 			for i := 0; i < len(steps); i++ {
 				steps[i] = steps[i] + " - " + b.Step(steps[i]).description
 			}
 			fmt.Println(strings.Join(steps, "\n"))
-			return nil
+			return
 		default:
 			step := b.Step(stepName)
 			if flagSkipDeps {
 				step.SkipDependencies()
 			}
 			if err := step.Run(ctx); err != nil {
-				return fmt.Errorf("error running build: %w", err)
+				log.Fatalf("error running build: %v\n", err)
 			}
 		}
 	}
 
 	log.Printf("Ran successfully in %s\n", time.Since(start).Round(time.Millisecond).String())
-	return nil
 }

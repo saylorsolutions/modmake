@@ -8,18 +8,13 @@ package main
 
 import (
   . "github.com/saylorsolutions/modmake"
-  "log"
-  "os"
 )
 
 func main() {
   b := NewBuild()
   b.Test().Does(Print("Testing..."))
   b.Build().Does(Print("Hello, modmake!"))
-
-  if err := b.Execute(os.Args[1:]...); err != nil {
-    log.Fatalf("Failed to execute build: %v\n", err)
-  }
+  b.Execute()
 }
 ```
 
@@ -142,4 +137,4 @@ Notice that the `benchmark` step is letting us know that it is skipped, and the 
 This is because `test` is a transitive dependency of `build` through `benchmark`.
 When a step is skipped, its dependencies are not.
 
-Take a look at the [pingpong example](../pingpong/README.md) for a more interesting build, including custom steps and multiple applications.
+Take a look at the [pingpong example](../pingpong/README.md) for a more interesting build, including custom steps and importing multiple builds.

@@ -76,7 +76,7 @@ func Print(msg string, args ...any) Runner {
 // The target file will be created or truncated as appropriate.
 func CopyFile(source, target string) Runner {
 	return RunFunc(func(ctx context.Context) error {
-		workdir, err := getWorkdir(ctx)
+		workdir, err := os.Getwd()
 		if err != nil {
 			return err
 		}
@@ -92,7 +92,7 @@ func CopyFile(source, target string) Runner {
 // The target file will be created or truncated as appropriate.
 func MoveFile(source, target string) Runner {
 	return RunFunc(func(ctx context.Context) error {
-		workdir, err := getWorkdir(ctx)
+		workdir, err := os.Getwd()
 		if err != nil {
 			return err
 		}
@@ -140,8 +140,8 @@ func Remove(file string) Runner {
 	})
 }
 
-// RemoveDir will remove the directory specified from the filesystem.
-// If the directory doesn't exist, then this returns nil.
+// RemoveDir will create a Runner that removes the directory specified and all of its contents from the filesystem.
+// If the directory doesn't exist, then this Runner returns nil.
 // Any other error encountered while removing the directory is returned.
 func RemoveDir(file string) Runner {
 	return RunFunc(func(ctx context.Context) error {
@@ -157,20 +157,6 @@ func RemoveDir(file string) Runner {
 		}
 		return os.RemoveAll(file)
 	})
-}
-
-// getWorkdir will return the working directory value from the context, if it exists.
-// If the type of CtxWorkdir is not a string, or if it doesn't exist, then ErrMissingWorkdir will be returned with an empty string.
-func getWorkdir(ctx context.Context) (string, error) {
-	val := ctx.Value(CtxWorkdir)
-	if val == nil {
-		return "", ErrMissingWorkdir
-	}
-	str, ok := val.(string)
-	if !ok {
-		return "", ErrMissingWorkdir
-	}
-	return str, nil
 }
 
 // relativeToWorkdir will return a path relative to the workdir if file is relative.

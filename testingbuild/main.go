@@ -3,10 +3,9 @@ package main
 import "fmt"
 
 var (
-	TestVar string
+	testVar string
 )
 
 func main() {
-	fmt.Println("Hello, world!")
-	fmt.Println("Testing var:", TestVar)
+	fmt.Println("Testing var:", testVar)
 }

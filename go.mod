@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/bitfield/script v0.22.0
+	github.com/saylorsolutions/cache v1.0.0
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.4
 )

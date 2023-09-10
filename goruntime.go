@@ -1,35 +1,139 @@
 package modmake
 
 import (
+	"bufio"
 	"context"
 	"errors"
 	"fmt"
+	"github.com/saylorsolutions/cache"
+	"io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
+	"sync"
 )
 
+// GoTools provides some utility functions for interacting with the go tool chain.
+// To get an instance of GoTools, use the Go function.
+// Upon first invocation, Go will cache filesystem and module details for reference later.
+//
+// To invalidate this cache, use [GoTools.InvalidateCache].
+//
+// If your build logic needs to cross into another go module, try using CallBuild.
 type GoTools struct {
-	rootDir string
+	goRootPath *cache.Value[string]
+	goModPath  *cache.Value[string]
+	moduleName *cache.Value[string]
 }
 
-var instance *GoTools
+var (
+	instMux  sync.RWMutex
+	instance *GoTools
+)
 
+// Go will retrieve or initialize an instance of GoTools.
+// This indirection is desirable to support caching of tool chain, filesystem, and module details.
+// This function is concurrency safe, and may be called by multiple goroutines if desired.
 func Go() *GoTools {
-	if instance == nil {
-		rootDir, ok := os.LookupEnv("GOROOT")
+	instMux.RLock()
+	if instance != nil {
+		instance := instance
+		instMux.RUnlock()
+		return instance
+	}
+	instMux.RUnlock()
+	instMux.Lock()
+	defer instMux.Unlock()
+	if instance != nil {
+		return instance
+	}
+	goRootPath := cache.New(func() (string, error) {
+		goRootDir, ok := os.LookupEnv("GOROOT")
 		if !ok {
 			panic("Unable to resolve environment variable GOROOT. Is Go installed correctly?")
 		}
-		instance = &GoTools{
-			rootDir: rootDir,
+		return goRootDir, nil
+	})
+	modPath := cache.New(func() (string, error) {
+		modPath, err := locateModRoot()
+		if err != nil {
+			panic(err)
 		}
+		return modPath, nil
+	})
+	moduleName := cache.New(func() (string, error) {
+		path, err := modPath.Get()
+		if err != nil {
+			panic(err)
+		}
+		moduleName, err := parseModuleName(path)
+		if err != nil {
+			panic(err)
+		}
+		return moduleName, nil
+	})
+	instance = &GoTools{
+		goRootPath: goRootPath,
+		goModPath:  modPath,
+		moduleName: moduleName,
 	}
 	return instance
 }
 
+// InvalidateCache will break the instance cache, forcing the next call to Go to scan the filesystem's information again.
+func (g *GoTools) InvalidateCache() {
+	instMux.Lock()
+	defer instMux.Unlock()
+	g.goRootPath.Invalidate()
+	g.goModPath.Invalidate()
+	g.moduleName.Invalidate()
+}
+
 func (g *GoTools) goTool() string {
-	return filepath.Join(g.rootDir, "bin", "go")
+	goRootPath, _ := g.goRootPath.Get()
+	return filepath.Join(goRootPath, "bin", "go")
+}
+
+// ModuleRoot returns a filesystem path to the root of the current module.
+func (g *GoTools) ModuleRoot() string {
+	goModPath, _ := g.goModPath.Get()
+	return filepath.Dir(goModPath)
+}
+
+// ModuleName returns the name of the current module as specified in the go.mod.
+func (g *GoTools) ModuleName() string {
+	modName, _ := g.moduleName.Get()
+	return modName
+}
+
+// ToModulePackage is specifically provided to construct a package reference for [GoBuild.SetVariable] by prepending the module name to the package name, separated by '/'.
+// This is not necessary for setting variables in the main package, as 'main' can be used instead.
+//
+//	// When run in a module named 'example.com/me/myproject', this will output 'example.com/me/myproject/other'.
+//	Go().ToModulePackage("other")
+//
+// See [GoBuild.SetVariable] for more details.
+func (g *GoTools) ToModulePackage(pkg string) string {
+	return g.ModuleName() + "/" + pkg
+}
+
+// ToModulePath takes a path to a file or directory within the module, relative to the module root, and translates it to a module path.
+// If a path to a file is given, then a module path to the file's parent directory is returned.
+// If ToModulePath is unable to stat the given path, then this function will panic.
+//
+// For example, given a module name of 'github.com/example/mymodule', and a relative path of 'app/main.go', the module path 'github.com/example/mymodule/app' is returned.
+func (g *GoTools) ToModulePath(dir string) string {
+	test := filepath.Join(g.ModuleRoot(), dir)
+	fi, err := os.Stat(test)
+	if err != nil {
+		panic(fmt.Errorf("unable to stat path '%s': %w", test, err))
+	}
+	if !fi.IsDir() {
+		dir = filepath.Dir(dir)
+	}
+	moduleName, _ := g.moduleName.Get()
+	return moduleName + "/" + filepath.ToSlash(dir)
 }
 
 func (g *GoTools) Command(command string, args ...string) *Command {
@@ -349,6 +453,26 @@ func (b *GoBuild) StripDebugSymbols() *GoBuild {
 }
 
 // SetVariable sets an ldflag to set a variable at build time.
+// The pkg parameter should be main, or the fully-qualified package name.
+// The variable referenced doesn't have to be exposed (starting with a capital letter).
+//
+// # Examples
+//
+// It's a little counter-intuitive how this works, but it's based on how the go tools themselves work.
+//
+// # Main package
+//
+// Given a module named 'example.com/me/myproject', and a package directory named 'build' with go files in package 'main', the pkg parameter should just be 'main'.
+//
+// # Non-main package
+//
+// Given a module named 'example.com/me/myproject', and a package directory named 'build' with go files in package 'other', the pkg parameter should be 'example.com/me/myproject/build'.
+//
+// [GoTools.ToModulePackage] is provided as a convenience to make it easier to create these reference strings.
+//
+// See [this article] for more examples.
+//
+// [this article]: https://programmingpercy.tech/blog/modify-variables-during-build/
 func (b *GoBuild) SetVariable(pkg, varName, value string) *GoBuild {
 	if b.err != nil {
 		return b
@@ -488,4 +612,71 @@ func keySlice[T any](set map[string]T) []string {
 		keys = append(keys, key)
 	}
 	return keys
+}
+
+var (
+	modFound       = errors.New("module was located")
+	modNamePattern = regexp.MustCompile(`^\s*module\s+(\S+)$`)
+)
+
+func locateModRoot() (string, error) {
+	dir, err := os.Getwd()
+	if err != nil {
+		return "", fmt.Errorf("unable to locatae working directory: %v", err)
+	}
+	modPath, found := scanGoMod(dir)
+	if !found {
+		return "", fmt.Errorf("unable to locate go.mod in '%s' or any parent directory", dir)
+	}
+	return modPath, nil
+}
+
+func scanGoMod(root string) (string, bool) {
+	var found string
+	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+		if path == root {
+			return nil
+		}
+		if d.IsDir() {
+			return fs.SkipDir
+		}
+		if d.Name() == "go.mod" {
+			found = path
+			return modFound
+		}
+		return nil
+	})
+	if err != nil {
+		if errors.Is(err, modFound) {
+			return found, true
+		}
+		panic(err)
+	}
+	parent := filepath.Dir(root)
+	if parent == root {
+		return "", false
+	}
+	return scanGoMod(parent)
+}
+
+func parseModuleName(modPath string) (string, error) {
+	f, err := os.Open(modPath)
+	if err != nil {
+		return "", fmt.Errorf("failed to open '%s': %w", modPath, err)
+	}
+	defer func() {
+		_ = f.Close()
+	}()
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if modNamePattern.MatchString(line) {
+			groups := modNamePattern.FindStringSubmatch(line)
+			return groups[1], nil
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		return "", err
+	}
+	return "", errors.New("not a valid go.mod file")
 }
