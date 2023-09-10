@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/saylorsolutions/cache"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -21,9 +22,9 @@ import (
 //
 // If your build logic needs to cross into another go module, try using CallBuild.
 type GoTools struct {
-	goRootPath string
-	goModPath  string
-	moduleName string
+	goRootPath *cache.Value[string]
+	goModPath  *cache.Value[string]
+	moduleName *cache.Value[string]
 }
 
 var (
@@ -47,17 +48,33 @@ func Go() *GoTools {
 	if instance != nil {
 		return instance
 	}
-	goRootDir, ok := os.LookupEnv("GOROOT")
-	if !ok {
-		panic("Unable to resolve environment variable GOROOT. Is Go installed correctly?")
-	}
-	modPath := locateModRoot()
-	moduleName, err := parseModuleName(modPath)
-	if err != nil {
-		panic(err)
-	}
+	goRootPath := cache.New(func() (string, error) {
+		goRootDir, ok := os.LookupEnv("GOROOT")
+		if !ok {
+			panic("Unable to resolve environment variable GOROOT. Is Go installed correctly?")
+		}
+		return goRootDir, nil
+	})
+	modPath := cache.New(func() (string, error) {
+		modPath, err := locateModRoot()
+		if err != nil {
+			panic(err)
+		}
+		return modPath, nil
+	})
+	moduleName := cache.New(func() (string, error) {
+		path, err := modPath.Get()
+		if err != nil {
+			panic(err)
+		}
+		moduleName, err := parseModuleName(path)
+		if err != nil {
+			panic(err)
+		}
+		return moduleName, nil
+	})
 	instance = &GoTools{
-		goRootPath: goRootDir,
+		goRootPath: goRootPath,
 		goModPath:  modPath,
 		moduleName: moduleName,
 	}
@@ -68,16 +85,37 @@ func Go() *GoTools {
 func (g *GoTools) InvalidateCache() {
 	instMux.Lock()
 	defer instMux.Unlock()
-	instance = nil
+	g.goRootPath.Invalidate()
+	g.goModPath.Invalidate()
+	g.moduleName.Invalidate()
 }
 
 func (g *GoTools) goTool() string {
-	return filepath.Join(g.goRootPath, "bin", "go")
+	goRootPath, _ := g.goRootPath.Get()
+	return filepath.Join(goRootPath, "bin", "go")
 }
 
 // ModuleRoot returns a filesystem path to the root of the current module.
 func (g *GoTools) ModuleRoot() string {
-	return filepath.Dir(g.goModPath)
+	goModPath, _ := g.goModPath.Get()
+	return filepath.Dir(goModPath)
+}
+
+// ModuleName returns the name of the current module as specified in the go.mod.
+func (g *GoTools) ModuleName() string {
+	modName, _ := g.moduleName.Get()
+	return modName
+}
+
+// ToModulePackage is specifically provided to construct a package reference for [GoBuild.SetVariable] by prepending the module name to the package name, separated by '/'.
+// This is not necessary for setting variables in the main package, as 'main' can be used instead.
+//
+//	// When run in a module named 'example.com/me/myproject', this will output 'example.com/me/myproject/other'.
+//	Go().ToModulePackage("other")
+//
+// See [GoBuild.SetVariable] for more details.
+func (g *GoTools) ToModulePackage(pkg string) string {
+	return g.ModuleName() + "/" + pkg
 }
 
 // ToModulePath takes a path to a file or directory within the module, relative to the module root, and translates it to a module path.
@@ -94,7 +132,8 @@ func (g *GoTools) ToModulePath(dir string) string {
 	if !fi.IsDir() {
 		dir = filepath.Dir(dir)
 	}
-	return g.moduleName + "/" + filepath.ToSlash(dir)
+	moduleName, _ := g.moduleName.Get()
+	return moduleName + "/" + filepath.ToSlash(dir)
 }
 
 func (g *GoTools) Command(command string, args ...string) *Command {
@@ -414,6 +453,26 @@ func (b *GoBuild) StripDebugSymbols() *GoBuild {
 }
 
 // SetVariable sets an ldflag to set a variable at build time.
+// The pkg parameter should be main, or the fully-qualified package name.
+// The variable referenced doesn't have to be exposed (starting with a capital letter).
+//
+// # Examples
+//
+// It's a little counter-intuitive how this works, but it's based on how the go tools themselves work.
+//
+// # Main package
+//
+// Given a module named 'example.com/me/myproject', and a package directory named 'build' with go files in package 'main', the pkg parameter should just be 'main'.
+//
+// # Non-main package
+//
+// Given a module named 'example.com/me/myproject', and a package directory named 'build' with go files in package 'other', the pkg parameter should be 'example.com/me/myproject/build'.
+//
+// [GoTools.ToModulePackage] is provided as a convenience to make it easier to create these reference strings.
+//
+// See [this article] for more examples.
+//
+// [this article]: https://programmingpercy.tech/blog/modify-variables-during-build/
 func (b *GoBuild) SetVariable(pkg, varName, value string) *GoBuild {
 	if b.err != nil {
 		return b
@@ -560,16 +619,16 @@ var (
 	modNamePattern = regexp.MustCompile(`^\s*module\s+(\S+)$`)
 )
 
-func locateModRoot() string {
+func locateModRoot() (string, error) {
 	dir, err := os.Getwd()
 	if err != nil {
-		panic("Unable to locate working directory")
+		return "", fmt.Errorf("unable to locatae working directory: %v", err)
 	}
 	modPath, found := scanGoMod(dir)
 	if !found {
-		panic(fmt.Sprintf("Unable to locate go.mod in '%s' or any parent directory", dir))
+		return "", fmt.Errorf("unable to locate go.mod in '%s' or any parent directory", dir)
 	}
-	return modPath
+	return modPath, nil
 }
 
 func scanGoMod(root string) (string, bool) {
