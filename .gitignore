@@ -1,3 +1,5 @@
 /.idea
 /client_test
 /server_test
+/build
+/dist
