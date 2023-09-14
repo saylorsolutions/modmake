@@ -71,8 +71,12 @@ func NewBuild() *Build {
 //
 // CallBuild is preferable over [Build.Import] for building separate go modules.
 // If you're building a component of the same go module, then use [Build.Import].
-func CallBuild(workdir, buildFile string, args ...string) *Command {
-	return Go().Run(buildFile, args...).WorkDir(workdir)
+//
+//   - workdir should be the root of the module
+//   - buildRef should be the module path to the build file
+//   - args are flags and steps that should be executed in the build
+func CallBuild(workdir, buildRef string, args ...string) *Command {
+	return Go().Run(buildRef, args...).WorkDir(workdir)
 }
 
 // Workdir sets the working directory for running build steps.

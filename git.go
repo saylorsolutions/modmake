@@ -84,7 +84,7 @@ func (g *GitTools) RepositoryRoot() string {
 }
 
 func (g *GitTools) BranchName() string {
-	return g.head.MustGet().String()
+	return g.head.MustGet().Name().Short()
 }
 
 func (g *GitTools) CommitHash() string {

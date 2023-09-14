@@ -11,6 +11,11 @@ import (
 	"strings"
 )
 
+var (
+	gitBranch = "UNKNONWN BRANCH"
+	gitHash   = "UNKNOWN COMMIT"
+)
+
 func main() {
 	panicFatal("Failed to query module/filesystem details. Are you running this in a Go project with Go tools installed?", func() {
 		Go()
@@ -27,8 +32,8 @@ func main() {
 
 	ctx := signalCtx()
 	if err := run(ctx, flags); err != nil {
-		flags.Usage()
-		log.Fatalln("Failed to run modmake:", err)
+		log.Println("Failed to run modmake:", err)
+		log.Fatalln("Try 'modmake --help' to get usage information")
 	}
 }
 
@@ -36,6 +41,10 @@ func run(ctx context.Context, flags *appFlags) error {
 	modRoot := Go().ModuleRoot()
 	if flags.help || len(os.Args) == 1 {
 		flags.Usage()
+		return nil
+	}
+	if flags.printVersion {
+		fmt.Printf("modmake branch: '%s', commit hash: '%s'\n", gitBranch, gitHash)
 		return nil
 	}
 	if flags.rootOverride != "" {

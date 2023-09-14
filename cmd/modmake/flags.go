@@ -11,6 +11,7 @@ type appFlags struct {
 	envVars       []string
 	rootOverride  string
 	buildOverride string
+	printVersion  bool
 }
 
 func setupFlags() *appFlags {
@@ -19,8 +20,9 @@ func setupFlags() *appFlags {
 	}
 	flags.BoolVarP(&flags.help, "help", "h", false, "Prints this usage information")
 	flags.StringArrayVarP(&flags.envVars, "set-env", "e", nil, "Sets one or more environment variables before calling the build")
-	flags.StringVarP(&flags.rootOverride, "workdir", "w", "", "Overrides the default logic of setting the working directory to the root of the module. Assumed to be a path relative to the module root.")
-	flags.StringVarP(&flags.buildOverride, "build", "b", "", "Overrides the build location resolution logic and specifies where the build file is located.")
+	flags.StringVarP(&flags.rootOverride, "workdir", "w", "", "Overrides the default logic of setting the working directory to the root of the module. Assumed to be a path relative to the module root")
+	flags.StringVarP(&flags.buildOverride, "build", "b", "", "Overrides the build location resolution logic and specifies where the build file is located")
+	flags.BoolVar(&flags.printVersion, "version", false, "Prints the git branch and hash from which the CLI was built")
 
 	flags.Usage = func() {
 		fmt.Printf(`modmake is a convenience CLI that allows easily auto-discovering and running a modmake build.
@@ -35,9 +37,9 @@ Here are some reasons you may want to use this:
 * You want to easily set one or more environment variables for the build, maybe so they act as parameters.
 * You want an easier way to invoke the build multiple times with different Go versions (-e GOROOT=/other/go/root).
 
-USAGE: modmake [MODMAKE_FLAGS --] [BUILD_FLAGS] BUILD_STEPS
+USAGE: modmake MODMAKE_FLAGS [-- BUILD_FLAGS] BUILD_STEPS
 
->>> Note that if you use any MODMAKE_FLAGS, '--' is necessary to disambiguate between flags for this CLI and flags for the build.
+>>> Note that if you use any BUILD_FLAGS, '--' is necessary to disambiguate between flags for this CLI and flags for the build.
     Running modmake with no flags/arguments will print this usage information.
 
 MODMAKE_FLAGS:  Described in the FLAGS section below.

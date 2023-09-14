@@ -2,7 +2,9 @@ package main
 
 import (
 	. "github.com/saylorsolutions/modmake"
+	"os"
 	"path/filepath"
+	"runtime"
 )
 
 func main() {
@@ -24,16 +26,34 @@ func main() {
 		},
 	}
 
-	for os, variants := range buildVariants {
-		for _, arch := range variants {
-			variant := os + "_" + arch
-			b.Import(variant, cliBuild(os, arch))
+	for _os, variants := range buildVariants {
+		for _, _arch := range variants {
+			variant := _os + "_" + _arch
+			b.Import(variant, cliBuild(_os, _arch))
 			b.Build().DependsOn(b.Step(variant + ":build"))
 		}
 	}
 
+	sysVariant := runtime.GOOS + "_" + runtime.GOARCH
+	executable := filepath.Join("build", sysVariant, "modmake")
+	if runtime.GOOS == "windows" {
+		executable += ".exe"
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+	target := filepath.Join(home, "go", "bin", filepath.Base(executable))
+	b.AddStep(NewStep("install", "Installs the modmake CLI to the user's $HOME/go/bin directory.").
+		Does(CopyFile(executable, target)).
+		DependsOn(b.Step(sysVariant + ":build")),
+	)
 	b.Execute()
 }
+
+var (
+	git = NewGitTools()
+)
 
 func cliBuild(os string, arch string) *Build {
 	buildDirName := filepath.Join("build", os+"_"+arch)
@@ -52,7 +72,9 @@ func cliBuild(os string, arch string) *Build {
 		OS(os).
 		Arch(arch).
 		StripDebugSymbols().
-		OutputFilename(target)
+		OutputFilename(target).
+		SetVariable("main", "gitHash", git.CommitHash()).
+		SetVariable("main", "gitBranch", git.BranchName())
 	b.Build().AfterRun(IfNotExists(target, Error("Failed to build modmake CLI for %s-%s", os, arch)))
 
 	b.Build().Does(build)
