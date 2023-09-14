@@ -242,6 +242,7 @@ type GoBuild struct {
 	addrSan       bool
 	printPackages bool
 	printCommands bool
+	stripDebug    bool
 	buildMode     string
 	gcFlags       map[string]bool
 	ldFlags       map[string]bool
@@ -453,12 +454,13 @@ func (b *GoBuild) GoCompileFlags(flags ...string) *GoBuild {
 	return b
 }
 
-// StripDebugSymbols will remove debugging information from the built artifact, improving file size.
+// StripDebugSymbols will remove debugging information from the built artifact, including file paths from panic output, reducing file size.
 func (b *GoBuild) StripDebugSymbols() *GoBuild {
 	if b.err != nil {
 		return b
 	}
-	return b.LinkerFlags("-s", "-w")
+	b.stripDebug = true
+	return b
 }
 
 // SetVariable sets an ldflag to set a variable at build time.
@@ -486,7 +488,7 @@ func (b *GoBuild) SetVariable(pkg, varName, value string) *GoBuild {
 	if b.err != nil {
 		return b
 	}
-	return b.LinkerFlags(fmt.Sprintf("-X %s.%s=%s", pkg, varName, value))
+	return b.LinkerFlags(fmt.Sprintf("-X '%s.%s=%s'", pkg, varName, value))
 }
 
 // LinkerFlags sets linker flags (ldflags) values for this build.
@@ -596,6 +598,10 @@ func (b *GoBuild) Run(ctx context.Context) error {
 	}
 	if len(b.gcFlags) > 0 {
 		b.cmd.Arg(fmt.Sprintf("-gcflags=%s", strings.Join(keySlice(b.gcFlags), " ")))
+	}
+	if b.stripDebug {
+		b.cmd.Arg("-trimpath")
+		b.LinkerFlags("-s", "-w")
 	}
 	if len(b.ldFlags) > 0 {
 		b.cmd.Arg(fmt.Sprintf("-ldflags=%s", strings.Join(keySlice(b.ldFlags), " ")))
