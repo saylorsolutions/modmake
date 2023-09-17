@@ -10,9 +10,13 @@ import (
 func main() {
 	b := NewBuild()
 	b.Test().Does(Go().TestAll())
-	b.Build().DependsOnRunner("clean", "Removes previous build output if it exists",
+	b.Build().DependsOnRunner("clean-build", "Removes previous build output if it exists",
 		RemoveDir("build"),
 	)
+	b.Package().DependsOnRunner("clean-dist", "Removes previous distribution output if it exists",
+		RemoveDir("dist"),
+	)
+	b.Package().AfterRun(RemoveDir("build"))
 
 	buildVariants := map[string][]string{
 		"windows": {
@@ -31,6 +35,7 @@ func main() {
 			variant := _os + "_" + _arch
 			b.Import(variant, cliBuild(_os, _arch))
 			b.Build().DependsOn(b.Step(variant + ":build"))
+			b.Package().DependsOn(b.Step(variant + ":package"))
 		}
 	}
 
@@ -56,12 +61,13 @@ var (
 )
 
 func cliBuild(os string, arch string) *Build {
-	buildDirName := filepath.Join("build", os+"_"+arch)
-	var target string
+	variant := os + "_" + arch
+	buildDirName := filepath.Join("build", variant)
+	var buildTarget string
 	if os == "windows" {
-		target = filepath.Join(buildDirName, "modmake.exe")
+		buildTarget = filepath.Join(buildDirName, "modmake.exe")
 	} else {
-		target = filepath.Join(buildDirName, "modmake")
+		buildTarget = filepath.Join(buildDirName, "modmake")
 	}
 
 	b := NewBuild()
@@ -72,11 +78,26 @@ func cliBuild(os string, arch string) *Build {
 		OS(os).
 		Arch(arch).
 		StripDebugSymbols().
-		OutputFilename(target).
+		OutputFilename(buildTarget).
 		SetVariable("main", "gitHash", git.CommitHash()).
 		SetVariable("main", "gitBranch", git.BranchName())
-	b.Build().AfterRun(IfNotExists(target, Error("Failed to build modmake CLI for %s-%s", os, arch)))
-
+	b.Build().AfterRun(IfNotExists(buildTarget, Error("Failed to build modmake CLI for %s-%s", os, arch)))
 	b.Build().Does(build)
+
+	pkgDirName := filepath.Join("dist")
+	pkgPath := filepath.Join(pkgDirName, "modmake-"+variant)
+	if os != "windows" {
+		pkgPath += ".tar.gz"
+		pkg := Tar(pkgPath)
+		pkg.AddFileWithPath(buildTarget, "modmake")
+		b.Package().Does(pkg.Create())
+		b.Package().BeforeRun(MkdirAll(pkgDirName, 0755))
+	} else {
+		pkgPath += ".zip"
+		pkg := Zip(pkgPath)
+		pkg.AddFileWithPath(buildTarget, "modmake.exe")
+		b.Package().Does(pkg.Create())
+		b.Package().BeforeRun(MkdirAll(pkgDirName, 0755))
+	}
 	return b
 }
