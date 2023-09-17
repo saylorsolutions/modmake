@@ -2,6 +2,7 @@ package modmake
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	flag "github.com/spf13/pflag"
 	"log"
@@ -28,21 +29,28 @@ func sigCtx() (context.Context, context.CancelFunc) {
 // It takes string arguments to allow overriding the default of capturing os.Args.
 // Run this with the -h flag to see usage information.
 // If an error occurs within Execute, then the error will be logged and [os.Exit] will be called with a non-zero exit code.
-//
-// Note that the build will attempt to change its working directory to the root of the module, so all filesystem paths should be relative to the root.
-// [GoTools.ToModulePath] may be useful to adhere to this constraint.
 func (b *Build) Execute(args ...string) {
+	if err := b.ExecuteErr(args...); err != nil {
+		log.Fatalln("Error executing build:", err)
+	}
+}
+
+// ExecuteErr executes a Build as configured, as if it were a CLI application, and returns an error if anything goes wrong.
+// It takes string arguments to allow overriding the default of capturing os.Args.
+// Run this with the -h flag to see usage information.
+// If an error occurs within Execute, then the error will be logged and [os.Exit] will be called with a non-zero exit code.
+func (b *Build) ExecuteErr(args ...string) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			stack := debug.Stack()
-			log.Fatalf("caught panic while running build: %v\n%s", r, string(stack))
+			err = fmt.Errorf("caught panic while running build: %v\n%s", r, string(stack))
 		}
 	}()
 	if err := os.Chdir(Go().ModuleRoot()); err != nil {
-		panic("Failed to change working directory to module root: " + err.Error())
+		return errors.New("failed to change working directory to module root: " + err.Error())
 	}
 	if err := b.cyclesCheck(); err != nil {
-		log.Fatalln(err)
+		return err
 	}
 	flags := flag.NewFlagSet("build", flag.ContinueOnError)
 
@@ -88,7 +96,7 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 	}
 	if err := flags.Parse(args); err != nil {
 		flags.Usage()
-		log.Fatalln(err)
+		return err
 	}
 
 	if flags.NArg() == 0 || flagHelp {
@@ -140,10 +148,11 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 			// Make sure that this step is not skipped, since it was called out by name.
 			step.UnSkip()
 			if err := step.Run(ctx); err != nil {
-				log.Fatalf("error running build: %v\n", err)
+				return fmt.Errorf("error running build: %v", err)
 			}
 		}
 	}
 
 	log.Printf("Ran successfully in %s\n", time.Since(start).Round(time.Millisecond).String())
+	return nil
 }
