@@ -43,19 +43,36 @@ func ExampleBuild_Graph() {
 }
 
 func ExampleBuild_Execute() {
+	var (
+		ranTools    bool
+		ranGenerate bool
+	)
+
 	b := NewBuild()
 	b.Tools().DependsOnFunc("print-tools", "", func(ctx context.Context) error {
 		fmt.Println("Running in tools")
 		return nil
 	})
+	b.Tools().Does(RunFunc(func(ctx context.Context) error {
+		ranTools = true
+		return nil
+	}))
+	b.Generate().Does(RunFunc(func(ctx context.Context) error {
+		ranGenerate = true
+		return nil
+	}))
 	b.Package().DependsOnFunc("print-pkg", "", func(ctx context.Context) error {
 		fmt.Println("Running in package")
 		return nil
 	})
-	b.Execute("--skip-tools", "--skip-generate", "package", "print-tools")
+	b.Execute("--skip", "tools", "--skip", "generate", "package", "print-tools")
+	fmt.Println("Ran tools:", ranTools)
+	fmt.Println("Ran generate:", ranGenerate)
 	// Output:
 	// Running in tools
 	// Running in package
+	// Ran tools: false
+	// Ran generate: false
 }
 
 func ExampleBuild_Steps() {
@@ -131,7 +148,7 @@ func TestCyclesCheck(t *testing.T) {
 }
 
 func TestCallBuild(t *testing.T) {
-	err := CallBuild("example/helloworld", "build.go", "--skip-dependencies", "build").Run(context.TODO())
+	err := CallBuild("example/helloworld", "build.go", "--only", "build").Run(context.TODO())
 	assert.NoError(t, err)
 }
 

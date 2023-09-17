@@ -69,6 +69,6 @@ func TestGoTools_Build_ModulePath(t *testing.T) {
 }
 
 func TestGoBuild_Run(t *testing.T) {
-	err := Go().Run("build.go", "--skip-dependencies", "build").WorkDir("example/helloworld").Run(context.TODO())
+	err := Go().Run("build.go", "--only", "build").WorkDir("example/helloworld").Run(context.TODO())
 	assert.NoError(t, err)
 }
