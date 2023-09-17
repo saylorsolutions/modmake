@@ -1,4 +1,4 @@
-package modmake
+package git
 
 import (
 	"errors"
@@ -13,21 +13,21 @@ import (
 	"sync"
 )
 
-type GitTools struct {
+type Tools struct {
 	mux     sync.RWMutex
 	rootDir *cache.Value[string]
 	head    *cache.Value[*plumbing.Reference]
 }
 
-// NewGitTools returns a new instance of GitTools that may be reused for multiple operations.
+// NewTools returns a new instance of Tools that may be reused for multiple operations.
 // A single instance should only be used in a single repository or submodule.
 // If an error occurs while trying to cache the Git context, then this function will panic.
-func NewGitTools() *GitTools {
+func NewTools() *Tools {
 	return initGitInst()
 }
 
-func initGitInst() *GitTools {
-	tools := new(GitTools)
+func initGitInst() *Tools {
+	tools := new(Tools)
 	tools.rootDir = cache.New[string](func() (string, error) {
 		tools.mux.RLock()
 		defer tools.mux.RUnlock()
@@ -72,21 +72,21 @@ func initGitInst() *GitTools {
 	return tools
 }
 
-func (g *GitTools) InvalidateCache() {
+func (g *Tools) InvalidateCache() {
 	g.mux.Lock()
 	defer g.mux.Unlock()
 	g.rootDir.Invalidate()
 	g.head.Invalidate()
 }
 
-func (g *GitTools) RepositoryRoot() string {
+func (g *Tools) RepositoryRoot() string {
 	return g.rootDir.MustGet()
 }
 
-func (g *GitTools) BranchName() string {
+func (g *Tools) BranchName() string {
 	return g.head.MustGet().Name().Short()
 }
 
-func (g *GitTools) CommitHash() string {
+func (g *Tools) CommitHash() string {
 	return g.head.MustGet().Hash().String()
 }

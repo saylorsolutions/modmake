@@ -2,6 +2,7 @@ package main
 
 import (
 	. "github.com/saylorsolutions/modmake"
+	"github.com/saylorsolutions/modmake/pkg/git"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -58,7 +59,7 @@ func main() {
 }
 
 var (
-	git = NewGitTools()
+	_git = git.NewTools()
 )
 
 func cliBuild(os string, arch string) *Build {
@@ -80,8 +81,8 @@ func cliBuild(os string, arch string) *Build {
 		Arch(arch).
 		StripDebugSymbols().
 		OutputFilename(buildTarget).
-		SetVariable("main", "gitHash", git.CommitHash()).
-		SetVariable("main", "gitBranch", git.BranchName())
+		SetVariable("main", "gitHash", _git.CommitHash()).
+		SetVariable("main", "gitBranch", _git.BranchName())
 	b.Build().AfterRun(IfNotExists(buildTarget, Error("Failed to build modmake CLI for %s-%s", os, arch)))
 	b.Build().Does(build)
 
