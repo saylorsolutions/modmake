@@ -10,11 +10,11 @@ import (
 
 func ExampleBuild_Graph() {
 	b := NewBuild()
-	b.Tools().DependsOn(NewStep("print-tools", "").Does(RunFunc(func(ctx context.Context) error {
+	b.Tools().DependsOn(NewStep("print-tools", "").Does(Task(func(ctx context.Context) error {
 		fmt.Println("Running in tools")
 		return nil
 	})))
-	b.Package().DependsOn(NewStep("print-pkg", "").Does(RunFunc(func(ctx context.Context) error {
+	b.Package().DependsOn(NewStep("print-pkg", "").Does(Task(func(ctx context.Context) error {
 		fmt.Println("Running in package")
 		return nil
 	})))
@@ -53,11 +53,11 @@ func ExampleBuild_Execute() {
 		fmt.Println("Running in tools")
 		return nil
 	})
-	b.Tools().Does(RunFunc(func(ctx context.Context) error {
+	b.Tools().Does(Task(func(ctx context.Context) error {
 		ranTools = true
 		return nil
 	}))
-	b.Generate().Does(RunFunc(func(ctx context.Context) error {
+	b.Generate().Does(Task(func(ctx context.Context) error {
 		ranGenerate = true
 		return nil
 	}))

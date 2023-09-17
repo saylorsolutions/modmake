@@ -61,7 +61,7 @@ func (t *TarArchive) AddFileWithPath(sourcePath, archivePath string) *TarArchive
 // If a file with the given name already exists, then it will be truncated first.
 // Ensure that all files referenced with AddFile (or AddFileWithPath) and directories exist before running this Runner, because it doesn't try to create them.
 func (t *TarArchive) Create() Runner {
-	runner := RunFunc(func(ctx context.Context) error {
+	runner := Task(func(ctx context.Context) error {
 		tarFile, err := os.Create(t.path)
 		if err != nil {
 			return err
@@ -91,7 +91,7 @@ func (t *TarArchive) Create() Runner {
 // If a file with the given name does not exist, then this Runner will return an error.
 // Ensure that all files referenced with AddFile (or AddFileWithPath) and directories exist before running this Runner, because it doesn't try to create them.
 func (t *TarArchive) Update() Runner {
-	runner := RunFunc(func(ctx context.Context) error {
+	runner := Task(func(ctx context.Context) error {
 		tarFile, err := os.OpenFile(t.path, os.O_RDWR, 0644)
 		if err != nil {
 			return err
@@ -159,7 +159,7 @@ func (t *TarArchive) writeFilesToTarArchive(ctx context.Context, tw *tar.Writer)
 // Extract will extract the named tar archive to the given directory.
 // Any errors encountered while doing so will be immediately returned.
 func (t *TarArchive) Extract(extractDir string) Runner {
-	runner := RunFunc(func(ctx context.Context) error {
+	runner := Task(func(ctx context.Context) error {
 		extractDir = filepath.Clean(extractDir)
 		err := os.MkdirAll(extractDir, 0755)
 		if err != nil {

@@ -30,7 +30,7 @@ func TestGoTools_Build_File(t *testing.T) {
 	b.Test().Does(test)
 	b.Build().Does(build)
 	b.Build().AfterRun(IfNotExists("testingbuild/blah.exe", Error("failed to build blah.exe")))
-	b.Build().AfterRun(RunFunc(func(ctx context.Context) error {
+	b.Build().AfterRun(Task(func(ctx context.Context) error {
 		err := os.Remove("testingbuild/blah.exe")
 		return err
 	}))
@@ -49,10 +49,10 @@ func TestGoTools_Build_ModulePath(t *testing.T) {
 	b.Generate().Does(Go().GenerateAll())
 	b.Test().Does(test)
 	b.Build().Does(build)
-	b.Build().AfterRun(IfNotExists("testingbuild/blah.exe", RunFunc(func(ctx context.Context) error {
+	b.Build().AfterRun(IfNotExists("testingbuild/blah.exe", Task(func(ctx context.Context) error {
 		return errors.New("failed to build blah.exe")
 	})))
-	b.Build().AfterRun(RunFunc(func(ctx context.Context) error {
+	b.Build().AfterRun(Task(func(ctx context.Context) error {
 		output, err := exec.Command("testingbuild/blah.exe").Output()
 		if err != nil {
 			return err
@@ -61,7 +61,7 @@ func TestGoTools_Build_ModulePath(t *testing.T) {
 		assert.Equal(t, expected, string(output))
 		return nil
 	}))
-	b.Build().AfterRun(RunFunc(func(ctx context.Context) error {
+	b.Build().AfterRun(Task(func(ctx context.Context) error {
 		err := os.Remove("testingbuild/blah.exe")
 		return err
 	}))

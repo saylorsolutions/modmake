@@ -14,18 +14,11 @@ type Runner interface {
 	Run(context.Context) error
 }
 
-// RunFunc is a convenient way to make a function that satisfies the Runner interface.
-type RunFunc func(ctx context.Context) error
-
-func (fn RunFunc) Run(ctx context.Context) error {
-	return fn(ctx)
-}
-
 // ContextAware creates a Runner that wraps the parameter with context handling logic.
 // In the event that the context is done, the context's error is returned.
 // This should not be used if custom [context.Context] handling is desired.
 func ContextAware(r Runner) Runner {
-	return RunFunc(func(ctx context.Context) error {
+	return Task(func(ctx context.Context) error {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -37,15 +30,8 @@ func ContextAware(r Runner) Runner {
 
 // NoOp is a Runner placeholder that immediately returns nil.
 func NoOp() Runner {
-	return RunFunc(func(ctx context.Context) error {
+	return Task(func(ctx context.Context) error {
 		return nil
-	})
-}
-
-// Error will create a Runner returning an error, creating with passing msg and args to [fmt.Errorf].
-func Error(msg string, args ...any) Runner {
-	return RunFunc(func(ctx context.Context) error {
-		return fmt.Errorf(msg, args...)
 	})
 }
 
@@ -71,7 +57,7 @@ var reservedStepNames = map[string]bool{
 	"steps": true,
 }
 
-// Step is a step in a Build.
+// Step is a step in a Build, a consistent fixture that may be invoked.
 // A Step may depend on others to set up pre-conditions that must be done before this Step executes.
 // Additionally, a Step may have actions that take place before and/or after this Step runs.
 //
@@ -150,7 +136,7 @@ func (s *Step) DependsOnRunner(name, description string, r Runner) *Step {
 	return s.DependsOn(step)
 }
 
-func (s *Step) DependsOnFunc(name, description string, fn RunFunc) *Step {
+func (s *Step) DependsOnFunc(name, description string, fn Task) *Step {
 	step := NewStep(name, description).Does(fn)
 	return s.DependsOn(step)
 }
@@ -164,8 +150,8 @@ func (s *Step) Does(operation Runner) *Step {
 	return s
 }
 
-// DoesFunc specifies the RunFunc that should happen as a result of executing this Step.
-func (s *Step) DoesFunc(fn RunFunc) *Step {
+// DoesFunc specifies the Task that should happen as a result of executing this Step.
+func (s *Step) DoesFunc(fn Task) *Step {
 	return s.Does(fn)
 }
 

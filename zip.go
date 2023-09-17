@@ -59,7 +59,7 @@ func (z *ZipArchive) AddFileWithPath(sourcePath, archivePath string) *ZipArchive
 // If a file with the given name already exists, then it will be truncated first.
 // Ensure that all files referenced with AddFile (or AddFileWithPath) and directories exist before running this Runner, because it doesn't try to create them.
 func (z *ZipArchive) Create() Runner {
-	runner := RunFunc(func(ctx context.Context) error {
+	runner := Task(func(ctx context.Context) error {
 		zipFile, err := os.Create(z.path)
 		if err != nil {
 			return err
@@ -84,7 +84,7 @@ func (z *ZipArchive) Create() Runner {
 // If a file with the given name does not exist, then this Runner will return an error.
 // Ensure that all files referenced with AddFile (or AddFileWithPath) and directories exist before running this Runner, because it doesn't try to create them.
 func (z *ZipArchive) Update() Runner {
-	runner := RunFunc(func(ctx context.Context) error {
+	runner := Task(func(ctx context.Context) error {
 		zipFile, err := os.OpenFile(z.path, os.O_RDWR, 0644)
 		if err != nil {
 			return err
@@ -140,7 +140,7 @@ func (z *ZipArchive) writeFilesToZipArchive(ctx context.Context, zw *zip.Writer)
 // Extract will extract the named zip archive to the given directory.
 // Any errors encountered while doing so will be immediately returned.
 func (z *ZipArchive) Extract(extractDir string) Runner {
-	runner := RunFunc(func(ctx context.Context) error {
+	runner := Task(func(ctx context.Context) error {
 		extractDir = filepath.Clean(extractDir)
 		err := os.MkdirAll(extractDir, 0755)
 		if err != nil {

@@ -15,15 +15,15 @@ import (
 
 func TestExecScript(t *testing.T) {
 	err := Script(
-		RunFunc(func(_ context.Context) error {
+		Task(func(_ context.Context) error {
 			_, err := script.File("script.go").WriteFile("script.go.copy")
 			return err
 		}),
-		RunFunc(func(_ context.Context) error {
+		Task(func(_ context.Context) error {
 			_, err := script.File("script.go.copy").Stdout()
 			return err
 		}),
-		RunFunc(func(_ context.Context) error {
+		Task(func(_ context.Context) error {
 			return os.Remove("script.go.copy")
 		}),
 	).Run(context.Background())
@@ -32,7 +32,7 @@ func TestExecScript(t *testing.T) {
 
 func TestIfNotExists(t *testing.T) {
 	var executed bool
-	err := IfNotExists("script.go", RunFunc(func(ctx context.Context) error {
+	err := IfNotExists("script.go", Task(func(ctx context.Context) error {
 		executed = true
 		return nil
 	})).Run(context.Background())
@@ -42,7 +42,7 @@ func TestIfNotExists(t *testing.T) {
 
 func TestIfExists(t *testing.T) {
 	var executed bool
-	err := IfExists("script.go", RunFunc(func(ctx context.Context) error {
+	err := IfExists("script.go", Task(func(ctx context.Context) error {
 		executed = true
 		return nil
 	})).Run(context.Background())
@@ -153,7 +153,7 @@ func TestRemove(t *testing.T) {
 
 	err = Script(
 		IfExists(file, Error("File '%s' should not already exist", file)),
-		RunFunc(func(ctx context.Context) error {
+		Task(func(ctx context.Context) error {
 			return os.WriteFile(file, []byte("Some text"), 0600)
 		}),
 		IfNotExists(file, Error("File '%s' should exist", file)),
