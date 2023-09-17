@@ -28,3 +28,12 @@ func TestNoColonInStepName(t *testing.T) {
 		NewStep("test:step", "This should not be allowed")
 	}, "Colon characters should not be allowed in a base step name")
 }
+
+func TestStepLifecycle(t *testing.T) {
+	step := NewStep("example", "a basis Step to show the lifecycle")
+	step.DependsOnRunner("dependency", "", Print("Ran a dependency"))
+	step.BeforeRun(Print("Running before hook"))
+	step.Does(Print("Running the 'example' step"))
+	step.AfterRun(Print("Running after hook"))
+	assert.NoError(t, step.Run(context.Background()))
+}

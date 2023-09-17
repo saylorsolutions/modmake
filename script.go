@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/bitfield/script"
+	"io"
 	"io/fs"
 	"log"
 	"os"
@@ -13,27 +13,39 @@ import (
 )
 
 // Script will execute each RunFunc in order, returning the first error.
-func Script(fns ...RunFunc) Runner {
+func Script(fns ...Runner) Runner {
 	return RunFunc(func(ctx context.Context) error {
-		for _, fn := range fns {
+		for i, fn := range fns {
 			run := ContextAware(fn)
 			if err := run.Run(ctx); err != nil {
-				return err
+				return fmt.Errorf("script[%d]: %w", i, err)
 			}
 		}
 		return nil
 	})
 }
 
+func fileExists(file string) (bool, error) {
+	_, err := os.Stat(file)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
+}
+
 // IfNotExists will skip executing the Runner if the given file exists, returning nil.
 // This is similar to the default Make behavior of skipping a task if the target file already exists.
 func IfNotExists(file string, r Runner) Runner {
 	return RunFunc(func(ctx context.Context) error {
-		if err := script.IfExists(file).Error(); err != nil {
-			if err == os.ErrNotExist {
-				return r.Run(ctx)
-			}
+		ok, err := fileExists(file)
+		if err != nil {
 			return err
+		}
+		if !ok {
+			return r.Run(ctx)
 		}
 		return nil
 	})
@@ -42,7 +54,11 @@ func IfNotExists(file string, r Runner) Runner {
 // IfExists will execute the Runner if the file exists, returning nil otherwise.
 func IfExists(file string, r Runner) Runner {
 	return RunFunc(func(ctx context.Context) error {
-		if err := script.IfExists(file).Error(); err == nil {
+		ok, err := fileExists(file)
+		if err != nil {
+			return err
+		}
+		if ok {
 			return r.Run(ctx)
 		}
 		return nil
@@ -71,6 +87,46 @@ func Print(msg string, args ...any) Runner {
 	})
 }
 
+// Chdir will change the current working directory to newWorkdir and run the Runner in that context.
+// Whether the Runner executes successfully or not, the working directory will be reset back to its original state.
+func Chdir(newWorkdir string, runner Runner) Runner {
+	return RunFunc(func(ctx context.Context) error {
+		curwd, err := os.Getwd()
+		if err != nil {
+			return fmt.Errorf("failed to get current working directory: %w", err)
+		}
+		if err := os.Chdir(newWorkdir); err != nil {
+			return fmt.Errorf("failed to change the working directory to '%s': %w", newWorkdir, err)
+		}
+		err = runner.Run(ctx)
+		if err := os.Chdir(curwd); err != nil {
+			return fmt.Errorf("failed to reset the working directory to '%s': %w", curwd, err)
+		}
+		return err
+	})
+}
+
+func cpFile(source, target string) error {
+	srcFile, err := os.Open(source)
+	if err != nil {
+		return fmt.Errorf("failed to open source file '%s': %w", source, err)
+	}
+	defer func() {
+		_ = srcFile.Close()
+	}()
+
+	trgFile, err := os.Create(target)
+	if err != nil {
+		return fmt.Errorf("failed to open/create target file '%s': %w", target, err)
+	}
+	defer func() {
+		_ = trgFile.Close()
+	}()
+
+	_, err = io.Copy(trgFile, srcFile)
+	return err
+}
+
 // CopyFile creates a Runner that copies a source file to target.
 // The source and target file names are expected to be relative to the build's working directory, unless they are absolute paths.
 // The target file will be created or truncated as appropriate.
@@ -80,10 +136,7 @@ func CopyFile(source, target string) Runner {
 		if err != nil {
 			return err
 		}
-		source = relativeToWorkdir(workdir, source)
-		target = relativeToWorkdir(workdir, target)
-		_, err = script.File(source).WriteFile(target)
-		return err
+		return cpFile(relativeToWorkdir(workdir, source), relativeToWorkdir(workdir, target))
 	})
 }
 
@@ -96,8 +149,8 @@ func MoveFile(source, target string) Runner {
 		if err != nil {
 			return err
 		}
+
 		source = relativeToWorkdir(workdir, source)
-		target = relativeToWorkdir(workdir, target)
 		if err := CopyFile(source, target).Run(ctx); err != nil {
 			return err
 		}
@@ -121,8 +174,8 @@ func MkdirAll(dir string, perm os.FileMode) Runner {
 	})
 }
 
-// Remove will remove the file specified from the filesystem.
-// If the file doesn't exist, then this returns nil.
+// Remove will create a Runner that removes the specified file from the filesystem.
+// If the file doesn't exist, then this Runner returns nil.
 // Any other error encountered while removing the file is returned.
 func Remove(file string) Runner {
 	return RunFunc(func(ctx context.Context) error {

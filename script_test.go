@@ -10,21 +10,22 @@ import (
 	"path/filepath"
 	"runtime"
 	"testing"
+	"time"
 )
 
 func TestExecScript(t *testing.T) {
 	err := Script(
-		func(_ context.Context) error {
+		RunFunc(func(_ context.Context) error {
 			_, err := script.File("script.go").WriteFile("script.go.copy")
 			return err
-		},
-		func(_ context.Context) error {
+		}),
+		RunFunc(func(_ context.Context) error {
 			_, err := script.File("script.go.copy").Stdout()
 			return err
-		},
-		func(_ context.Context) error {
+		}),
+		RunFunc(func(_ context.Context) error {
 			return os.Remove("script.go.copy")
-		},
+		}),
 	).Run(context.Background())
 	assert.NoError(t, err)
 }
@@ -116,4 +117,50 @@ func ExampleIfError() {
 		fmt.Println("Error should not have been returned:", err)
 	}
 	// Output:
+}
+
+func TestRemoveDir(t *testing.T) {
+	tmp, err := os.MkdirTemp("", "RemoveDir-*")
+	require.NoError(t, err)
+	defer func() {
+		assert.NoError(t, os.RemoveAll(tmp))
+	}()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	dir := filepath.Join(tmp, "dir")
+	err = Script(
+		IfExists(dir, Error("Directory '%s' should not already exist", dir)),
+		Mkdir(dir, 0755),
+		IfNotExists(dir, Error("Directory '%s' should exist", dir)),
+		Chdir(tmp, Script(
+			RemoveDir("dir"),
+			IfExists("dir", Error("RemoveDir should have reported an error")),
+		)),
+	).Run(ctx)
+	assert.NoError(t, err)
+}
+
+func TestRemove(t *testing.T) {
+	tmp, err := os.MkdirTemp("", "RemoveDir-*")
+	require.NoError(t, err)
+	defer func() {
+		assert.NoError(t, os.RemoveAll(tmp))
+	}()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	file := filepath.Join(tmp, "file.txt")
+
+	err = Script(
+		IfExists(file, Error("File '%s' should not already exist", file)),
+		RunFunc(func(ctx context.Context) error {
+			return os.WriteFile(file, []byte("Some text"), 0600)
+		}),
+		IfNotExists(file, Error("File '%s' should exist", file)),
+		Chdir(tmp, Script(
+			Remove("file.txt"),
+			IfExists("file.txt", Error("Remove should have reported an error")),
+		)),
+	).Run(ctx)
+	assert.NoError(t, err)
 }

@@ -22,15 +22,6 @@ func (fn RunFunc) Run(ctx context.Context) error {
 	return fn(ctx)
 }
 
-func (fn RunFunc) Then(other RunFunc) RunFunc {
-	return func(ctx context.Context) error {
-		if err := fn(ctx); err != nil {
-			return err
-		}
-		return other(ctx)
-	}
-}
-
 // ContextAware creates a Runner that wraps the parameter with context handling logic.
 // In the event that the context is done, the context's error is returned.
 // This should not be used if custom [context.Context] handling is desired.

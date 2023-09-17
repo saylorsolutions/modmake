@@ -9,6 +9,7 @@ import (
 
 func main() {
 	b := NewBuild()
+	b.Tools().Does(Go().ModTidy())
 	b.Test().Does(Go().TestAll())
 	b.Build().DependsOnRunner("clean-build", "Removes previous build output if it exists",
 		RemoveDir("build"),

@@ -136,6 +136,9 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 			if flagSkipDeps {
 				step.SkipDependencies()
 			}
+
+			// Make sure that this step is not skipped, since it was called out by name.
+			step.UnSkip()
 			if err := step.Run(ctx); err != nil {
 				log.Fatalf("error running build: %v\n", err)
 			}
