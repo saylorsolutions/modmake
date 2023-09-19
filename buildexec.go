@@ -157,7 +157,10 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 			fmt.Println(strings.Join(steps, "\n"))
 			return
 		default:
-			step := b.Step(stepName)
+			step, ok := b.StepOk(stepName)
+			if !ok {
+				return fmt.Errorf("build step '%s' does not exist", stepName)
+			}
 			if flagSkipDeps {
 				step.SkipDependencies()
 			}

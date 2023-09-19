@@ -116,7 +116,7 @@ func (s *Step) setBuild(build *Build) {
 	}
 }
 
-// DependsOn makes this Step depend on the given step.
+// DependsOn makes this Step depend on the given Step.
 // The given step must execute successfully for this Step to be executed.
 func (s *Step) DependsOn(dependency *Step) *Step {
 	if dependency == nil {
@@ -131,12 +131,8 @@ func (s *Step) DependsOn(dependency *Step) *Step {
 	return s
 }
 
-func (s *Step) DependsOnRunner(name, description string, r Runner) *Step {
-	step := NewStep(name, description).Does(r)
-	return s.DependsOn(step)
-}
-
-func (s *Step) DependsOnFunc(name, description string, fn Task) *Step {
+// DependsOnTask wraps the given Task in a Step using the name and description parameters, and calls DependsOn with it.
+func (s *Step) DependsOnTask(name, description string, fn Task) *Step {
 	step := NewStep(name, description).Does(fn)
 	return s.DependsOn(step)
 }

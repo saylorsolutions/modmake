@@ -12,13 +12,19 @@ func main() {
 	b := NewBuild()
 	b.Tools().Does(Go().ModTidy())
 	b.Test().Does(Go().TestAll())
-	b.Build().DependsOnRunner("clean-build", "Removes previous build output if it exists",
+	b.Benchmark().Does(Go().BenchmarkAll())
+	b.Build().DependsOnTask("clean-build", "Removes previous build output if it exists",
 		RemoveDir("build"),
 	)
-	b.Package().DependsOnRunner("clean-dist", "Removes previous distribution output if it exists",
+	b.Package().DependsOnTask("clean-dist", "Removes previous distribution output if it exists",
 		RemoveDir("dist"),
 	)
 	b.Package().AfterRun(RemoveDir("build"))
+
+	b.AddStep(NewStep("clean", "Removes all output directories").
+		DependsOn(b.Step("clean-build")).
+		DependsOn(b.Step("clean-dist")),
+	)
 
 	buildVariants := map[string][]string{
 		"windows": {

@@ -49,7 +49,7 @@ func ExampleBuild_Execute() {
 	)
 
 	b := NewBuild()
-	b.Tools().DependsOnFunc("print-tools", "", func(ctx context.Context) error {
+	b.Tools().DependsOnTask("print-tools", "", func(ctx context.Context) error {
 		fmt.Println("Running in tools")
 		return nil
 	})
@@ -61,7 +61,7 @@ func ExampleBuild_Execute() {
 		ranGenerate = true
 		return nil
 	}))
-	b.Package().DependsOnFunc("print-pkg", "", func(ctx context.Context) error {
+	b.Package().DependsOnTask("print-pkg", "", func(ctx context.Context) error {
 		fmt.Println("Running in package")
 		return nil
 	})
@@ -124,7 +124,7 @@ func TestCyclesCheck(t *testing.T) {
 		"Dual dependency": {
 			b: func() *Build {
 				b := NewBuild()
-				b.Build().DependsOnRunner("echo", "Prints a message", Print("a message"))
+				b.Build().DependsOnTask("echo", "Prints a message", Print("a message"))
 				b.Package().DependsOn(b.Step("echo"))
 				return b
 			},
@@ -202,8 +202,8 @@ func TestBuild_Import(t *testing.T) {
 		other.Build().DependsOn(other.Step("print"))
 	}, "New step creation should not panic")
 	b.Import("other", other)
-	_, ok := b.stepNames["other:print"]
+	_, ok := b.StepOk("other:print")
 	assert.True(t, ok, "Step 'other:print' should have been imported")
-	_, ok = b.stepNames["print"]
+	_, ok = b.StepOk("print")
 	assert.False(t, ok, "Other 'print' step should not have been imported")
 }

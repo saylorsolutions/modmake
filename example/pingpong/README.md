@@ -131,7 +131,7 @@ Press Ctrl+C in each terminal to send an interrupt signal which stops the client
 Now we can build both of our artifacts with one command.
 
 ```shell
-go run example/pingpong/modmake/build.go build
+go run example/pingpong/build.go build
 ```
 
-After this runs, you should see both a client and server executable in the root of the repository.
+After this runs, you should see both a client and server executable in the `build` directory.
