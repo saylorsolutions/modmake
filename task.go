@@ -14,7 +14,7 @@ func WithoutErr(fn func(context.Context)) Task {
 	return func(ctx context.Context) (err error) {
 		defer func() {
 			if r := recover(); r != nil {
-				err = fmt.Errorf("caught panic: %v", r)
+				err = fmt.Errorf("%v", r)
 			}
 		}()
 		fn(ctx)

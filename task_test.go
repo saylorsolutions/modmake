@@ -44,3 +44,33 @@ func TestTask_Catch(t *testing.T) {
 	assert.True(t, handled)
 	assert.True(t, postAction)
 }
+
+func TestWithoutErr(t *testing.T) {
+	var (
+		called int
+	)
+	err := WithoutErr(func(ctx context.Context) {
+		called++
+		panic("error")
+	})(context.Background())
+	assert.Equal(t, "error", err.Error())
+	assert.Equal(t, 1, called)
+
+	assert.NoError(t, WithoutErr(func(ctx context.Context) {
+		called++
+	})(context.Background()))
+	assert.Equal(t, 2, called)
+}
+
+func TestWithoutContext(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	fn := WithoutContext(func() error {
+		return nil
+	})
+	err := fn.Run(ctx)
+	assert.NoError(t, err)
+
+	cancel()
+	err = fn.Run(ctx)
+	assert.ErrorIs(t, err, context.Canceled)
+}
