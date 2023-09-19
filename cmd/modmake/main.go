@@ -81,7 +81,7 @@ func runBuild(ctx context.Context, target string, flags *appFlags) error {
 		if len(kv) != 2 {
 			return fmt.Errorf("invalid environment variable format, '%s' must be 'KEY=VALUE'", env)
 		}
-		run.Env(kv[0], kv[1])
+		run.Env(strings.TrimSpace(kv[0]), strings.TrimSpace(kv[1]))
 	}
 	return run.Run(ctx)
 }
