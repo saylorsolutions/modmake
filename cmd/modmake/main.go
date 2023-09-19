@@ -59,23 +59,31 @@ func run(ctx context.Context, flags *appFlags) error {
 			log.Printf("Unable to locate build override '%s': %v\n", override, err)
 		}
 		log.Printf("Running build %s\n", flags.buildOverride)
-		return runBuild(ctx, Go().ToModulePath(flags.buildOverride), flags.Args())
+		return runBuild(ctx, Go().ToModulePath(flags.buildOverride), flags)
 	}
 	fi, err := os.Stat("modmake")
 	if err == nil && fi.IsDir() {
 		log.Println("Running build from modmake")
-		return runBuild(ctx, Go().ToModulePath("modmake"), flags.Args())
+		return runBuild(ctx, Go().ToModulePath("modmake"), flags)
 	}
 	_, err = os.Stat("build.go")
 	if err == nil {
 		log.Println("Running build from build.go")
-		return runBuild(ctx, ".", flags.Args())
+		return runBuild(ctx, ".", flags)
 	}
 	return errors.New("unable to resolve build, try providing a build override")
 }
 
-func runBuild(ctx context.Context, target string, args []string) error {
-	return Go().Run(target).Arg(args...).Run(ctx)
+func runBuild(ctx context.Context, target string, flags *appFlags) error {
+	run := Go().Run(target).Arg(flags.Args()...)
+	for _, env := range flags.envVars {
+		kv := strings.Split(env, "=")
+		if len(kv) != 2 {
+			return fmt.Errorf("invalid environment variable format, '%s' must be 'KEY=VALUE'", env)
+		}
+		run.Env(kv[0], kv[1])
+	}
+	return run.Run(ctx)
 }
 
 func errFatal(msg string, err error) {
