@@ -2,6 +2,7 @@ package modmake
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	flag "github.com/spf13/pflag"
 	"log"
@@ -32,37 +33,50 @@ func sigCtx() (context.Context, context.CancelFunc) {
 // Note that the build will attempt to change its working directory to the root of the module, so all filesystem paths should be relative to the root.
 // [GoTools.ToModulePath] may be useful to adhere to this constraint.
 func (b *Build) Execute(args ...string) {
+	if err := b.ExecuteErr(args...); err != nil {
+		log.Fatalln("Error executing build:", err)
+	}
+}
+
+// ExecuteErr executes a Build as configured, as if it were a CLI application, and returns an error if anything goes wrong.
+// It takes string arguments to allow overriding the default of capturing os.Args.
+// Run this with the -h flag to see usage information.
+// If an error occurs within Execute, then the error will be logged and [os.Exit] will be called with a non-zero exit code.
+//
+// Note that the build will attempt to change its working directory to the root of the module, so all filesystem paths should be relative to the root.
+// [GoTools.ToModulePath] may be useful to adhere to this constraint.
+func (b *Build) ExecuteErr(args ...string) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			stack := debug.Stack()
-			log.Fatalf("caught panic while running build: %v\n%s", r, string(stack))
+			err = fmt.Errorf("caught panic while running build: %v\n%s", r, string(stack))
 		}
 	}()
 	if err := os.Chdir(Go().ModuleRoot()); err != nil {
-		panic("Failed to change working directory to module root: " + err.Error())
+		return errors.New("failed to change working directory to module root: " + err.Error())
 	}
 	if err := b.cyclesCheck(); err != nil {
-		log.Fatalln(err)
+		return err
 	}
 	flags := flag.NewFlagSet("build", flag.ContinueOnError)
 
 	var (
-		flagHelp         bool
-		flagDoBench      bool
-		flagSkipTests    bool
-		flagSkipInstall  bool
-		flagSkipGenerate bool
-		flagSkipDeps     bool
-		flagTimeout      time.Duration
+		flagHelp     bool
+		flagSkip     []string
+		flagNoSkip   []string
+		flagSkipDeps bool
+		flagTimeout  time.Duration
+		flagDryRun   bool
+		flagDebugLog bool
 	)
 
-	flags.BoolVarP(&flagHelp, "help", "h", false, "Prints this usage information")
-	flags.BoolVar(&flagDoBench, "run-benchmark", false, "Runs the benchmark step")
-	flags.BoolVar(&flagSkipTests, "skip-test", false, "Skips the test step, but not its dependencies.")
-	flags.BoolVar(&flagSkipInstall, "skip-tools", false, "Skips the tools install step, but not its dependencies.")
-	flags.BoolVar(&flagSkipGenerate, "skip-generate", false, "Skips the generate step, but not its dependencies.")
-	flags.BoolVar(&flagSkipDeps, "skip-dependencies", false, "Skips running the named step's dependencies.")
-	flags.DurationVar(&flagTimeout, "timeout", 0, "Sets a timeout duration for this build run")
+	flags.BoolVarP(&flagHelp, "help", "h", false, "Prints this usage information.")
+	flags.StringArrayVar(&flagSkip, "skip", nil, "Skips one or more named steps.")
+	flags.StringArrayVar(&flagNoSkip, "no-skip", nil, "Specifies that the one or more steps should not be skipped, if they need to run. Note that specifically referencing a step will always run it, even if it's skipped by default.")
+	flags.BoolVar(&flagSkipDeps, "only", false, "Skips running the named step's dependencies, only runs the step itself.")
+	flags.DurationVar(&flagTimeout, "timeout", 0, "Sets a timeout duration for this build run.")
+	flags.BoolVar(&flagDryRun, "dry-run", false, "Runs the build's steps in dry run mode. No actual operations will be executed, but logs will still be printed.")
+	flags.BoolVar(&flagDebugLog, "debug", false, "Specifies that debug step logs should be emitted.")
 
 	flags.Usage = func() {
 		fmt.Printf(`Executes this modmake build
@@ -88,7 +102,7 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 	}
 	if err := flags.Parse(args); err != nil {
 		flags.Usage()
-		log.Fatalln(err)
+		return err
 	}
 
 	if flags.NArg() == 0 || flagHelp {
@@ -96,17 +110,8 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 		return
 	}
 
-	if flagSkipTests {
-		b.testStep.Skip()
-	}
-	if flagSkipInstall {
-		b.toolsStep.Skip()
-	}
-	if flagSkipGenerate {
-		b.generateStep.Skip()
-	}
-	if flagDoBench {
-		b.benchStep.UnSkip()
+	if flagDebugLog {
+		_stepDebugLog = true
 	}
 
 	ctx, cancel := sigCtx()
@@ -118,7 +123,27 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 		defer _cancel()
 	}
 
+	for _, skip := range flagSkip {
+		step, ok := b.StepOk(skip)
+		if !ok {
+			log.Printf("WARN: User asked that step '%s' be skipped, but it doesn't exist in this model\n", skip)
+			continue
+		}
+		step.Skip()
+	}
+	for _, noskip := range flagNoSkip {
+		step, ok := b.StepOk(noskip)
+		if !ok {
+			log.Printf("WARN: User asked that step '%s' not be skipped, but it doesn't exist in this model\n", noskip)
+			continue
+		}
+		step.UnSkip()
+	}
+
 	start := time.Now()
+	if flagDryRun {
+		log.Println("Running build in DRY RUN mode, steps will not run.")
+	}
 	for i, stepName := range flags.Args() {
 		switch {
 		case i == 0 && stepName == "graph":
@@ -136,11 +161,19 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 			if flagSkipDeps {
 				step.SkipDependencies()
 			}
-			if err := step.Run(ctx); err != nil {
-				log.Fatalf("error running build: %v\n", err)
+
+			// Make sure that this step is not skipped, since it was called out by name.
+			step.UnSkip()
+			run := step.Run
+			if flagDryRun {
+				run = step.DryRun
+			}
+			if err := run(ctx); err != nil {
+				return fmt.Errorf("error running build: %v", err)
 			}
 		}
 	}
 
 	log.Printf("Ran successfully in %s\n", time.Since(start).Round(time.Millisecond).String())
+	return nil
 }

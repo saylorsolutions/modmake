@@ -3,7 +3,6 @@ package modmake
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 )
@@ -15,27 +14,11 @@ type Runner interface {
 	Run(context.Context) error
 }
 
-// RunFunc is a convenient way to make a function that satisfies the Runner interface.
-type RunFunc func(ctx context.Context) error
-
-func (fn RunFunc) Run(ctx context.Context) error {
-	return fn(ctx)
-}
-
-func (fn RunFunc) Then(other RunFunc) RunFunc {
-	return func(ctx context.Context) error {
-		if err := fn(ctx); err != nil {
-			return err
-		}
-		return other(ctx)
-	}
-}
-
 // ContextAware creates a Runner that wraps the parameter with context handling logic.
 // In the event that the context is done, the context's error is returned.
 // This should not be used if custom [context.Context] handling is desired.
 func ContextAware(r Runner) Runner {
-	return RunFunc(func(ctx context.Context) error {
+	return Task(func(ctx context.Context) error {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -47,15 +30,8 @@ func ContextAware(r Runner) Runner {
 
 // NoOp is a Runner placeholder that immediately returns nil.
 func NoOp() Runner {
-	return RunFunc(func(ctx context.Context) error {
+	return Task(func(ctx context.Context) error {
 		return nil
-	})
-}
-
-// Error will create a Runner returning an error, creating with passing msg and args to [fmt.Errorf].
-func Error(msg string, args ...any) Runner {
-	return RunFunc(func(ctx context.Context) error {
-		return fmt.Errorf(msg, args...)
 	})
 }
 
@@ -81,7 +57,7 @@ var reservedStepNames = map[string]bool{
 	"steps": true,
 }
 
-// Step is a step in a Build.
+// Step is a step in a Build, a consistent fixture that may be invoked.
 // A Step may depend on others to set up pre-conditions that must be done before this Step executes.
 // Additionally, a Step may have actions that take place before and/or after this Step runs.
 //
@@ -98,6 +74,7 @@ type Step struct {
 	shouldSkip     bool
 	shouldSkipDeps bool
 	build          *Build
+	dryRun         bool
 }
 
 func newStep(name, description string) *Step {
@@ -159,7 +136,7 @@ func (s *Step) DependsOnRunner(name, description string, r Runner) *Step {
 	return s.DependsOn(step)
 }
 
-func (s *Step) DependsOnFunc(name, description string, fn RunFunc) *Step {
+func (s *Step) DependsOnFunc(name, description string, fn Task) *Step {
 	step := NewStep(name, description).Does(fn)
 	return s.DependsOn(step)
 }
@@ -173,8 +150,8 @@ func (s *Step) Does(operation Runner) *Step {
 	return s
 }
 
-// DoesFunc specifies the RunFunc that should happen as a result of executing this Step.
-func (s *Step) DoesFunc(fn RunFunc) *Step {
+// DoesFunc specifies the Task that should happen as a result of executing this Step.
+func (s *Step) DoesFunc(fn Task) *Step {
 	return s.Does(fn)
 }
 
@@ -200,13 +177,17 @@ func (s *Step) AfterRun(op Runner) *Step {
 
 func (s *Step) Run(ctx context.Context) error {
 	if s.shouldSkipDeps {
-		log.Printf("[%s] Skipping dependencies\n", s.name)
+		s.Info("Skipping dependencies")
 	} else {
 		for _, d := range s.dependencies {
 			if d.state != StateNotRun {
 				continue
 			}
-			if err := d.Run(ctx); err != nil {
+			run := d.Run
+			if s.dryRun {
+				run = d.DryRun
+			}
+			if err := run(ctx); err != nil {
 				s.state = StateFailed
 				return err
 			}
@@ -217,48 +198,63 @@ func (s *Step) Run(ctx context.Context) error {
 		return nil
 	}
 	if s.shouldSkip {
-		log.Printf("[%s] Skipping step\n", s.name)
+		s.Info("Skipping step")
 		return nil
 	}
 
 	if len(s.beforeOp) > 0 {
-		log.Printf("[%s] Runnning before hooks...\n", s.name)
+		s.Info("Running before hooks...")
 		start := time.Now()
-		for _, before := range s.beforeOp {
-			if err := before.Run(ctx); err != nil {
-				log.Printf("[%s] Error running step: %v\n", s.name, err)
-				s.state = StateFailed
-				return err
+		if s.dryRun {
+			s.Info("Would have run %d before operations", len(s.beforeOp))
+		} else {
+			for _, before := range s.beforeOp {
+				if err := before.Run(ctx); err != nil {
+					s.Error("Error running step: %v", err)
+					s.state = StateFailed
+					return err
+				}
 			}
 		}
-		log.Printf("[%s] Before hooks ran successfully in %s\n", s.name, time.Since(start).Round(time.Millisecond).String())
+		s.Info("Before hooks ran successfully in %s", time.Since(start).Round(time.Millisecond).String())
 	}
 	s.state = StateSuccessful
 
 	if s.operation != nil {
-		log.Printf("[%s] Running step...\n", s.name)
+		s.Info("Running step...")
 		runStart := time.Now()
-		if err := s.operation.Run(ctx); err != nil {
-			log.Printf("Error running step '%s': %v\n", s.name, err)
-			s.state = StateFailed
-			return err
-		}
-		log.Printf("[%s] Successfully ran step in %s\n", s.name, time.Since(runStart).Round(time.Millisecond).String())
-	}
-
-	if len(s.afterOp) > 0 {
-		log.Printf("[%s] Runnning after hooks...\n", s.name)
-		start := time.Now()
-		for _, after := range s.afterOp {
-			if err := after.Run(ctx); err != nil {
-				log.Printf("[%s] Error running after hooks: %v", s.name, err)
+		if !s.dryRun {
+			if err := s.operation.Run(ctx); err != nil {
+				s.Error("Error running step: %v", err)
 				s.state = StateFailed
 				return err
 			}
 		}
-		log.Printf("[%s] Successfully ran after hooks in %s\n", s.name, time.Since(start).Round(time.Millisecond).String())
+		s.Info("Successfully ran step in %s", time.Since(runStart).Round(time.Millisecond).String())
+	}
+
+	if len(s.afterOp) > 0 {
+		s.Info("Running after hooks...")
+		start := time.Now()
+		if s.dryRun {
+			s.Info("Would have run %d after hooks", len(s.afterOp))
+		} else {
+			for _, after := range s.afterOp {
+				if err := after.Run(ctx); err != nil {
+					s.Error("Error running after hooks: %v", err)
+					s.state = StateFailed
+					return err
+				}
+			}
+		}
+		s.Info("Successfully ran after hooks in %s", time.Since(start).Round(time.Millisecond).String())
 	}
 	return nil
+}
+
+func (s *Step) DryRun(ctx context.Context) error {
+	s.dryRun = true
+	return s.Run(ctx)
 }
 
 // Skip will skip execution of this step, including its before/after hooks.

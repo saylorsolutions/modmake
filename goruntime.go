@@ -28,63 +28,75 @@ type GoTools struct {
 }
 
 var (
-	instMux  sync.RWMutex
-	instance *GoTools
+	_goMux      sync.RWMutex
+	_goInstance *GoTools
 )
 
 // Go will retrieve or initialize an instance of GoTools.
 // This indirection is desirable to support caching of tool chain, filesystem, and module details.
 // This function is concurrency safe, and may be called by multiple goroutines if desired.
 func Go() *GoTools {
-	instMux.RLock()
-	if instance != nil {
-		instance := instance
-		instMux.RUnlock()
-		return instance
+	_goMux.RLock()
+	inst := _goInstance
+	_goMux.RUnlock()
+	if inst != nil {
+		return inst
 	}
-	instMux.RUnlock()
-	instMux.Lock()
-	defer instMux.Unlock()
-	if instance != nil {
-		return instance
+	var err error
+	inst, err = initGoInst()
+	if err != nil {
+		panic(err)
+	}
+	_goInstance = inst
+	return inst
+}
+
+func initGoInst() (*GoTools, error) {
+	_goMux.Lock()
+	defer _goMux.Unlock()
+	if _goInstance != nil {
+		return _goInstance, nil
 	}
 	goRootPath := cache.New(func() (string, error) {
 		goRootDir, ok := os.LookupEnv("GOROOT")
 		if !ok {
-			panic("Unable to resolve environment variable GOROOT. Is Go installed correctly?")
+			return "", errors.New("unable to resolve environment variable GOROOT, Go may not be installed correctly")
 		}
 		return goRootDir, nil
 	})
 	modPath := cache.New(func() (string, error) {
 		modPath, err := locateModRoot()
 		if err != nil {
-			panic(err)
+			return "", err
 		}
 		return modPath, nil
 	})
 	moduleName := cache.New(func() (string, error) {
 		path, err := modPath.Get()
 		if err != nil {
-			panic(err)
+			return "", err
 		}
 		moduleName, err := parseModuleName(path)
 		if err != nil {
-			panic(err)
+			return "", err
 		}
 		return moduleName, nil
 	})
-	instance = &GoTools{
+	inst := &GoTools{
 		goRootPath: goRootPath,
 		goModPath:  modPath,
 		moduleName: moduleName,
 	}
-	return instance
+	return inst, nil
 }
 
 // InvalidateCache will break the instance cache, forcing the next call to Go to scan the filesystem's information again.
 func (g *GoTools) InvalidateCache() {
-	instMux.Lock()
-	defer instMux.Unlock()
+	_goMux.Lock()
+	defer _goMux.Unlock()
+	if _goInstance == nil {
+		return
+	}
 	g.goRootPath.Invalidate()
 	g.goModPath.Invalidate()
 	g.moduleName.Invalidate()
@@ -97,14 +109,12 @@ func (g *GoTools) goTool() string {
 
 // ModuleRoot returns a filesystem path to the root of the current module.
 func (g *GoTools) ModuleRoot() string {
-	goModPath, _ := g.goModPath.Get()
-	return filepath.Dir(goModPath)
+	return filepath.Dir(g.goModPath.MustGet())
 }
 
 // ModuleName returns the name of the current module as specified in the go.mod.
 func (g *GoTools) ModuleName() string {
-	modName, _ := g.moduleName.Get()
-	return modName
+	return g.moduleName.MustGet()
 }
 
 // ToModulePackage is specifically provided to construct a package reference for [GoBuild.SetVariable] by prepending the module name to the package name, separated by '/'.
@@ -132,8 +142,7 @@ func (g *GoTools) ToModulePath(dir string) string {
 	if !fi.IsDir() {
 		dir = filepath.Dir(dir)
 	}
-	moduleName, _ := g.moduleName.Get()
-	return moduleName + "/" + filepath.ToSlash(dir)
+	return g.moduleName.MustGet() + "/" + filepath.ToSlash(dir)
 }
 
 func (g *GoTools) Command(command string, args ...string) *Command {
@@ -233,6 +242,7 @@ type GoBuild struct {
 	addrSan       bool
 	printPackages bool
 	printCommands bool
+	stripDebug    bool
 	buildMode     string
 	gcFlags       map[string]bool
 	ldFlags       map[string]bool
@@ -444,12 +454,13 @@ func (b *GoBuild) GoCompileFlags(flags ...string) *GoBuild {
 	return b
 }
 
-// StripDebugSymbols will remove debugging information from the built artifact, improving file size.
+// StripDebugSymbols will remove debugging information from the built artifact, including file paths from panic output, reducing file size.
 func (b *GoBuild) StripDebugSymbols() *GoBuild {
 	if b.err != nil {
 		return b
 	}
-	return b.LinkerFlags("-s", "-w")
+	b.stripDebug = true
+	return b
 }
 
 // SetVariable sets an ldflag to set a variable at build time.
@@ -477,7 +488,7 @@ func (b *GoBuild) SetVariable(pkg, varName, value string) *GoBuild {
 	if b.err != nil {
 		return b
 	}
-	return b.LinkerFlags(fmt.Sprintf("-X %s.%s=%s", pkg, varName, value))
+	return b.LinkerFlags(fmt.Sprintf("-X '%s.%s=%s'", pkg, varName, value))
 }
 
 // LinkerFlags sets linker flags (ldflags) values for this build.
@@ -587,6 +598,10 @@ func (b *GoBuild) Run(ctx context.Context) error {
 	}
 	if len(b.gcFlags) > 0 {
 		b.cmd.Arg(fmt.Sprintf("-gcflags=%s", strings.Join(keySlice(b.gcFlags), " ")))
+	}
+	if b.stripDebug {
+		b.cmd.Arg("-trimpath")
+		b.LinkerFlags("-s", "-w")
 	}
 	if len(b.ldFlags) > 0 {
 		b.cmd.Arg(fmt.Sprintf("-ldflags=%s", strings.Join(keySlice(b.ldFlags), " ")))
