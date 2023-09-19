@@ -157,11 +157,19 @@ func MoveFile(source, target string) Task {
 	}
 }
 
-// Mkdir makes a directory named dir.
+// Mkdir makes a directory named dir, if it doesn't exist already.
+// If the directory already exists, then nothing is done and err will be nil.
 // Any error encountered while making the directory is returned.
 func Mkdir(dir string, perm os.FileMode) Task {
 	return WithoutContext(func() error {
-		return os.Mkdir(dir, perm)
+		err := os.Mkdir(dir, perm)
+		if err != nil {
+			if errors.Is(err, fs.ErrExist) {
+				return nil
+			}
+			return err
+		}
+		return nil
 	})
 }
 

@@ -31,7 +31,7 @@ func TestNoColonInStepName(t *testing.T) {
 
 func TestStepLifecycle(t *testing.T) {
 	step := NewStep("example", "a basis Step to show the lifecycle")
-	step.DependsOnRunner("dependency", "", Print("Ran a dependency"))
+	step.DependsOnTask("dependency", "", Print("Ran a dependency"))
 	step.BeforeRun(Print("Running before hook"))
 	step.Does(Print("Running the 'example' step"))
 	step.AfterRun(Print("Running after hook"))
