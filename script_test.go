@@ -158,8 +158,8 @@ func TestRemove(t *testing.T) {
 		}),
 		IfNotExists(file, Error("File '%s' should exist", file)),
 		Chdir(tmp, Script(
-			Remove("file.txt"),
-			IfExists("file.txt", Error("Remove should have reported an error")),
+			RemoveFile("file.txt"),
+			IfExists("file.txt", Error("RemoveFile should have reported an error")),
 		)),
 	).Run(ctx)
 	assert.NoError(t, err)

@@ -78,13 +78,12 @@ func IfError(canErr Runner, handler Runner) Task {
 
 // Print will create a Runner that logs a message.
 func Print(msg string, args ...any) Task {
-	return func(ctx context.Context) error {
+	return Plain(func() {
 		if !strings.HasSuffix(msg, "\n") {
 			msg += "\n"
 		}
 		log.Printf(msg, args...)
-		return nil
-	}
+	})
 }
 
 // Chdir will change the current working directory to newWorkdir and run the Runner in that context.
@@ -131,13 +130,13 @@ func cpFile(source, target string) error {
 // The source and target file names are expected to be relative to the build's working directory, unless they are absolute paths.
 // The target file will be created or truncated as appropriate.
 func CopyFile(source, target string) Task {
-	return func(ctx context.Context) error {
+	return WithoutContext(func() error {
 		workdir, err := os.Getwd()
 		if err != nil {
 			return err
 		}
 		return cpFile(relativeToWorkdir(workdir, source), relativeToWorkdir(workdir, target))
-	}
+	})
 }
 
 // MoveFile creates a Runner that will move the file indicated by source to target.
@@ -161,24 +160,24 @@ func MoveFile(source, target string) Task {
 // Mkdir makes a directory named dir.
 // Any error encountered while making the directory is returned.
 func Mkdir(dir string, perm os.FileMode) Task {
-	return func(ctx context.Context) error {
+	return WithoutContext(func() error {
 		return os.Mkdir(dir, perm)
-	}
+	})
 }
 
 // MkdirAll makes the target directory, and any directories in between.
 // Any error encountered while making the directories is returned.
 func MkdirAll(dir string, perm os.FileMode) Task {
-	return func(ctx context.Context) error {
+	return WithoutContext(func() error {
 		return os.MkdirAll(dir, perm)
-	}
+	})
 }
 
-// Remove will create a Runner that removes the specified file from the filesystem.
+// RemoveFile will create a Runner that removes the specified file from the filesystem.
 // If the file doesn't exist, then this Runner returns nil.
 // Any other error encountered while removing the file is returned.
-func Remove(file string) Task {
-	return func(ctx context.Context) error {
+func RemoveFile(file string) Task {
+	return WithoutContext(func() error {
 		fi, err := os.Stat(file)
 		if err != nil {
 			if errors.Is(err, fs.ErrNotExist) {
@@ -190,14 +189,14 @@ func Remove(file string) Task {
 			return fmt.Errorf("file '%s' is a directory, use RemoveDir instead", file)
 		}
 		return os.Remove(file)
-	}
+	})
 }
 
 // RemoveDir will create a Runner that removes the directory specified and all of its contents from the filesystem.
 // If the directory doesn't exist, then this Runner returns nil.
 // Any other error encountered while removing the directory is returned.
 func RemoveDir(file string) Task {
-	return func(ctx context.Context) error {
+	return WithoutContext(func() error {
 		fi, err := os.Stat(file)
 		if err != nil {
 			if errors.Is(err, fs.ErrNotExist) {
@@ -206,10 +205,10 @@ func RemoveDir(file string) Task {
 			return err
 		}
 		if !fi.IsDir() {
-			return fmt.Errorf("file '%s' is a file, use Remove instead", file)
+			return fmt.Errorf("file '%s' is a file, use RemoveFile instead", file)
 		}
 		return os.RemoveAll(file)
-	}
+	})
 }
 
 // relativeToWorkdir will return a path relative to the workdir if file is relative.
