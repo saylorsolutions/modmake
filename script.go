@@ -228,3 +228,40 @@ func relativeToWorkdir(workdir, file string) string {
 	}
 	return filepath.Join(workdir, file)
 }
+
+// PathString is a string that represents a filesystem path.
+//
+// String inputs to all PathString functions, including Path, is expected to be a filesystem path with forward slash ('/') separators.
+// These will be translated to actual OS filesystem path strings, making them incompatible with module path strings on Windows.
+type PathString string
+
+// Join will append path segments to this PathString and return a new PathString.
+func (p PathString) Join(segments ...string) PathString {
+	if len(segments) == 0 {
+		return p
+	}
+	_segments := make([]string, len(segments))
+	for i, segment := range segments {
+		_segments[i] = filepath.FromSlash(segment)
+	}
+	return PathString(filepath.Join(append([]string{string(p)}, _segments...)...))
+}
+
+// JoinPath will append PathString segments to this PathString and return a new PathString.
+func (p PathString) JoinPath(segments ...PathString) PathString {
+	var newPath = p
+	for _, segment := range segments {
+		newPath = newPath.Join(string(segment))
+	}
+	return newPath
+}
+
+// Path creates a new PathString from the input path segments.
+func Path(path string, segments ...string) PathString {
+	_segments := make([]string, len(segments))
+	path = filepath.FromSlash(path)
+	for i, segment := range segments {
+		_segments[i] = filepath.FromSlash(segment)
+	}
+	return PathString(filepath.Join(append([]string{path}, _segments...)...))
+}
