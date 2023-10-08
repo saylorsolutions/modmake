@@ -9,7 +9,7 @@ func main() {
 	b := NewBuild()
 	b.Import("client", client())
 	b.Import("server", server())
-	b.Build().DependsOnTask("clean", "Removes the build directory",
+	b.Build().DependsOnRunner("clean", "Removes the build directory",
 		RemoveDir("build"),
 	)
 	b.Build().DependsOn(b.Step("client:build"))

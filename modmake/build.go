@@ -13,10 +13,10 @@ func main() {
 	b.Tools().Does(Go().ModTidy())
 	b.Test().Does(Go().TestAll())
 	b.Benchmark().Does(Go().BenchmarkAll())
-	b.Build().DependsOnTask("clean-build", "Removes previous build output if it exists",
+	b.Build().DependsOnRunner("clean-build", "Removes previous build output if it exists",
 		RemoveDir("build"),
 	)
-	b.Package().DependsOnTask("clean-dist", "Removes previous distribution output if it exists",
+	b.Package().DependsOnRunner("clean-dist", "Removes previous distribution output if it exists",
 		RemoveDir("dist"),
 	)
 	b.Package().AfterRun(RemoveDir("build"))
