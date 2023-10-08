@@ -14,44 +14,42 @@ import (
 // The Runner is created with Zip.
 type ZipArchive struct {
 	err      error
-	path     string
-	addFiles map[string]string
+	path     PathString
+	addFiles map[PathString]string
 }
 
 // Zip will create a new ZipArchive to contextualize follow-on operations that act on a zip file.
 // Adding a ".zip" suffix to the location path string is recommended, but not required.
-func Zip(location string) *ZipArchive {
-	location = strings.TrimSpace(location)
+func Zip(location PathString) *ZipArchive {
 	if len(location) == 0 {
 		panic("empty location")
 	}
 	return &ZipArchive{
 		path:     location,
-		addFiles: map[string]string{},
+		addFiles: map[PathString]string{},
 	}
 }
 
 // AddFile adds the referenced file with the same archive path as what is given.
 // The archive path will be converted to slash format.
-func (z *ZipArchive) AddFile(sourcePath string) *ZipArchive {
+func (z *ZipArchive) AddFile(sourcePath PathString) *ZipArchive {
 	z.AddFileWithPath(sourcePath, sourcePath)
 	return z
 }
 
 // AddFileWithPath adds the referenced file with an archive path specified.
 // The archive path will be converted to slash format.
-func (z *ZipArchive) AddFileWithPath(sourcePath, archivePath string) *ZipArchive {
+func (z *ZipArchive) AddFileWithPath(sourcePath, archivePath PathString) *ZipArchive {
 	if z.err != nil {
 		return z
 	}
-	sourcePath, archivePath = strings.TrimSpace(sourcePath), strings.TrimSpace(archivePath)
 	if len(sourcePath) == 0 {
 		panic("empty source path")
 	}
 	if len(archivePath) == 0 {
 		panic("empty target path")
 	}
-	z.addFiles[sourcePath] = filepath.ToSlash(archivePath)
+	z.addFiles[sourcePath] = filepath.ToSlash(archivePath.String())
 	return z
 }
 
@@ -60,7 +58,7 @@ func (z *ZipArchive) AddFileWithPath(sourcePath, archivePath string) *ZipArchive
 // Ensure that all files referenced with AddFile (or AddFileWithPath) and directories exist before running this Runner, because it doesn't try to create them.
 func (z *ZipArchive) Create() Runner {
 	runner := Task(func(ctx context.Context) error {
-		zipFile, err := os.Create(z.path)
+		zipFile, err := os.Create(z.path.String())
 		if err != nil {
 			return err
 		}
@@ -85,7 +83,7 @@ func (z *ZipArchive) Create() Runner {
 // Ensure that all files referenced with AddFile (or AddFileWithPath) and directories exist before running this Runner, because it doesn't try to create them.
 func (z *ZipArchive) Update() Runner {
 	runner := Task(func(ctx context.Context) error {
-		zipFile, err := os.OpenFile(z.path, os.O_RDWR, 0644)
+		zipFile, err := os.OpenFile(z.path.String(), os.O_RDWR, 0644)
 		if err != nil {
 			return err
 		}
@@ -112,7 +110,7 @@ func (z *ZipArchive) writeFilesToZipArchive(ctx context.Context, zw *zip.Writer)
 		default:
 			source, target := source, target
 			err := func() error {
-				f, err := os.Open(source)
+				f, err := os.Open(source.String())
 				if err != nil {
 					return err
 				}
@@ -139,24 +137,23 @@ func (z *ZipArchive) writeFilesToZipArchive(ctx context.Context, zw *zip.Writer)
 
 // Extract will extract the named zip archive to the given directory.
 // Any errors encountered while doing so will be immediately returned.
-func (z *ZipArchive) Extract(extractDir string) Runner {
+func (z *ZipArchive) Extract(extractDir PathString) Runner {
 	runner := Task(func(ctx context.Context) error {
-		extractDir = filepath.Clean(extractDir)
-		err := os.MkdirAll(extractDir, 0755)
-		if err != nil {
-			return fmt.Errorf("unable to create extraction directory: %w", err)
-		}
-		fi, err := os.Stat(z.path)
-		if err != nil {
-			return fmt.Errorf("unable to get file information for the source zip file: %w", err)
-		}
-		src, err := os.Open(z.path)
+		src, err := os.Open(z.path.String())
 		if err != nil {
 			return fmt.Errorf("unable to open zip archive: %w", err)
 		}
 		defer func() {
 			_ = src.Close()
 		}()
+		fi, err := os.Stat(z.path.String())
+		if err != nil {
+			return fmt.Errorf("unable to get file information for the source zip file: %w", err)
+		}
+		err = os.MkdirAll(extractDir.String(), 0755)
+		if err != nil {
+			return fmt.Errorf("unable to create extraction directory: %w", err)
+		}
 		zr, err := zip.NewReader(src, fi.Size())
 		if err != nil {
 			return fmt.Errorf("failed to open '%s' for reading: %w", z.path, err)
@@ -168,16 +165,16 @@ func (z *ZipArchive) Extract(extractDir string) Runner {
 				return ctx.Err()
 			default:
 				err := func() error {
-					output := filepath.Join(extractDir, f.Name)
-					if strings.HasSuffix(output, "/") {
-						err := os.MkdirAll(output, 0755)
+					output := extractDir.Join(f.Name)
+					if strings.HasSuffix(output.String(), "/") {
+						err := os.MkdirAll(output.String(), 0755)
 						if err != nil {
 							return fmt.Errorf("failed to create parent directory '%s': %w", output, err)
 						}
 						return nil
 					}
-					outputDir := filepath.Dir(output)
-					if err := os.MkdirAll(outputDir, 0755); err != nil {
+					outputDir := output.Dir()
+					if err := os.MkdirAll(outputDir.String(), 0755); err != nil {
 						return fmt.Errorf("failed to make parent directory for file '%s' at '%s': %w", f.Name, outputDir, err)
 					}
 					zipFile, err := f.Open()
@@ -187,7 +184,7 @@ func (z *ZipArchive) Extract(extractDir string) Runner {
 					defer func() {
 						_ = zipFile.Close()
 					}()
-					out, err := os.Create(output)
+					out, err := os.Create(output.String())
 					if err != nil {
 						return fmt.Errorf("failed to create file '%s': %w", output, err)
 					}

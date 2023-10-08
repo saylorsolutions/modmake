@@ -234,7 +234,7 @@ func (g *GoTools) BenchmarkAll() *Command {
 type GoBuild struct {
 	err           error
 	cmd           *Command
-	output        string
+	output        PathString
 	forceRebuild  bool
 	dryRun        bool
 	detectRace    bool
@@ -285,7 +285,7 @@ func (b *GoBuild) ChangeDir(newDir string) *GoBuild {
 }
 
 // OutputFilename specifies the name of the built artifact.
-func (b *GoBuild) OutputFilename(filename string) *GoBuild {
+func (b *GoBuild) OutputFilename(filename PathString) *GoBuild {
 	if b.err != nil {
 		return b
 	}
@@ -585,7 +585,7 @@ func (b *GoBuild) Run(ctx context.Context) error {
 		return b.err
 	}
 
-	b.cmd.OptArg(len(b.output) > 0, "-o", b.output)
+	b.cmd.OptArg(len(b.output) > 0, "-o", b.output.String())
 	b.cmd.OptArg(b.forceRebuild, "-a")
 	b.cmd.OptArg(b.dryRun, "-n")
 	b.cmd.OptArg(b.detectRace, "-race")

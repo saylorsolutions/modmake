@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"os"
 	"path/filepath"
-	"runtime"
 	"testing"
 	"time"
 )
@@ -57,19 +56,20 @@ func TestCopyFile_Abs(t *testing.T) {
 	defer func() {
 		_ = os.RemoveAll(dir)
 	}()
-	fname := filepath.Join(dir, "test.file")
-	f, err := os.Create(fname)
+	fname := Path(dir, "test.file")
+	fname2 := fname + "2"
+	f, err := os.Create(fname.String())
 	require.NoError(t, err)
 	require.NotNil(t, f)
 	_, err = f.WriteString("Hello!")
 	assert.NoError(t, err)
 	assert.NoError(t, f.Close())
 
-	assert.NoError(t, CopyFile(fname, fname+"2").Run(context.Background()))
-	assert.NoError(t, script.IfExists(fname+"2").Error())
-	assert.NoError(t, script.IfExists(fname).Error())
+	assert.NoError(t, CopyFile(fname, fname2).Run(context.Background()))
+	assert.True(t, fname2.Exists())
+	assert.True(t, fname.Exists())
 
-	data, err := script.File(fname + "2").String()
+	data, err := script.File(fname2.String()).String()
 	assert.NoError(t, err)
 	assert.Equal(t, "Hello!", data)
 }
@@ -81,33 +81,22 @@ func TestMoveFile(t *testing.T) {
 	defer func() {
 		_ = os.RemoveAll(dir)
 	}()
-	fname := filepath.Join(dir, "test.file")
-	f, err := os.Create(fname)
+	fname := Path(dir, "test.file")
+	fname2 := fname + "2"
+	f, err := os.Create(fname.String())
 	require.NoError(t, err)
 	require.NotNil(t, f)
 	_, err = f.WriteString("Hello!")
 	assert.NoError(t, err)
 	assert.NoError(t, f.Close())
 
-	assert.NoError(t, MoveFile(fname, fname+"2").Run(context.Background()))
-	assert.NoError(t, script.IfExists(fname+"2").Error())
-	assert.ErrorIs(t, script.IfExists(fname).Error(), os.ErrNotExist)
+	assert.NoError(t, MoveFile(fname, fname2).Run(context.Background()))
+	assert.True(t, fname2.Exists())
+	assert.False(t, fname.Exists())
 
-	data, err := script.File(fname + "2").String()
+	data, err := script.File(fname2.String()).String()
 	assert.NoError(t, err)
 	assert.Equal(t, "Hello!", data)
-}
-
-func TestRelativeToWorkdir(t *testing.T) {
-	rel := relativeToWorkdir("./test", "a")
-	if runtime.GOOS == "windows" {
-		assert.Equal(t, "test\\a", rel)
-	} else {
-		assert.Equal(t, "test/a", rel)
-	}
-	abs, err := filepath.Abs(".")
-	assert.NoError(t, err)
-	assert.Equal(t, abs, relativeToWorkdir("./test", abs))
 }
 
 func ExampleIfError() {
@@ -128,12 +117,12 @@ func TestRemoveDir(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	dir := filepath.Join(tmp, "dir")
+	dir := Path(tmp, "dir")
 	err = Script(
 		IfExists(dir, Error("Directory '%s' should not already exist", dir)),
 		Mkdir(dir, 0755),
 		IfNotExists(dir, Error("Directory '%s' should exist", dir)),
-		Chdir(tmp, Script(
+		Chdir(Path(tmp), Script(
 			RemoveDir("dir"),
 			IfExists("dir", Error("RemoveDir should have reported an error")),
 		)),
@@ -149,15 +138,15 @@ func TestRemove(t *testing.T) {
 	}()
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	file := filepath.Join(tmp, "file.txt")
+	file := Path(tmp, "file.txt")
 
 	err = Script(
 		IfExists(file, Error("File '%s' should not already exist", file)),
 		Task(func(ctx context.Context) error {
-			return os.WriteFile(file, []byte("Some text"), 0600)
+			return os.WriteFile(file.String(), []byte("Some text"), 0600)
 		}),
 		IfNotExists(file, Error("File '%s' should exist", file)),
-		Chdir(tmp, Script(
+		Chdir(Path(tmp), Script(
 			RemoveFile("file.txt"),
 			IfExists("file.txt", Error("RemoveFile should have reported an error")),
 		)),

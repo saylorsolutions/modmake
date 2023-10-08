@@ -8,52 +8,49 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 // TarArchive represents a Runner that performs operations on a tar archive that uses gzip compression.
 // The Runner is created with Tar.
 type TarArchive struct {
 	err      error
-	path     string
-	addFiles map[string]string
+	path     PathString
+	addFiles map[PathString]string
 }
 
 // Tar will create a new TarArchive to contextualize follow-on operations that act on a tar.gz file.
 // Adding a ".tar.gz" suffix to the location path string is recommended, but not required.
-func Tar(location string) *TarArchive {
-	location = strings.TrimSpace(location)
+func Tar(location PathString) *TarArchive {
 	if len(location) == 0 {
 		panic("empty location")
 	}
 	return &TarArchive{
 		path:     location,
-		addFiles: map[string]string{},
+		addFiles: map[PathString]string{},
 	}
 }
 
 // AddFile adds the referenced file with the same archive path as what is given.
 // The archive path will be converted to slash format.
-func (t *TarArchive) AddFile(sourcePath string) *TarArchive {
+func (t *TarArchive) AddFile(sourcePath PathString) *TarArchive {
 	t.AddFileWithPath(sourcePath, sourcePath)
 	return t
 }
 
 // AddFileWithPath adds the referenced file with an archive path specified.
 // The archive path will be converted to slash format.
-func (t *TarArchive) AddFileWithPath(sourcePath, archivePath string) *TarArchive {
+func (t *TarArchive) AddFileWithPath(sourcePath, archivePath PathString) *TarArchive {
 	if t.err != nil {
 		return t
 	}
-	sourcePath, archivePath = strings.TrimSpace(sourcePath), strings.TrimSpace(archivePath)
 	if len(sourcePath) == 0 {
 		panic("empty source path")
 	}
 	if len(archivePath) == 0 {
 		panic("empty target path")
 	}
-	filepath.ToSlash(archivePath)
-	t.addFiles[sourcePath] = archivePath
+	archivePathStr := filepath.ToSlash(archivePath.String())
+	t.addFiles[sourcePath] = archivePathStr
 	return t
 }
 
@@ -62,7 +59,7 @@ func (t *TarArchive) AddFileWithPath(sourcePath, archivePath string) *TarArchive
 // Ensure that all files referenced with AddFile (or AddFileWithPath) and directories exist before running this Runner, because it doesn't try to create them.
 func (t *TarArchive) Create() Runner {
 	runner := Task(func(ctx context.Context) error {
-		tarFile, err := os.Create(t.path)
+		tarFile, err := os.Create(t.path.String())
 		if err != nil {
 			return err
 		}
@@ -92,7 +89,7 @@ func (t *TarArchive) Create() Runner {
 // Ensure that all files referenced with AddFile (or AddFileWithPath) and directories exist before running this Runner, because it doesn't try to create them.
 func (t *TarArchive) Update() Runner {
 	runner := Task(func(ctx context.Context) error {
-		tarFile, err := os.OpenFile(t.path, os.O_RDWR, 0644)
+		tarFile, err := os.OpenFile(t.path.String(), os.O_RDWR, 0644)
 		if err != nil {
 			return err
 		}
@@ -124,7 +121,10 @@ func (t *TarArchive) writeFilesToTarArchive(ctx context.Context, tw *tar.Writer)
 		default:
 			source, target := source, target
 			err := func() error {
-				f, err := os.Open(source)
+				if !source.Exists() {
+					return fmt.Errorf("unable to locate source file: %s", source)
+				}
+				f, err := os.Open(source.String())
 				if err != nil {
 					return err
 				}
@@ -158,20 +158,19 @@ func (t *TarArchive) writeFilesToTarArchive(ctx context.Context, tw *tar.Writer)
 
 // Extract will extract the named tar archive to the given directory.
 // Any errors encountered while doing so will be immediately returned.
-func (t *TarArchive) Extract(extractDir string) Runner {
+func (t *TarArchive) Extract(extractDir PathString) Runner {
 	runner := Task(func(ctx context.Context) error {
-		extractDir = filepath.Clean(extractDir)
-		err := os.MkdirAll(extractDir, 0755)
-		if err != nil {
-			return fmt.Errorf("unable to create extraction directory: %w", err)
-		}
-		src, err := os.Open(t.path)
+		src, err := os.Open(t.path.String())
 		if err != nil {
 			return fmt.Errorf("unable to open tar archive: %w", err)
 		}
 		defer func() {
 			_ = src.Close()
 		}()
+		err = os.MkdirAll(extractDir.String(), 0755)
+		if err != nil {
+			return fmt.Errorf("unable to create extraction directory: %w", err)
+		}
 		gz, err := gzip.NewReader(src)
 		if err != nil {
 			return fmt.Errorf("unable to create gzip reader for '%s': %w", t.path, err)
@@ -194,12 +193,12 @@ func (t *TarArchive) Extract(extractDir string) Runner {
 				return ctx.Err()
 			default:
 				err := func() error {
-					output := filepath.Join(extractDir, header.Name)
-					outputDir := filepath.Dir(output)
-					if err := os.MkdirAll(outputDir, 0755); err != nil {
+					output := extractDir.Join(header.Name)
+					outputDir := output.Dir()
+					if err := os.MkdirAll(outputDir.String(), 0755); err != nil {
 						return fmt.Errorf("failed to make parent directory for file '%s' at '%s': %w", header.Name, outputDir, err)
 					}
-					out, err := os.Create(output)
+					out, err := os.Create(output.String())
 					if err != nil {
 						return fmt.Errorf("failed to create file '%s': %w", output, err)
 					}
