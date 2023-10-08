@@ -18,7 +18,7 @@ func ExampleBuild_Graph() {
 		fmt.Println("Running in package")
 		return nil
 	})))
-	b.Graph()
+	b.Graph(true)
 
 	// Output:
 	// Printing build graph
@@ -77,7 +77,7 @@ func ExampleBuild_Execute() {
 
 func ExampleBuild_Steps() {
 	b := NewBuild()
-	b.Execute("steps")
+	b.Execute("-v", "steps")
 	// Output:
 	// benchmark - Runs benchmarking on the code base
 	// build - Builds the code base and outputs an artifact

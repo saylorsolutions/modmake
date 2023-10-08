@@ -146,6 +146,28 @@ func (s *Step) Does(operation Runner) *Step {
 	return s
 }
 
+func (s *Step) hasOperation() bool {
+	if s.operation != nil {
+		return true
+	}
+	if len(s.beforeOp) > 0 {
+		return true
+	}
+	if len(s.afterOp) > 0 {
+		return true
+	}
+	return s.hasDepOperation()
+}
+
+func (s *Step) hasDepOperation() bool {
+	for _, dep := range s.dependencies {
+		if dep.hasOperation() {
+			return true
+		}
+	}
+	return false
+}
+
 // BeforeRun adds an operation that will execute before this Step.
 // BeforeRun operations will happen after this Step's dependencies.
 func (s *Step) BeforeRun(op Runner) *Step {

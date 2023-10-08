@@ -163,7 +163,7 @@ func (b *Build) Import(prefix string, other *Build) {
 	}
 }
 
-func (b *Build) Graph() {
+func (b *Build) Graph(verbose bool) {
 	if err := b.cyclesCheck(); err != nil {
 		panic(err)
 	}
@@ -171,21 +171,39 @@ func (b *Build) Graph() {
 	var buf strings.Builder
 	buf.WriteString("Printing build graph\n\n")
 
-	b.graph(b.toolsStep, 0, &buf, visited)
-	b.graph(b.generateStep, 0, &buf, visited)
-	b.graph(b.testStep, 0, &buf, visited)
-	b.graph(b.benchStep, 0, &buf, visited)
-	b.graph(b.buildStep, 0, &buf, visited)
-	b.graph(b.packageStep, 0, &buf, visited)
+	if verbose || b.toolsStep.hasOperation() {
+		b.graph(b.toolsStep, 0, &buf, visited)
+	}
+	if verbose || b.generateStep.hasOperation() {
+		b.graph(b.generateStep, 0, &buf, visited)
+	}
+	if verbose || b.testStep.hasOperation() {
+		b.graph(b.testStep, 0, &buf, visited)
+	}
+	if verbose || b.benchStep.hasOperation() {
+		b.graph(b.benchStep, 0, &buf, visited)
+	}
+	if verbose || b.buildStep.hasOperation() {
+		b.graph(b.buildStep, 0, &buf, visited)
+	}
+	if verbose || b.packageStep.hasOperation() {
+		b.graph(b.packageStep, 0, &buf, visited)
+	}
 
 	for _, stepName := range b.Steps() {
 		if reservedStepNames[stepName] {
 			continue
 		}
-		b.graph(b.Step(stepName), 0, &buf, visited)
+		step := b.Step(stepName)
+		if verbose || step.hasOperation() {
+			b.graph(step, 0, &buf, visited)
+		}
 	}
 
 	buf.WriteString("\n* - duplicate reference\n")
+	if !verbose {
+		buf.WriteString("Use -v to print defined steps with no operation or dependent operation\n")
+	}
 	fmt.Print(buf.String())
 }
 

@@ -256,10 +256,25 @@ func (p PathString) JoinPath(segments ...PathString) PathString {
 	return newPath
 }
 
+func (p PathString) Base() string {
+	return filepath.Base(string(p))
+}
+
+func (p PathString) Dir() PathString {
+	return Path(filepath.Dir(string(p)))
+}
+
+func (p PathString) String() string {
+	return string(p)
+}
+
 // Path creates a new PathString from the input path segments.
 func Path(path string, segments ...string) PathString {
-	_segments := make([]string, len(segments))
 	path = filepath.FromSlash(path)
+	if len(segments) == 0 {
+		return PathString(path)
+	}
+	_segments := make([]string, len(segments))
 	for i, segment := range segments {
 		_segments[i] = filepath.FromSlash(segment)
 	}
