@@ -3,7 +3,6 @@ package main
 import (
 	. "github.com/saylorsolutions/modmake"
 	"github.com/saylorsolutions/modmake/pkg/git"
-	"os"
 	"runtime"
 )
 
@@ -51,11 +50,11 @@ func main() {
 	if runtime.GOOS == "windows" {
 		executable += ".exe"
 	}
-	home, err := os.UserHomeDir()
+	home, err := UserHomeDir()
 	if err != nil {
 		panic(err)
 	}
-	target := Path(home, "go/bin", executable.Base())
+	target := home.Join("go/bin", executable.Base())
 	b.AddStep(NewStep("install", "Installs the modmake CLI to the user's $HOME/go/bin directory.").
 		Does(CopyFile(executable, target)).
 		DependsOn(b.Step(sysVariant + ":build")),

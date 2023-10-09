@@ -1,6 +1,7 @@
 package modmake
 
 import (
+	"io"
 	"os"
 	"path/filepath"
 )
@@ -40,9 +41,14 @@ func (p PathString) Join(segments ...string) PathString {
 func (p PathString) JoinPath(segments ...PathString) PathString {
 	var newPath = p
 	for _, segment := range segments {
-		newPath = newPath.Join(string(segment))
+		newPath = newPath.Join(segment.ToSlash())
 	}
 	return newPath
+}
+
+// ToSlash will change the PathString to use slash separators if the OS representation is different.
+func (p PathString) ToSlash() string {
+	return filepath.ToSlash(string(p))
 }
 
 // Base calls filepath.Base on the string representation of this PathString, returning the last element of the path.
@@ -69,6 +75,11 @@ func (p PathString) Exists() bool {
 	return err == nil
 }
 
+// Stat will return os.FileInfo for the file referenced by this PathString like os.Stat.
+func (p PathString) Stat() (os.FileInfo, error) {
+	return os.Stat(string(p))
+}
+
 // IsDir returns true if this PathString references an existing directory.
 func (p PathString) IsDir() bool {
 	fi, err := os.Stat(string(p))
@@ -90,4 +101,85 @@ func (p PathString) IsFile() bool {
 // String returns this PathString as a string.
 func (p PathString) String() string {
 	return string(p)
+}
+
+// Create will create or truncate the named file like os.Create.
+func (p PathString) Create() (*os.File, error) {
+	return os.Create(string(p))
+}
+
+// Open opens the named file for reading like os.Open.
+func (p PathString) Open() (*os.File, error) {
+	return os.Open(string(p))
+}
+
+// OpenFile is a generalized open call like os.OpenFile.
+func (p PathString) OpenFile(flag int, mode os.FileMode) (*os.File, error) {
+	return os.OpenFile(string(p), flag, mode)
+}
+
+// Mkdir creates a new directory with the specified name and permissions like os.Mkdir.
+func (p PathString) Mkdir(mode os.FileMode) error {
+	return os.Mkdir(string(p), mode)
+}
+
+// MkdirAll creates the named directory and any non-existent path in between like os.MkdirAll.
+func (p PathString) MkdirAll(mode os.FileMode) error {
+	return os.MkdirAll(string(p), mode)
+}
+
+// Remove removes the named file or directory like os.Remove.
+func (p PathString) Remove() error {
+	return os.Remove(string(p))
+}
+
+// RemoveAll removes the path and any children it contains like os.RemoveAll.
+func (p PathString) RemoveAll() error {
+	return os.RemoveAll(string(p))
+}
+
+// Chdir changes the current working directory to the named directory like os.Chdir.
+func (p PathString) Chdir() error {
+	return os.Chdir(string(p))
+}
+
+// CopyTo copies the contents of the file referenced by this PathString to the file referenced by other, creating or truncating the file.
+func (p PathString) CopyTo(other PathString) error {
+	in, err := p.Open()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		_ = in.Close()
+	}()
+	out, err := other.Create()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		_ = out.Close()
+	}()
+	_, err = io.Copy(out, in)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Getwd gets the current working directory as a PathString like os.Getwd.
+func Getwd() (PathString, error) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+	return Path(cwd), nil
+}
+
+// UserHomeDir will return the current user's home directory as a PathString.
+func UserHomeDir() (PathString, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	return Path(home), nil
 }

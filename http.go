@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 )
 
@@ -35,9 +34,9 @@ func Download(url string, location PathString) Task {
 			return fmt.Errorf("expected status 200 OK, got %s", resp.Status)
 		}
 
-		out, err := os.Create(location.String())
+		out, err := location.Create()
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to create download file '%s': %w", location, err)
 		}
 		defer func() {
 			_ = out.Close()

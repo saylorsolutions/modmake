@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"io/fs"
 	"log"
 	"os"
@@ -69,44 +68,24 @@ func Print(msg string, args ...any) Task {
 // Chdir will change the current working directory to newWorkdir and run the Runner in that context.
 // Whether the Runner executes successfully or not, the working directory will be reset back to its original state.
 func Chdir(newWorkdir PathString, runner Runner) Task {
-	return func(ctx context.Context) error {
-		cwd, err := os.Getwd()
+	return func(ctx context.Context) (err error) {
+		cwd, err := Getwd()
 		if err != nil {
 			return fmt.Errorf("failed to get current working directory: %w", err)
 		}
-		if err := os.Chdir(newWorkdir.String()); err != nil {
+		if err = newWorkdir.Chdir(); err != nil {
 			return fmt.Errorf("failed to change the working directory to '%s': %w", newWorkdir, err)
 		}
-		err = runner.Run(ctx)
-		if err := os.Chdir(cwd); err != nil {
-			return fmt.Errorf("failed to reset the working directory to '%s': %w", cwd, err)
-		}
-		return err
+		defer func() {
+			if _err := cwd.Chdir(); _err != nil {
+				_err = fmt.Errorf("failed to reset the working directory to '%s': %w", cwd, _err)
+				if err != nil {
+					err = fmt.Errorf("%w, %v", err, _err)
+				}
+			}
+		}()
+		return runner.Run(ctx)
 	}
-}
-
-func cpFile(source, target PathString) error {
-	if !source.Exists() {
-		return fmt.Errorf("source file does not exist: '%s'", source)
-	}
-	srcFile, err := os.Open(source.String())
-	if err != nil {
-		return fmt.Errorf("failed to open source file '%s': %w", source, err)
-	}
-	defer func() {
-		_ = srcFile.Close()
-	}()
-
-	trgFile, err := os.Create(target.String())
-	if err != nil {
-		return fmt.Errorf("failed to open/create target file '%s': %w", target, err)
-	}
-	defer func() {
-		_ = trgFile.Close()
-	}()
-
-	_, err = io.Copy(trgFile, srcFile)
-	return err
 }
 
 // CopyFile creates a Runner that copies a source file to target.
@@ -114,7 +93,7 @@ func cpFile(source, target PathString) error {
 // The target file will be created or truncated as appropriate.
 func CopyFile(source, target PathString) Task {
 	return WithoutContext(func() error {
-		return cpFile(source, target)
+		return source.CopyTo(target)
 	})
 }
 
@@ -124,7 +103,7 @@ func CopyFile(source, target PathString) Task {
 func MoveFile(source, target PathString) Task {
 	return func(ctx context.Context) error {
 		return CopyFile(source, target).Then(Task(func(_ context.Context) error {
-			return os.Remove(source.String())
+			return source.Remove()
 		})).Run(ctx)
 	}
 }
@@ -137,7 +116,7 @@ func Mkdir(dir PathString, perm os.FileMode) Task {
 		if dir.Exists() {
 			return nil
 		}
-		err := os.Mkdir(dir.String(), perm)
+		err := dir.Mkdir(perm)
 		if err != nil {
 			if errors.Is(err, fs.ErrExist) {
 				return nil
@@ -152,7 +131,7 @@ func Mkdir(dir PathString, perm os.FileMode) Task {
 // Any error encountered while making the directories is returned.
 func MkdirAll(dir PathString, perm os.FileMode) Task {
 	return WithoutContext(func() error {
-		return os.MkdirAll(dir.String(), perm)
+		return dir.MkdirAll(perm)
 	})
 }
 
@@ -167,7 +146,7 @@ func RemoveFile(file PathString) Task {
 		if file.IsDir() {
 			return fmt.Errorf("file '%s' is a directory, use RemoveDir instead", file)
 		}
-		return os.Remove(file.String())
+		return file.Remove()
 	})
 }
 
@@ -182,6 +161,6 @@ func RemoveDir(file PathString) Task {
 		if file.IsFile() {
 			return fmt.Errorf("file '%s' is a file, use RemoveFile instead", file)
 		}
-		return os.RemoveAll(file.String())
+		return file.RemoveAll()
 	})
 }

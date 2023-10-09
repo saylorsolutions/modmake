@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 )
 
 // TarArchive represents a Runner that performs operations on a tar archive that uses gzip compression.
@@ -49,7 +48,7 @@ func (t *TarArchive) AddFileWithPath(sourcePath, archivePath PathString) *TarArc
 	if len(archivePath) == 0 {
 		panic("empty target path")
 	}
-	archivePathStr := filepath.ToSlash(archivePath.String())
+	archivePathStr := archivePath.ToSlash()
 	t.addFiles[sourcePath] = archivePathStr
 	return t
 }
@@ -59,7 +58,7 @@ func (t *TarArchive) AddFileWithPath(sourcePath, archivePath PathString) *TarArc
 // Ensure that all files referenced with AddFile (or AddFileWithPath) and directories exist before running this Runner, because it doesn't try to create them.
 func (t *TarArchive) Create() Runner {
 	runner := Task(func(ctx context.Context) error {
-		tarFile, err := os.Create(t.path.String())
+		tarFile, err := t.path.Create()
 		if err != nil {
 			return err
 		}
@@ -89,7 +88,7 @@ func (t *TarArchive) Create() Runner {
 // Ensure that all files referenced with AddFile (or AddFileWithPath) and directories exist before running this Runner, because it doesn't try to create them.
 func (t *TarArchive) Update() Runner {
 	runner := Task(func(ctx context.Context) error {
-		tarFile, err := os.OpenFile(t.path.String(), os.O_RDWR, 0644)
+		tarFile, err := t.path.OpenFile(os.O_RDWR, 0644)
 		if err != nil {
 			return err
 		}
@@ -124,7 +123,7 @@ func (t *TarArchive) writeFilesToTarArchive(ctx context.Context, tw *tar.Writer)
 				if !source.Exists() {
 					return fmt.Errorf("unable to locate source file: %s", source)
 				}
-				f, err := os.Open(source.String())
+				f, err := source.Open()
 				if err != nil {
 					return err
 				}
@@ -160,14 +159,14 @@ func (t *TarArchive) writeFilesToTarArchive(ctx context.Context, tw *tar.Writer)
 // Any errors encountered while doing so will be immediately returned.
 func (t *TarArchive) Extract(extractDir PathString) Runner {
 	runner := Task(func(ctx context.Context) error {
-		src, err := os.Open(t.path.String())
+		src, err := t.path.Open()
 		if err != nil {
 			return fmt.Errorf("unable to open tar archive: %w", err)
 		}
 		defer func() {
 			_ = src.Close()
 		}()
-		err = os.MkdirAll(extractDir.String(), 0755)
+		err = extractDir.MkdirAll(0755)
 		if err != nil {
 			return fmt.Errorf("unable to create extraction directory: %w", err)
 		}
@@ -195,10 +194,10 @@ func (t *TarArchive) Extract(extractDir PathString) Runner {
 				err := func() error {
 					output := extractDir.Join(header.Name)
 					outputDir := output.Dir()
-					if err := os.MkdirAll(outputDir.String(), 0755); err != nil {
+					if err := outputDir.MkdirAll(0755); err != nil {
 						return fmt.Errorf("failed to make parent directory for file '%s' at '%s': %w", header.Name, outputDir, err)
 					}
-					out, err := os.Create(output.String())
+					out, err := output.Create()
 					if err != nil {
 						return fmt.Errorf("failed to create file '%s': %w", output, err)
 					}
