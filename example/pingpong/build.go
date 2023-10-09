@@ -2,14 +2,13 @@ package main
 
 import (
 	. "github.com/saylorsolutions/modmake"
-	"path/filepath"
 )
 
 func main() {
 	b := NewBuild()
 	b.Import("client", client())
 	b.Import("server", server())
-	b.Build().DependsOnTask("clean", "Removes the build directory",
+	b.Build().DependsOnRunner("clean", "Removes the build directory",
 		RemoveDir("build"),
 	)
 	b.Build().DependsOn(b.Step("client:build"))
@@ -22,7 +21,7 @@ func client() *Build {
 	b := NewBuild()
 	b.Build().BeforeRun(Mkdir("build", 0755))
 	b.Build().Does(
-		Go().Build(mainPath).OutputFilename(filepath.Join("build", "client_test")),
+		Go().Build(mainPath).OutputFilename(Path("build/client_test")),
 	)
 	b.AddStep(NewStep("run", "Runs the client").Does(
 		Go().Run(mainPath)),
@@ -35,7 +34,7 @@ func server() *Build {
 	b := NewBuild()
 	b.Build().BeforeRun(Mkdir("build", 0755))
 	b.Build().Does(
-		Go().Build(mainPath).OutputFilename(filepath.Join("build", "server_test")),
+		Go().Build(mainPath).OutputFilename(Path("build/server_test")),
 	)
 	b.AddStep(NewStep("run", "Runs the server").Does(
 		Go().Run(mainPath)),

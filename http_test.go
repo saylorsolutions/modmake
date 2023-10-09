@@ -4,12 +4,11 @@ import (
 	"context"
 	"errors"
 	"github.com/stretchr/testify/assert"
-	"path/filepath"
 	"testing"
 )
 
 func TestDownload(t *testing.T) {
-	location := filepath.Join("build", "index.html")
+	location := Path("build", "index.html")
 	err := Script(
 		IfExists(location, WithoutContext(func() error {
 			t.Errorf("File '%[1]s' existed before starting, delete '%[1]s' and run this test again to get past the pre-check", location)

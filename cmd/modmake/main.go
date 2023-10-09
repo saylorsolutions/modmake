@@ -7,7 +7,6 @@ import (
 	. "github.com/saylorsolutions/modmake"
 	"log"
 	"os"
-	"path/filepath"
 	"strings"
 )
 
@@ -48,26 +47,23 @@ func run(ctx context.Context, flags *appFlags) error {
 		return nil
 	}
 	if flags.rootOverride != "" {
-		if err := os.Chdir(filepath.Join(modRoot, flags.rootOverride)); err != nil {
+		if err := Path(modRoot, flags.rootOverride).Chdir(); err != nil {
 			return err
 		}
 	}
 	if flags.buildOverride != "" {
-		override := filepath.Join(modRoot, flags.buildOverride)
-		_, err := os.Stat(override)
-		if err != nil {
-			log.Printf("Unable to locate build override '%s': %v\n", override, err)
+		override := Path(modRoot, flags.buildOverride)
+		if !override.Exists() {
+			log.Printf("Unable to locate build override '%s'\n", override)
 		}
 		log.Printf("Running build %s\n", flags.buildOverride)
 		return runBuild(ctx, Go().ToModulePath(flags.buildOverride), flags)
 	}
-	fi, err := os.Stat("modmake")
-	if err == nil && fi.IsDir() {
+	if Path("modmake").IsDir() {
 		log.Println("Running build from modmake")
 		return runBuild(ctx, Go().ToModulePath("modmake"), flags)
 	}
-	_, err = os.Stat("build.go")
-	if err == nil {
+	if Path("build.go").Exists() {
 		log.Println("Running build from build.go")
 		return runBuild(ctx, ".", flags)
 	}

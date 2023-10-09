@@ -131,8 +131,8 @@ func (s *Step) DependsOn(dependency *Step) *Step {
 	return s
 }
 
-// DependsOnTask wraps the given Task in a Step using the name and description parameters, and calls DependsOn with it.
-func (s *Step) DependsOnTask(name, description string, fn Task) *Step {
+// DependsOnRunner wraps the given Runner in a Step using the name and description parameters, and calls DependsOn with it.
+func (s *Step) DependsOnRunner(name, description string, fn Runner) *Step {
 	step := NewStep(name, description).Does(fn)
 	return s.DependsOn(step)
 }
@@ -146,9 +146,26 @@ func (s *Step) Does(operation Runner) *Step {
 	return s
 }
 
-// DoesFunc specifies the Task that should happen as a result of executing this Step.
-func (s *Step) DoesFunc(fn Task) *Step {
-	return s.Does(fn)
+func (s *Step) hasOperation() bool {
+	if s.operation != nil {
+		return true
+	}
+	if len(s.beforeOp) > 0 {
+		return true
+	}
+	if len(s.afterOp) > 0 {
+		return true
+	}
+	return s.hasDepOperation()
+}
+
+func (s *Step) hasDepOperation() bool {
+	for _, dep := range s.dependencies {
+		if dep.hasOperation() {
+			return true
+		}
+	}
+	return false
 }
 
 // BeforeRun adds an operation that will execute before this Step.

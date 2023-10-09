@@ -4,11 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"io/fs"
 	"log"
 	"os"
-	"path/filepath"
 	"strings"
 )
 
@@ -25,26 +23,11 @@ func Script(fns ...Runner) Runner {
 	})
 }
 
-func fileExists(file string) (bool, error) {
-	_, err := os.Stat(file)
-	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return false, nil
-		}
-		return false, err
-	}
-	return true, nil
-}
-
 // IfNotExists will skip executing the Runner if the given file exists, returning nil.
 // This is similar to the default Make behavior of skipping a task if the target file already exists.
-func IfNotExists(file string, r Runner) Task {
+func IfNotExists(file PathString, r Runner) Task {
 	return func(ctx context.Context) error {
-		ok, err := fileExists(file)
-		if err != nil {
-			return err
-		}
-		if !ok {
+		if !file.Exists() {
 			return r.Run(ctx)
 		}
 		return nil
@@ -52,13 +35,9 @@ func IfNotExists(file string, r Runner) Task {
 }
 
 // IfExists will execute the Runner if the file exists, returning nil otherwise.
-func IfExists(file string, r Runner) Task {
+func IfExists(file PathString, r Runner) Task {
 	return func(ctx context.Context) error {
-		ok, err := fileExists(file)
-		if err != nil {
-			return err
-		}
-		if ok {
+		if file.Exists() {
 			return r.Run(ctx)
 		}
 		return nil
@@ -88,81 +67,56 @@ func Print(msg string, args ...any) Task {
 
 // Chdir will change the current working directory to newWorkdir and run the Runner in that context.
 // Whether the Runner executes successfully or not, the working directory will be reset back to its original state.
-func Chdir(newWorkdir string, runner Runner) Task {
-	return func(ctx context.Context) error {
-		cwd, err := os.Getwd()
+func Chdir(newWorkdir PathString, runner Runner) Task {
+	return func(ctx context.Context) (err error) {
+		cwd, err := Getwd()
 		if err != nil {
 			return fmt.Errorf("failed to get current working directory: %w", err)
 		}
-		if err := os.Chdir(newWorkdir); err != nil {
+		if err = newWorkdir.Chdir(); err != nil {
 			return fmt.Errorf("failed to change the working directory to '%s': %w", newWorkdir, err)
 		}
-		err = runner.Run(ctx)
-		if err := os.Chdir(cwd); err != nil {
-			return fmt.Errorf("failed to reset the working directory to '%s': %w", cwd, err)
-		}
-		return err
+		defer func() {
+			if _err := cwd.Chdir(); _err != nil {
+				_err = fmt.Errorf("failed to reset the working directory to '%s': %w", cwd, _err)
+				if err != nil {
+					err = fmt.Errorf("%w, %v", err, _err)
+				}
+			}
+		}()
+		return runner.Run(ctx)
 	}
-}
-
-func cpFile(source, target string) error {
-	srcFile, err := os.Open(source)
-	if err != nil {
-		return fmt.Errorf("failed to open source file '%s': %w", source, err)
-	}
-	defer func() {
-		_ = srcFile.Close()
-	}()
-
-	trgFile, err := os.Create(target)
-	if err != nil {
-		return fmt.Errorf("failed to open/create target file '%s': %w", target, err)
-	}
-	defer func() {
-		_ = trgFile.Close()
-	}()
-
-	_, err = io.Copy(trgFile, srcFile)
-	return err
 }
 
 // CopyFile creates a Runner that copies a source file to target.
 // The source and target file names are expected to be relative to the build's working directory, unless they are absolute paths.
 // The target file will be created or truncated as appropriate.
-func CopyFile(source, target string) Task {
+func CopyFile(source, target PathString) Task {
 	return WithoutContext(func() error {
-		workdir, err := os.Getwd()
-		if err != nil {
-			return err
-		}
-		return cpFile(relativeToWorkdir(workdir, source), relativeToWorkdir(workdir, target))
+		return source.CopyTo(target)
 	})
 }
 
 // MoveFile creates a Runner that will move the file indicated by source to target.
 // The source and target file names are expected to be relative to the build's working directory, unless they are absolute paths.
 // The target file will be created or truncated as appropriate.
-func MoveFile(source, target string) Task {
+func MoveFile(source, target PathString) Task {
 	return func(ctx context.Context) error {
-		workdir, err := os.Getwd()
-		if err != nil {
-			return err
-		}
-
-		source = relativeToWorkdir(workdir, source)
-		if err := CopyFile(source, target).Run(ctx); err != nil {
-			return err
-		}
-		return os.Remove(source)
+		return CopyFile(source, target).Then(Task(func(_ context.Context) error {
+			return source.Remove()
+		})).Run(ctx)
 	}
 }
 
 // Mkdir makes a directory named dir, if it doesn't exist already.
 // If the directory already exists, then nothing is done and err will be nil.
 // Any error encountered while making the directory is returned.
-func Mkdir(dir string, perm os.FileMode) Task {
+func Mkdir(dir PathString, perm os.FileMode) Task {
 	return WithoutContext(func() error {
-		err := os.Mkdir(dir, perm)
+		if dir.Exists() {
+			return nil
+		}
+		err := dir.Mkdir(perm)
 		if err != nil {
 			if errors.Is(err, fs.ErrExist) {
 				return nil
@@ -175,56 +129,38 @@ func Mkdir(dir string, perm os.FileMode) Task {
 
 // MkdirAll makes the target directory, and any directories in between.
 // Any error encountered while making the directories is returned.
-func MkdirAll(dir string, perm os.FileMode) Task {
+func MkdirAll(dir PathString, perm os.FileMode) Task {
 	return WithoutContext(func() error {
-		return os.MkdirAll(dir, perm)
+		return dir.MkdirAll(perm)
 	})
 }
 
 // RemoveFile will create a Runner that removes the specified file from the filesystem.
 // If the file doesn't exist, then this Runner returns nil.
 // Any other error encountered while removing the file is returned.
-func RemoveFile(file string) Task {
+func RemoveFile(file PathString) Task {
 	return WithoutContext(func() error {
-		fi, err := os.Stat(file)
-		if err != nil {
-			if errors.Is(err, fs.ErrNotExist) {
-				return nil
-			}
-			return err
+		if !file.Exists() {
+			return nil
 		}
-		if fi.IsDir() {
+		if file.IsDir() {
 			return fmt.Errorf("file '%s' is a directory, use RemoveDir instead", file)
 		}
-		return os.Remove(file)
+		return file.Remove()
 	})
 }
 
 // RemoveDir will create a Runner that removes the directory specified and all of its contents from the filesystem.
 // If the directory doesn't exist, then this Runner returns nil.
 // Any other error encountered while removing the directory is returned.
-func RemoveDir(file string) Task {
+func RemoveDir(file PathString) Task {
 	return WithoutContext(func() error {
-		fi, err := os.Stat(file)
-		if err != nil {
-			if errors.Is(err, fs.ErrNotExist) {
-				return nil
-			}
-			return err
+		if !file.Exists() {
+			return nil
 		}
-		if !fi.IsDir() {
+		if file.IsFile() {
 			return fmt.Errorf("file '%s' is a file, use RemoveFile instead", file)
 		}
-		return os.RemoveAll(file)
+		return file.RemoveAll()
 	})
-}
-
-// relativeToWorkdir will return a path relative to the workdir if file is relative.
-// Otherwise, it will return the absolute path file.
-func relativeToWorkdir(workdir, file string) string {
-	file = strings.TrimSpace(file)
-	if filepath.IsAbs(file) {
-		return file
-	}
-	return filepath.Join(workdir, file)
 }

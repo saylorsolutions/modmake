@@ -3,8 +3,6 @@ package main
 import (
 	. "github.com/saylorsolutions/modmake"
 	"github.com/saylorsolutions/modmake/pkg/git"
-	"os"
-	"path/filepath"
 	"runtime"
 )
 
@@ -13,10 +11,10 @@ func main() {
 	b.Tools().Does(Go().ModTidy())
 	b.Test().Does(Go().TestAll())
 	b.Benchmark().Does(Go().BenchmarkAll())
-	b.Build().DependsOnTask("clean-build", "Removes previous build output if it exists",
+	b.Build().DependsOnRunner("clean-build", "Removes previous build output if it exists",
 		RemoveDir("build"),
 	)
-	b.Package().DependsOnTask("clean-dist", "Removes previous distribution output if it exists",
+	b.Package().DependsOnRunner("clean-dist", "Removes previous distribution output if it exists",
 		RemoveDir("dist"),
 	)
 	b.Package().AfterRun(RemoveDir("build"))
@@ -48,15 +46,15 @@ func main() {
 	}
 
 	sysVariant := runtime.GOOS + "_" + runtime.GOARCH
-	executable := filepath.Join("build", sysVariant, "modmake")
+	executable := Path("build", sysVariant, "modmake")
 	if runtime.GOOS == "windows" {
 		executable += ".exe"
 	}
-	home, err := os.UserHomeDir()
+	home, err := UserHomeDir()
 	if err != nil {
 		panic(err)
 	}
-	target := filepath.Join(home, "go", "bin", filepath.Base(executable))
+	target := home.Join("go/bin", executable.Base())
 	b.AddStep(NewStep("install", "Installs the modmake CLI to the user's $HOME/go/bin directory.").
 		Does(CopyFile(executable, target)).
 		DependsOn(b.Step(sysVariant + ":build")),
@@ -70,12 +68,12 @@ var (
 
 func cliBuild(os string, arch string) *Build {
 	variant := os + "_" + arch
-	buildDirName := filepath.Join("build", variant)
-	var buildTarget string
+	buildDirName := Path("build", variant)
+	var buildTarget PathString
 	if os == "windows" {
-		buildTarget = filepath.Join(buildDirName, "modmake.exe")
+		buildTarget = buildDirName.Join("modmake.exe")
 	} else {
-		buildTarget = filepath.Join(buildDirName, "modmake")
+		buildTarget = buildDirName.Join("modmake")
 	}
 
 	b := NewBuild()
@@ -92,8 +90,8 @@ func cliBuild(os string, arch string) *Build {
 	b.Build().AfterRun(IfNotExists(buildTarget, Error("Failed to build modmake CLI for %s-%s", os, arch)))
 	b.Build().Does(build)
 
-	pkgDirName := filepath.Join("dist")
-	pkgPath := filepath.Join(pkgDirName, "modmake-"+variant)
+	pkgDirName := Path("dist")
+	pkgPath := pkgDirName.Join("modmake-" + variant)
 	if os != "windows" {
 		pkgPath += ".tar.gz"
 		pkg := Tar(pkgPath)

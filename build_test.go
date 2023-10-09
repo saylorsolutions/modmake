@@ -18,7 +18,7 @@ func ExampleBuild_Graph() {
 		fmt.Println("Running in package")
 		return nil
 	})))
-	b.Graph()
+	b.Graph(true)
 
 	// Output:
 	// Printing build graph
@@ -49,10 +49,10 @@ func ExampleBuild_Execute() {
 	)
 
 	b := NewBuild()
-	b.Tools().DependsOnTask("print-tools", "", func(ctx context.Context) error {
+	b.Tools().DependsOnRunner("print-tools", "", Task(func(ctx context.Context) error {
 		fmt.Println("Running in tools")
 		return nil
-	})
+	}))
 	b.Tools().Does(Task(func(ctx context.Context) error {
 		ranTools = true
 		return nil
@@ -61,10 +61,10 @@ func ExampleBuild_Execute() {
 		ranGenerate = true
 		return nil
 	}))
-	b.Package().DependsOnTask("print-pkg", "", func(ctx context.Context) error {
+	b.Package().DependsOnRunner("print-pkg", "", Task(func(ctx context.Context) error {
 		fmt.Println("Running in package")
 		return nil
-	})
+	}))
 	b.Execute("--skip", "tools", "--skip", "generate", "package", "print-tools")
 	fmt.Println("Ran tools:", ranTools)
 	fmt.Println("Ran generate:", ranGenerate)
@@ -77,7 +77,7 @@ func ExampleBuild_Execute() {
 
 func ExampleBuild_Steps() {
 	b := NewBuild()
-	b.Execute("steps")
+	b.Execute("-v", "steps")
 	// Output:
 	// benchmark - Runs benchmarking on the code base
 	// build - Builds the code base and outputs an artifact
@@ -124,7 +124,7 @@ func TestCyclesCheck(t *testing.T) {
 		"Dual dependency": {
 			b: func() *Build {
 				b := NewBuild()
-				b.Build().DependsOnTask("echo", "Prints a message", Print("a message"))
+				b.Build().DependsOnRunner("echo", "Prints a message", Print("a message"))
 				b.Package().DependsOn(b.Step("echo"))
 				return b
 			},

@@ -68,6 +68,7 @@ func (b *Build) ExecuteErr(args ...string) (err error) {
 		flagTimeout  time.Duration
 		flagDryRun   bool
 		flagDebugLog bool
+		flagVerbose  bool
 	)
 
 	flags.BoolVarP(&flagHelp, "help", "h", false, "Prints this usage information.")
@@ -77,6 +78,7 @@ func (b *Build) ExecuteErr(args ...string) (err error) {
 	flags.DurationVar(&flagTimeout, "timeout", 0, "Sets a timeout duration for this build run.")
 	flags.BoolVar(&flagDryRun, "dry-run", false, "Runs the build's steps in dry run mode. No actual operations will be executed, but logs will still be printed.")
 	flags.BoolVar(&flagDebugLog, "debug", false, "Specifies that debug step logs should be emitted.")
+	flags.BoolVarP(&flagVerbose, "verbose", "v", false, "Used with 'steps' or 'graph' to output all steps, including those that do nothing.")
 
 	flags.Usage = func() {
 		fmt.Printf(`Executes this modmake build
@@ -95,7 +97,7 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 %s
 
 `, flags.FlagUsages())
-		b.Graph()
+		b.Graph(false)
 	}
 	if len(args) == 0 {
 		args = os.Args[1:]
@@ -147,14 +149,18 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 	for i, stepName := range flags.Args() {
 		switch {
 		case i == 0 && stepName == "graph":
-			b.Graph()
+			b.Graph(flagVerbose)
 			return
 		case i == 0 && stepName == "steps":
+			var buf strings.Builder
 			steps := b.Steps()
 			for i := 0; i < len(steps); i++ {
-				steps[i] = steps[i] + " - " + b.Step(steps[i]).description
+				step := b.Step(steps[i])
+				if flagVerbose || step.hasOperation() {
+					buf.WriteString(fmt.Sprintf("%s - %s\n", steps[i], step.description))
+				}
 			}
-			fmt.Println(strings.Join(steps, "\n"))
+			fmt.Println(buf.String())
 			return
 		default:
 			step, ok := b.StepOk(stepName)
