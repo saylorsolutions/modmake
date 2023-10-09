@@ -59,8 +59,7 @@ func run(ctx context.Context, flags *appFlags) error {
 		log.Printf("Running build %s\n", flags.buildOverride)
 		return runBuild(ctx, Go().ToModulePath(flags.buildOverride), flags)
 	}
-	fi, err := Path("modmake").Stat()
-	if err == nil && fi.IsDir() {
+	if Path("modmake").IsDir() {
 		log.Println("Running build from modmake")
 		return runBuild(ctx, Go().ToModulePath("modmake"), flags)
 	}
