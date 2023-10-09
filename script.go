@@ -85,8 +85,8 @@ func (p PathString) IsDir() bool {
 	return fi.IsDir()
 }
 
-// IsNotDir returns true if this PathString references a file that exists and is not a directory.
-func (p PathString) IsNotDir() bool {
+// IsFile returns true if this PathString references a file that exists, and it is not a directory.
+func (p PathString) IsFile() bool {
 	fi, err := os.Stat(string(p))
 	if err != nil {
 		return false
@@ -267,7 +267,7 @@ func RemoveDir(file PathString) Task {
 		if !file.Exists() {
 			return nil
 		}
-		if file.IsNotDir() {
+		if file.IsFile() {
 			return fmt.Errorf("file '%s' is a file, use RemoveFile instead", file)
 		}
 		return os.RemoveAll(file.String())
