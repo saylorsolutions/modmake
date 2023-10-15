@@ -160,8 +160,18 @@ func main() {
             A Task is able to chain other tasks with <a href="https://pkg.go.dev/github.com/saylorsolutions/modmake#Task.Then">Then</a>,
             and handle failure with <a href="https://pkg.go.dev/github.com/saylorsolutions/modmake#Task.Catch">Catch</a>.
         </p>
+        <p>
+            There are <a href="https://pkg.go.dev/github.com/saylorsolutions/modmake#Task">several tasks</a> that may be used to express your desired logic.
+            A custom Task may be created as a simple function with this signature.
+        </p>
+        <pre>
+Task(func(ctx context.Context) error {
+    // Custom task logic here
+    return nil
+})
+        </pre>
         <aside>
-            Multiple Tasks may be run in a sequence with the <a href="https://pkg.go.dev/github.com/saylorsolutions/modmake#Script">Script</a> helper function.
+            Any Task can chain other operations after it, but this can be cumbersome with many Tasks. Multiple Tasks may be run in a sequence with the <a href="https://pkg.go.dev/github.com/saylorsolutions/modmake#Script">Script</a> helper function.
             Any failure that occurs in the Script will stop the sequence, and the error will be immediately returned.
         </aside>
         <h3 id="build-model_invocation">Invocation</h3>
@@ -198,6 +208,10 @@ func main() {
                         Runners and Tasks should always return an error from their Run method instead of panicking. If a panic happens inside a Run function, then it's very likely a bug.
                     </li>
                 </ul>
+            </li>
+            <li>
+                If a goroutine is started in a Task, it should exit before the Task returns.
+                This makes Task execution more predictable and easier to understand.
             </li>
         </ul>
         <h2 id="modmake-cli">Modmake CLI</h2>
