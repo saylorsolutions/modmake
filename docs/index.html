@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Modmake Docs</title>
+    <link rel="stylesheet" href="/modmake/main.css"/>
+</head>
+<body>
+<nav class="header">
+    <div>
+        <img src="/modmake/img/img.svg" alt="logo"/>
+        <h3>Modmake</h3>
+    </div>
+    <div>
+        <a href="https://github.com/saylorsolutions/modmake" target="_blank">GitHub</a>
+        <a href="https://github.com/saylorsolutions/modmake/blob/main/example/helloworld/README.md" target="_blank">Examples</a>
+        <a href="https://pkg.go.dev/github.com/saylorsolutions/modmake" target="_blank">GoDoc</a>
+    </div>
+</nav>
+<div id="frame">
+    <div id="side-panel">
+        <a href="#introduction">Introduction</a>
+        <a href="#getting-started">Getting Started</a>
+        <a href="#build-model">Build Model</a>
+        <ul>
+            <li>
+                <a href="#build-model_steps">Steps</a>
+            </li>
+            <li>
+                <a href="#build-model_tasks">Tasks</a>
+            </li>
+            <li>
+                <a href="#build-model_invocation">Invocation</a>
+            </li>
+        </ul>
+        <a href="#api-patterns">API Patterns</a>
+        <a href="#modmake-cli">Modmake CLI</a>
+        <ul>
+            <li>
+                <a href="#modmake-cli_resolution">Build Resolution</a>
+            </li>
+            <li>
+                <a href="#modmake-cli_invocation">Invocation</a>
+            </li>
+        </ul>
+    </div>
+    <section id="content">
+        <h2 id="introduction">Introduction</h2>
+        <p>
+            Modmake is a build system inspired by <a href="https://www.gnu.org/software/make/">GNU Make</a> and <a href="https://gradle.org/">Gradle</a>,
+            but specifically tailored to Go modules.
+            It also makes an attempt at providing a lot of the fundamental automation needs of Go projects in development.
+        </p>
+        <aside>
+            <b>This software is still early in development and pre-v1</b>, but it's already in use for orchestrating non-trivial Go builds.
+            Any feedback on the design or functionality of Modmake may be reported in a <a href="https://github.com/saylorsolutions/modmake/issues/new/choose" target="_blank">new issue</a> on GitHub.
+            <br/>
+            Thanks in advance! 😁
+        </aside>
+        <h3>Project Commitments</h3>
+        <ul>
+            <li>
+                The last 3 major Go versions will be supported. At the time of this writing 1.21 is the latest, so this module specifies 1.19.
+            </li>
+            <li>
+                The primarily supported method for invoking Modmake builds is <code>go run</code>. The <a href="#modmake-cli">Modmake CLI</a> just makes that a little easier.
+            </li>
+            <li>
+                A user should need nothing more than the Go toolchain (of a supported version) to use Modmake. This supports an idealized slow ramp to onboarding with this system.
+                However, additional tooling may be required as more automation requirements are introduced, so the <code>tools</code> step should be used to <code>go install</code> additional dependencies.
+            </li>
+        </ul>
+        <h2 id="getting-started">Getting started</h2>
+        <p>
+            To get started using Modmake in your own project, you'll first need to <code>go get</code> it.
+        </p>
+        <code class="block">go get github.com/saylorsolutions/modmake@latest</code>
+        <p>
+            Next, create <code>modmake/build.go</code> (relative to the root of your project)
+            and enter this code into it.
+        </p>
+        <pre>
+package main
+
+import (
+    . "github.com/saylorsolutions/modmake"
+)
+
+func main() {
+    b := NewBuild()
+    // This is where you can customize your new Build.
+    b.Execute()
+}
+        </pre>
+        <p>
+            You can run the default <code>build</code> step with <code>go run ./modmake build</code>
+        </p>
+        <p>
+            The rest of the docs will discuss the <i>concepts</i> of a build model in Modmake.
+        </p>
+        <aside>
+            For the impatient, take a look at the <a href="https://github.com/saylorsolutions/modmake/blob/main/example/helloworld/README.md">examples</a> to get more hands-on with Modmake.
+        </aside>
+        <h2 id="build-model">Build Model</h2>
+        <p>
+            A <code>Build</code> model includes a set of standard steps that do nothing by default.
+            This is to establish a standard structure for a Build for consistency's sake.
+            More build steps may be <a href="https://pkg.go.dev/github.com/saylorsolutions/modmake#Build.AddStep">added as needed</a>.
+        </p>
+        <p>
+            A Build is intended to act much like any other Go-based CLI tool. The difference is that it's 100% intended to be run with <code>go run</code>.
+            Of course &mdash; just like any other Go executable &mdash; a Modmake build may be built into a single static executable, but this is not required.
+        </p>
+        <p>
+            Several flags to control execution are provided, and a user may introspect a build model without looking at the code.
+            See the <a href="https://github.com/saylorsolutions/modmake/blob/main/example/helloworld/README.md">hello world example</a> for more details on <code>steps</code> and <code>graph</code> output.
+        </p>
+        <aside>
+            Skipped steps will not run their operation or before/after run hooks, but will still invoke dependencies.
+            To prevent executing dependencies and only run the specified Step(s), use the <code>--only</code> flag when calling the build.
+        </aside>
+        <aside>
+            One or more Steps may be skipped with the <code>--skip</code> flag, but any step specified when the Build is invoked will be run regardless.
+        </aside>
+        <h3 id="build-model_steps">Steps</h3>
+        <p>
+            A <code>Step</code> is something that may be invoked with either <code>go run</code> or the <a href="#modmake-cli">modmake CLI</a>, but may also
+            have <a href="https://pkg.go.dev/github.com/saylorsolutions/modmake#Step.DependsOn">dependencies</a> and
+            <a href="https://pkg.go.dev/github.com/saylorsolutions/modmake#Step.BeforeRun">pre/post</a> actions.
+        </p>
+        <p>
+            Step dependencies are arranged as a directed acyclic graph (a <a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">DAG</a>).
+            If a cycle is detected during invocation &mdash; or while running the builtin <code>graph</code> step &mdash; then the Build will panic to include details of the error.
+        </p>
+        <aside>
+            <b>Note:</b> a build step will do nothing by default.
+            A step's <a href="https://pkg.go.dev/github.com/saylorsolutions/modmake#Step.Does">Does</a> method must be used to make a Step perform some operation.
+        </aside>
+        <aside>
+            A step's <a href="https://pkg.go.dev/github.com/saylorsolutions/modmake#Step.BeforeRun">BeforeRun</a> hooks will run in order <i>after</i> dependent steps have executed.
+            Dependencies are also executed in order.
+        </aside>
+        <p>
+            Here are the default steps added by default to each build.
+        </p>
+        <ul>
+            <li><code>tools</code> - This step is for installing external tools that may be needed for the Build to function as expected.</li>
+            <li><code>generate</code> - This step is for generating code (potentially with newly installed tools) that will be required for <code>test</code> and later steps. Depends on <code>tools</code></li>
+            <li><code>test</code> - This step should run unit tests in the project. Depends on <code>generate</code>.</li>
+            <li><code>benchmark</code> - This step is skipped by default (it's not very often that these need to be run), but the step is here when required. Depends on <code>test</code>.</li>
+            <li><code>build</code> - This step is for building the code </li>
+        </ul>
+        <h3 id="build-model_tasks">Tasks</h3>
+        <p>
+            At a more atomic level there exists a <code>Task</code>.
+            A Task enables more flexible expression, which contrasts with a Step that provides more structure and standardized expression.
+            While a Task and a Step have some similarities, they server very different purposes within a Build. Namely, only a Step may be invoked.
+        </p>
+        <p>
+            A Task is able to chain other tasks with <a href="https://pkg.go.dev/github.com/saylorsolutions/modmake#Task.Then">Then</a>,
+            and handle failure with <a href="https://pkg.go.dev/github.com/saylorsolutions/modmake#Task.Catch">Catch</a>.
+        </p>
+        <aside>
+            Multiple Tasks may be run in a sequence with the <a href="https://pkg.go.dev/github.com/saylorsolutions/modmake#Script">Script</a> helper function.
+            Any failure that occurs in the Script will stop the sequence, and the error will be immediately returned.
+        </aside>
+        <h3 id="build-model_invocation">Invocation</h3>
+        <p>
+            Any Build step may be invoked with either <code>go run</code> or the <a href="#modmake-cli">Modmake CLI</a>, whichever is most convenient.
+            Here are the basic steps for setting up a Modmake build.
+        </p>
+        <ol>
+            <li>Create a build file relative to the root of your Go module code in either <code>/modmake/build.go</code>, or at the root, generally as <code>/build.go</code>.</li>
+            <li>Configure and test the various steps needed by calling them with <code>go run</code>.</li>
+            <li>Commit build code to version control so others can use the Build steps.</li>
+        </ol>
+        <img src="/modmake/img/invocation.png" alt="invocation example"/>
+        <h3 id="api-patterns">API Patterns</h3>
+        <p>There are a few common patterns that should be consistently represented around the code base.</p>
+        <ul>
+            <li>
+                <code>Runner</code> may be a parameter or a return value, but <code>Task</code> may only be a return value.
+                <ul>
+                    <li>This is because a Task is just a function implementing Runner, but a Runner may be <i>anything</i> with a <code>Run</code> method.</li>
+                </ul>
+            </li>
+            <li>
+                When a filesystem path is an expected parameter, it should be represented as a <a href="https://github.com/saylorsolutions/modmake/blob/main/pathstring.go">PathString</a>.
+                This allows for more consistent, safe, and convenient manipulation of paths throughout the package, without mistaking them for normal strings or module paths.
+            </li>
+            <li>
+                The API may panic at configuration time, but should always return an error at run time.
+                <ul>
+                    <li>
+                        A panic at configuration time is intended to be a clear indicator to the developer that something is configured incorrectly, or some invariant has been violated.
+                    </li>
+                    <li>
+                        Runners and Tasks should always return an error from their Run method instead of panicking. If a panic happens inside a Run function, then it's very likely a bug.
+                    </li>
+                </ul>
+            </li>
+        </ul>
+        <h2 id="modmake-cli">Modmake CLI</h2>
+        <p>
+            The CLI is 100% optional.
+            It's provided to make working with Modmake builds a little more convenient.
+        </p>
+        <p>
+            Using plain <code>go run</code> is still a primarily supported Modmake invocation method, and likely will be in perpetuity, but the CLI can provide more consistency to both build resolution and invocation.
+            It can also be used to set environment variables that may influence build behavior, providing a sort of build parameterization mechanism.
+        </p>
+        <aside>
+            By default, the CLI will change its working directory to the root of your Go module (the directory where <code>go.mod</code> resides) if not already run in that location.
+            This behavior <i>can</i> be overridden, but it's not recommended, and this override may be removed in a later version.
+        </aside>
+        <p>
+            Since this is a 100% Go tool, you could use <code>go install</code> to install the CLI, like this.
+        </p>
+        <code class="block">
+            go install github.com/saylorsolutions/modmake/cmd/modmake@latest
+        </code>
+        <p>
+            When the project reaches a v1, I'll start producing GitHub releases that will include binaries with version information.
+        </p>
+        <p>
+            If you'd like to see what that will look like, you can clone the project and run this command.
+        </p>
+        <code class="block">
+            go run ./modmake install
+        </code>
+        <p>
+            This will call the Modmake build's <code>install</code> step to install a binary for your system at <code>~/go/bin/</code>.
+        </p>
+        <p>
+            Next, run <code>modmake --version</code> to see the Git commit and branch used to build the CLI.
+        </p>
+        <h3 id="modmake-cli_resolution">CLI Build Resolution</h3>
+        <p>
+            By default, the CLI looks for your Modmake build in this order:
+        </p>
+        <ol>
+            <li>In a directory called <code>modmake</code> at the root of your module.</li>
+            <li>In a Go file called <code>build.go</code> at the root of your module.</li>
+        </ol>
+        <p>
+            If none of the locations above are found, then you will need to tell the CLI where to locate your build code with.
+            See <code>modmake --help</code> for details.
+        </p>
+        <aside>
+            It's recommended to use the <code>modmake</code> directory for non-trivial build logic, so you can structure your build with additional files for maintainability.
+        </aside>
+        <h3 id="modmake-cli_invocation">CLI Invocation</h3>
+        <p>
+            The CLI has its own flags that may be used to influence the Modmake build invocation context.
+            To see a listing of these flags see the output of <code>modmake --help</code>
+        </p>
+        <p>
+            Because a Modmake build may <i>also</i> accept flags, the user will need to disambiguate between CLI flags and build flags.
+            To pass build flags through the CLI, prefix build flags and arguments with <code>--</code> like this.
+        </p>
+        <code class="block">
+            modmake -e SOME_VAR=value -- --skip generate build
+        </code>
+    </section>
+</div>
+</body>
+</html>
