@@ -118,7 +118,7 @@ func (i *Command) Silent() *Command {
 	return i
 }
 
-// CaptureStdin will make the executed Command pass os.Stdin to the executed process.
+// CaptureStdin will make the Command pass os.Stdin to the executed process.
 func (i *Command) CaptureStdin() *Command {
 	if i.err != nil {
 		return i
