@@ -118,10 +118,36 @@ func (i *Command) Silent() *Command {
 	return i
 }
 
-// CaptureStdin will make the executed Command pass os.Stdin to it.
+// CaptureStdin will make the executed Command pass os.Stdin to the executed process.
 func (i *Command) CaptureStdin() *Command {
+	if i.err != nil {
+		return i
+	}
 	i.stdin = os.Stdin
 	return i
+}
+
+// Stdout will capture all data written to the Command's stdout stream and write it to w.
+func (i *Command) Stdout(w io.Writer) *Command {
+	if i.err != nil {
+		return i
+	}
+	i.stdout = w
+	return i
+}
+
+// Stderr will capture all data written to the Command's stderr stream and write it to w.
+func (i *Command) Stderr(w io.Writer) *Command {
+	if i.err != nil {
+		return i
+	}
+	i.stderr = w
+	return i
+}
+
+// Output will redirect all data written to either stdout or stderr to w.
+func (i *Command) Output(w io.Writer) *Command {
+	return i.Stdout(w).Stderr(w)
 }
 
 func (i *Command) Run(ctx context.Context) error {

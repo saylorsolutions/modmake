@@ -12,6 +12,7 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"time"
 )
 
 // GoTools provides some utility functions for interacting with the go tool chain.
@@ -59,8 +60,20 @@ func initGoInst() (*GoTools, error) {
 	}
 	goRootPath := cache.New(func() (string, error) {
 		goRootDir, ok := os.LookupEnv("GOROOT")
-		if !ok {
-			return "", errors.New("unable to resolve environment variable GOROOT, Go may not be installed correctly")
+		if !ok || len(goRootDir) == 0 {
+			errMsg := "unable to resolve GOROOT, Go may not be installed correctly or on the PATH"
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			var output strings.Builder
+			err := Exec("go", "env", "GOROOT").Silent().Stdout(&output).Run(ctx)
+			if err != nil {
+				return "", fmt.Errorf("%s: %v", errMsg, err)
+			}
+			goRootDir = strings.TrimSpace(output.String())
+			if len(goRootDir) == 0 {
+				return "", errors.New(errMsg)
+			}
+			return goRootDir, nil
 		}
 		return goRootDir, nil
 	})
@@ -637,7 +650,7 @@ var (
 func locateModRoot() (string, error) {
 	dir, err := os.Getwd()
 	if err != nil {
-		return "", fmt.Errorf("unable to locatae working directory: %v", err)
+		return "", fmt.Errorf("unable to locate working directory: %v", err)
 	}
 	modPath, found := scanGoMod(dir)
 	if !found {
