@@ -25,7 +25,7 @@ If these goals aren't compatible with yours then Modmake may not be for you, and
 Besides accomplishing the goals set out above, there are some key benefits with this approach.
 
 * Modmake provides a DSL-like API that is simple to use and type-safe. All the power of Go code, but without the verbosity.
-* Low barrier of entry with a consistent starting point.
+* Low barrier of entry with a [consistent starting point](example/helloworld/README.md).
 * Go code works on many OS/architecture combinations, and Modmake inherits that ability.
 * Modmake includes a lot of common-use functionality with more to come:
   * Using the Go toolchain, resolved from `GOROOT`.
