@@ -55,8 +55,8 @@ func (p PathString) ToSlash() string {
 // Trailing path separators are removed before extracting the last element.
 // If the path is empty, Base returns ".".
 // If the path consists entirely of separators, Base returns a single separator.
-func (p PathString) Base() string {
-	return filepath.Base(string(p))
+func (p PathString) Base() PathString {
+	return PathString(filepath.Base(string(p)))
 }
 
 // Dir calls filepath.Dir on the string representation of this PathString, returning all but the last element of the path.

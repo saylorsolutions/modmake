@@ -28,11 +28,9 @@ func ContextAware(r Runner) Runner {
 	})
 }
 
-// NoOp is a Runner placeholder that immediately returns nil.
-func NoOp() Runner {
-	return Task(func(ctx context.Context) error {
-		return nil
-	})
+// NoOp is a Task placeholder that immediately returns nil.
+func NoOp() Task {
+	return nil
 }
 
 // RunState indicates the state of a Step.

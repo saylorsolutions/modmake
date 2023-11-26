@@ -56,7 +56,7 @@ func (t *TarArchive) AddFileWithPath(sourcePath, archivePath PathString) *TarArc
 // Create will return a Runner that creates a new tar file with the given files loaded.
 // If a file with the given name already exists, then it will be truncated first.
 // Ensure that all files referenced with AddFile (or AddFileWithPath) and directories exist before running this Runner, because it doesn't try to create them.
-func (t *TarArchive) Create() Runner {
+func (t *TarArchive) Create() Task {
 	runner := Task(func(ctx context.Context) error {
 		tarFile, err := t.path.Create()
 		if err != nil {
@@ -79,14 +79,14 @@ func (t *TarArchive) Create() Runner {
 		}
 		return nil
 	})
-	return ContextAware(runner)
+	return ContextAware(runner).Run
 }
 
 // Update will return a Runner that creates a new tar file with the given files loaded.
 // If a file with the given name already exists, then it will be updated.
 // If a file with the given name does not exist, then this Runner will return an error.
 // Ensure that all files referenced with AddFile (or AddFileWithPath) and directories exist before running this Runner, because it doesn't try to create them.
-func (t *TarArchive) Update() Runner {
+func (t *TarArchive) Update() Task {
 	runner := Task(func(ctx context.Context) error {
 		tarFile, err := t.path.OpenFile(os.O_RDWR, 0644)
 		if err != nil {
@@ -109,7 +109,7 @@ func (t *TarArchive) Update() Runner {
 		}
 		return nil
 	})
-	return ContextAware(runner)
+	return ContextAware(runner).Run
 }
 
 func (t *TarArchive) writeFilesToTarArchive(ctx context.Context, tw *tar.Writer) error {
@@ -157,7 +157,7 @@ func (t *TarArchive) writeFilesToTarArchive(ctx context.Context, tw *tar.Writer)
 
 // Extract will extract the named tar archive to the given directory.
 // Any errors encountered while doing so will be immediately returned.
-func (t *TarArchive) Extract(extractDir PathString) Runner {
+func (t *TarArchive) Extract(extractDir PathString) Task {
 	runner := Task(func(ctx context.Context) error {
 		src, err := t.path.Open()
 		if err != nil {
@@ -217,5 +217,5 @@ func (t *TarArchive) Extract(extractDir PathString) Runner {
 		}
 		return nil
 	})
-	return ContextAware(runner)
+	return ContextAware(runner).Run
 }
