@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/saylorsolutions/modmake/assert"
 	"runtime"
+	"strings"
 )
 
 // AppBuildFunc is a function used to customize an AppBuild or AppVariant's build step.
@@ -56,7 +57,7 @@ func PackageZip() AppPackageFunc {
 	}
 }
 
-// AppBuild is used as a somewhat opinionated abstraction over the common pattern of building a static executable, including packaging.
+// AppBuild is a somewhat opinionated abstraction over the common pattern of building a static executable, including packaging.
 // The build step may be customized as needed, and different OS/Arch variants may be created as needed.
 // Each built executable will be output to ${MODROOT}/build/${APP}_${VARIANT_NAME}/${APP}
 // Default packaging will write a zip or tar.gz to ${MODROOT}/dist/${APP}/${APP}_${VARIANT_NAME}_${VERSION}.(zip|tar.gz)
@@ -68,10 +69,16 @@ type AppBuild struct {
 	appName           string
 }
 
+// NewAppBuild creates a new AppBuild with the given details.
+// Empty values are not allowed and will result in a panic.
+// If mainPath is not prefixed with the module name, then it will be added.
 func NewAppBuild(appName, mainPath, version string) *AppBuild {
 	assert.NotEmpty(&appName)
 	assert.NotEmpty(&mainPath)
 	assert.SemverVersion(&version)
+	if !strings.HasPrefix(mainPath, Go().ModuleName()) {
+		mainPath = Go().ToModulePath(mainPath)
+	}
 	return &AppBuild{
 		appName:  appName,
 		mainPath: mainPath,
@@ -154,6 +161,7 @@ func (a *AppBuild) generateBuild() *Build {
 	return b
 }
 
+// ImportApp imports an AppBuild as a new build, attaching its build and package steps as dependencies of the parent build.
 func (b *Build) ImportApp(a *AppBuild) {
 	other := a.generateBuild()
 	b.Import(a.appName, other)
@@ -170,14 +178,18 @@ type AppVariant struct {
 	packageFunc          AppPackageFunc
 }
 
+// HostVariant creates an AppVariant with the current host's GOOS and GOARCH settings.
+// Packaging will be disabled by default for this variant.
 func (a *AppBuild) HostVariant() *AppVariant {
-	return a.NamedVariant("localtest", runtime.GOOS, runtime.GOARCH)
+	return a.NamedVariant("localtest", runtime.GOOS, runtime.GOARCH).NoPackage()
 }
 
+// Variant creates an AppVariant with the given OS and architecture settings.
 func (a *AppBuild) Variant(os, arch string) *AppVariant {
 	return a.NamedVariant(os+"_"+arch, os, arch)
 }
 
+// NamedVariant creates an AppVariant much like [AppBuild.Variant], but with a custom variant name.
 func (a *AppBuild) NamedVariant(variant, os, arch string) *AppVariant {
 	assert.NotEmpty(&variant)
 	assert.NotEmpty(&os)

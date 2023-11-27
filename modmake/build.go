@@ -21,13 +21,14 @@ func main() {
 	b.Build().DependsOnRunner("clean-build", "", RemoveDir("build"))
 	b.Package().DependsOnRunner("clean-dist", "", RemoveDir("dist"))
 
-	a := NewAppBuild("modmake", Go().ToModulePath("cmd/modmake"), version).
+	a := NewAppBuild("modmake", "cmd/modmake", version).
 		Build(func(gb *GoBuild) {
 			gb.
 				StripDebugSymbols().
 				SetVariable("main", "gitHash", _git.CommitHash()).
 				SetVariable("main", "gitBranch", _git.BranchName())
 		})
+	a.HostVariant()
 	a.Variant("windows", "amd64")
 	a.Variant("linux", "amd64")
 	a.Variant("linux", "arm64")
