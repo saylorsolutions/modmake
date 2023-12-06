@@ -16,9 +16,9 @@ func TestDownload(t *testing.T) {
 		})),
 		Mkdir("build", 0755),
 		Download("https://google.com", location).
-			Catch(func(err error) error {
+			Catch(func(err error) Task {
 				t.Error("Unexpected error returned:", err)
-				return err
+				return Error(err.Error())
 			}),
 		IfNotExists(location, Plain(func() {
 			t.Error("Download file should exist now")

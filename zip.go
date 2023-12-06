@@ -55,7 +55,7 @@ func (z *ZipArchive) AddFileWithPath(sourcePath, archivePath PathString) *ZipArc
 // Create will return a Runner that creates a new zip file with the given files loaded.
 // If a file with the given name already exists, then it will be truncated first.
 // Ensure that all files referenced with AddFile (or AddFileWithPath) and directories exist before running this Runner, because it doesn't try to create them.
-func (z *ZipArchive) Create() Runner {
+func (z *ZipArchive) Create() Task {
 	runner := Task(func(ctx context.Context) error {
 		zipFile, err := z.path.Create()
 		if err != nil {
@@ -73,14 +73,14 @@ func (z *ZipArchive) Create() Runner {
 		}
 		return nil
 	})
-	return ContextAware(runner)
+	return ContextAware(runner).Run
 }
 
 // Update will return a Runner that creates a new zip file with the given files loaded.
 // If a file with the given name already exists, then it will be updated.
 // If a file with the given name does not exist, then this Runner will return an error.
 // Ensure that all files referenced with AddFile (or AddFileWithPath) and directories exist before running this Runner, because it doesn't try to create them.
-func (z *ZipArchive) Update() Runner {
+func (z *ZipArchive) Update() Task {
 	runner := Task(func(ctx context.Context) error {
 		zipFile, err := z.path.OpenFile(os.O_RDWR, 0644)
 		if err != nil {
@@ -98,7 +98,7 @@ func (z *ZipArchive) Update() Runner {
 		}
 		return nil
 	})
-	return ContextAware(runner)
+	return ContextAware(runner).Run
 }
 
 func (z *ZipArchive) writeFilesToZipArchive(ctx context.Context, zw *zip.Writer) error {
@@ -136,7 +136,7 @@ func (z *ZipArchive) writeFilesToZipArchive(ctx context.Context, zw *zip.Writer)
 
 // Extract will extract the named zip archive to the given directory.
 // Any errors encountered while doing so will be immediately returned.
-func (z *ZipArchive) Extract(extractDir PathString) Runner {
+func (z *ZipArchive) Extract(extractDir PathString) Task {
 	runner := Task(func(ctx context.Context) error {
 		src, err := z.path.Open()
 		if err != nil {
@@ -203,5 +203,5 @@ func (z *ZipArchive) Extract(extractDir PathString) Runner {
 		}
 		return nil
 	})
-	return ContextAware(runner)
+	return ContextAware(runner).Run
 }

@@ -30,10 +30,10 @@ func TestTask_Catch(t *testing.T) {
 		postAction bool
 	)
 	task := Error("An error occurred!").Catch(
-		func(err error) error {
+		func(err error) Task {
 			log.Println(err)
 			handled = true
-			return nil
+			return NoOp()
 		},
 	).Then(
 		Plain(func() {

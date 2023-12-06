@@ -17,7 +17,9 @@ func WithoutErr(fn func(context.Context)) Task {
 				err = fmt.Errorf("%v", r)
 			}
 		}()
-		fn(ctx)
+		if fn != nil {
+			fn(ctx)
+		}
 		return nil
 	}
 }
@@ -30,7 +32,10 @@ func WithoutContext(fn func() error) Task {
 		case <-ctx.Done():
 			return ctx.Err()
 		default:
-			return fn()
+			if fn != nil {
+				return fn()
+			}
+			return nil
 		}
 	}
 }
@@ -47,7 +52,9 @@ func Plain(fn func()) Task {
 		case <-ctx.Done():
 			return ctx.Err()
 		default:
-			fn()
+			if fn != nil {
+				fn()
+			}
 			return nil
 		}
 	}
@@ -61,13 +68,16 @@ func Error(msg string, args ...any) Task {
 }
 
 func (t Task) Run(ctx context.Context) error {
-	return t(ctx)
+	if t != nil {
+		return t(ctx)
+	}
+	return nil
 }
 
 // Then returns a Task that runs if this Task executed successfully.
 func (t Task) Then(other Runner) Task {
 	return func(ctx context.Context) error {
-		if err := t(ctx); err != nil {
+		if err := t.Run(ctx); err != nil {
 			return err
 		}
 		return other.Run(ctx)
@@ -75,10 +85,10 @@ func (t Task) Then(other Runner) Task {
 }
 
 // Catch runs the catch function if this Task returns an error.
-func (t Task) Catch(catch func(error) error) Task {
+func (t Task) Catch(catch func(error) Task) Task {
 	return func(ctx context.Context) error {
-		if err := t(ctx); err != nil {
-			return catch(err)
+		if err := t.Run(ctx); err != nil {
+			return catch(err).Run(ctx)
 		}
 		return nil
 	}
