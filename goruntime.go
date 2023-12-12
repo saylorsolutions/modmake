@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/saylorsolutions/cache"
-	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -670,7 +669,6 @@ func keySlice[T any](set map[string]T) []string {
 }
 
 var (
-	modFound       = errors.New("module was located")
 	modNamePattern = regexp.MustCompile(`^\s*module\s+(\S+)$`)
 )
 
@@ -695,32 +693,17 @@ func locateModRoot(base ...PathString) (PathString, error) {
 }
 
 func scanGoMod(root PathString) (PathString, bool) {
-	var found PathString
-	_root := root.String()
-	err := filepath.WalkDir(_root, func(path string, d fs.DirEntry, err error) error {
-		if path == _root {
-			return nil
-		}
-		if d.IsDir() {
-			return fs.SkipDir
-		}
-		if d.Name() == "go.mod" {
-			found = Path(path)
-			return modFound
-		}
-		return nil
-	})
-	if err != nil {
-		if errors.Is(err, modFound) {
+	if root.IsFile() {
+		root = root.Dir()
+	}
+	for root != root.Dir() {
+		found := root.Join("go.mod")
+		if found.IsFile() {
 			return found, true
 		}
-		panic(err)
+		root = root.Dir()
 	}
-	parent := root.Dir()
-	if parent == root {
-		return "", false
-	}
-	return scanGoMod(parent)
+	return "", false
 }
 
 func parseModuleName(goModPath PathString) (string, error) {
