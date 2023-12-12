@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/fatih/color"
 	flag "github.com/spf13/pflag"
 	"log"
 	"os"
@@ -11,6 +12,13 @@ import (
 	"runtime/debug"
 	"strings"
 	"time"
+)
+
+var (
+	errColor   = color.New(color.FgRed, color.Bold).SprintFunc()
+	okColor    = color.New(color.FgGreen, color.Bold).SprintFunc()
+	warnColor  = color.New(color.FgYellow, color.Bold).SprintFunc()
+	debugColor = color.New(color.FgCyan).SprintFunc()
 )
 
 func sigCtx() (context.Context, context.CancelFunc) {
@@ -34,7 +42,7 @@ func sigCtx() (context.Context, context.CancelFunc) {
 // [GoTools.ToModulePath] may be useful to adhere to this constraint.
 func (b *Build) Execute(args ...string) {
 	if err := b.ExecuteErr(args...); err != nil {
-		log.Fatalln("Error executing build:", err)
+		log.Fatalf("%s: %v\n", errColor("Error executing build"), err.Error())
 	}
 }
 
@@ -69,6 +77,7 @@ func (b *Build) ExecuteErr(args ...string) (err error) {
 		flagDryRun   bool
 		flagDebugLog bool
 		flagVerbose  bool
+		flagNoColor  bool
 	)
 
 	flags.BoolVarP(&flagHelp, "help", "h", false, "Prints this usage information.")
@@ -79,6 +88,7 @@ func (b *Build) ExecuteErr(args ...string) (err error) {
 	flags.BoolVar(&flagDryRun, "dry-run", false, "Runs the build's steps in dry run mode. No actual operations will be executed, but logs will still be printed.")
 	flags.BoolVar(&flagDebugLog, "debug", false, "Specifies that debug step logs should be emitted.")
 	flags.BoolVarP(&flagVerbose, "verbose", "v", false, "Used with 'steps' or 'graph' to output all steps, including those that do nothing.")
+	flags.BoolVar(&flagNoColor, "no-color", false, "Used to disable colorized output.")
 
 	flags.Usage = func() {
 		fmt.Printf(`Executes this modmake build
@@ -97,7 +107,6 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 %s
 
 `, flags.FlagUsages())
-		b.Graph(false)
 	}
 	if len(args) == 0 {
 		args = os.Args[1:]
@@ -105,6 +114,9 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 	if err := flags.Parse(args); err != nil {
 		flags.Usage()
 		return err
+	}
+	if flagNoColor {
+		color.NoColor = true
 	}
 
 	if flags.NArg() == 0 || flagHelp {
@@ -128,7 +140,7 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 	for _, skip := range flagSkip {
 		step, ok := b.StepOk(skip)
 		if !ok {
-			log.Printf("WARN: User asked that step '%s' be skipped, but it doesn't exist in this model\n", skip)
+			log.Printf("%s: User asked that step '%s' be skipped, but it doesn't exist in this model\n", warnColor("WARN"), skip)
 			continue
 		}
 		step.Skip()
@@ -136,7 +148,7 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 	for _, noskip := range flagNoSkip {
 		step, ok := b.StepOk(noskip)
 		if !ok {
-			log.Printf("WARN: User asked that step '%s' not be skipped, but it doesn't exist in this model\n", noskip)
+			log.Printf("%s: User asked that step '%s' not be skipped, but it doesn't exist in this model\n", warnColor("WARN"), noskip)
 			continue
 		}
 		step.UnSkip()
@@ -144,7 +156,7 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 
 	start := time.Now()
 	if flagDryRun {
-		log.Println("Running build in DRY RUN mode, steps will not run.")
+		log.Printf("Running build in %s mode, steps will not run.\n", okColor("DRY RUN"))
 	}
 	for i, stepName := range flags.Args() {
 		switch {
@@ -157,7 +169,7 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 			for i := 0; i < len(steps); i++ {
 				step := b.Step(steps[i])
 				if flagVerbose || step.hasOperation() {
-					buf.WriteString(fmt.Sprintf("%s - %s\n", steps[i], step.description))
+					buf.WriteString(fmt.Sprintf("%s - %s\n", debugColor(steps[i]), step.description))
 				}
 			}
 			fmt.Println(buf.String())
@@ -165,7 +177,7 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 		default:
 			step, ok := b.StepOk(stepName)
 			if !ok {
-				return fmt.Errorf("build step '%s' does not exist", stepName)
+				return fmt.Errorf("build step '%s' does not exist", errColor(stepName))
 			}
 			if flagSkipDeps {
 				step.SkipDependencies()
@@ -183,6 +195,6 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 		}
 	}
 
-	log.Printf("Ran successfully in %s\n", time.Since(start).Round(time.Millisecond).String())
+	log.Printf(okColor(fmt.Sprintf("Ran successfully in %s\n", time.Since(start).Round(time.Millisecond).String())))
 	return nil
 }
