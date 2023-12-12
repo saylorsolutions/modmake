@@ -73,7 +73,7 @@ func NewBuild() *Build {
 // CallBuild is preferable over [Build.Import] for building separate go modules.
 // If you're building a component of the same go module, then use [Build.Import].
 //
-//   - buildRef should be the filesystem path to the build file
+//   - buildFile should be the filesystem path to the build that should be executed
 //   - args are flags and steps that should be executed in the build
 func CallBuild(buildFile PathString, args ...string) *Command {
 	gt := goToolsAt(buildFile)
