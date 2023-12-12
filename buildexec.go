@@ -169,7 +169,7 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 			for i := 0; i < len(steps); i++ {
 				step := b.Step(steps[i])
 				if flagVerbose || step.hasOperation() {
-					buf.WriteString(fmt.Sprintf("%s - %s\n", steps[i], step.description))
+					buf.WriteString(fmt.Sprintf("%s - %s\n", debugColor(steps[i]), step.description))
 				}
 			}
 			fmt.Println(buf.String())
