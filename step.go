@@ -188,7 +188,7 @@ func (s *Step) AfterRun(op Runner) *Step {
 
 func (s *Step) Run(ctx context.Context) error {
 	if s.shouldSkipDeps {
-		s.Info("Skipping dependencies")
+		s.Warn("Skipping dependencies")
 	} else {
 		for _, d := range s.dependencies {
 			if d.state != StateNotRun {
@@ -209,7 +209,7 @@ func (s *Step) Run(ctx context.Context) error {
 		return nil
 	}
 	if s.shouldSkip {
-		s.Info("Skipping step")
+		s.Warn("Skipping step")
 		return nil
 	}
 
@@ -217,7 +217,7 @@ func (s *Step) Run(ctx context.Context) error {
 		s.Info("Running before hooks...")
 		start := time.Now()
 		if s.dryRun {
-			s.Info("Would have run %d before operations", len(s.beforeOp))
+			s.Debug("Would have run %d before operations", len(s.beforeOp))
 		} else {
 			for _, before := range s.beforeOp {
 				if err := before.Run(ctx); err != nil {
@@ -248,7 +248,7 @@ func (s *Step) Run(ctx context.Context) error {
 		s.Info("Running after hooks...")
 		start := time.Now()
 		if s.dryRun {
-			s.Info("Would have run %d after hooks", len(s.afterOp))
+			s.Debug("Would have run %d after hooks", len(s.afterOp))
 		} else {
 			for _, after := range s.afterOp {
 				if err := after.Run(ctx); err != nil {

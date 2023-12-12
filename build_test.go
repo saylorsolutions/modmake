@@ -148,7 +148,12 @@ func TestCyclesCheck(t *testing.T) {
 }
 
 func TestCallBuild(t *testing.T) {
-	err := CallBuild("example/helloworld", "build.go", "--only", "build").Run(context.TODO())
+	err := CallBuild("example/helloworld/build.go", "--only", "build").Run(context.TODO())
+	assert.NoError(t, err)
+}
+
+func TestSubmoduleCallBuild(t *testing.T) {
+	err := CallBuild("./example/submodule/modmake/build.go", "build").Run(context.TODO())
 	assert.NoError(t, err)
 }
 

@@ -72,3 +72,18 @@ func TestGoBuild_Run(t *testing.T) {
 	err := Go().Run("build.go", "--only", "build").WorkDir("example/helloworld").Run(context.TODO())
 	assert.NoError(t, err)
 }
+
+func TestScanGoMod(t *testing.T) {
+	cwd, err := os.Getwd()
+	assert.NoError(t, err)
+	_cwd := Path(cwd)
+
+	git := _cwd.Join("package/git")
+	root, found := scanGoMod(git)
+	assert.True(t, found, "Should have found the root of the module")
+	assert.Equal(t, _cwd.Join("go.mod").String(), root.String(), "Current working directory should be the root of the module")
+
+	root, found = scanGoMod(_cwd)
+	assert.True(t, found, "Should have found the root of the module")
+	assert.Equal(t, _cwd.Join("go.mod").String(), root.String(), "Current working directory should be the root of the module")
+}

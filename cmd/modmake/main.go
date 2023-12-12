@@ -20,7 +20,7 @@ func main() {
 		Go()
 	})
 	modRoot := Go().ModuleRoot()
-	errFatal(fmt.Sprintf("Failed to change the working directory to module root '%s'", modRoot), os.Chdir(modRoot))
+	errFatal(fmt.Sprintf("Failed to change the working directory to module root '%s'", modRoot), modRoot.Chdir())
 	flags := setupFlags()
 	if err := flags.Parse(os.Args[1:]); err != nil {
 		log.Println("Sorry, I don't understand what you mean:", err)
@@ -47,12 +47,12 @@ func run(ctx context.Context, flags *appFlags) error {
 		return nil
 	}
 	if flags.rootOverride != "" {
-		if err := Path(modRoot, flags.rootOverride).Chdir(); err != nil {
+		if err := modRoot.Join(flags.rootOverride).Chdir(); err != nil {
 			return err
 		}
 	}
 	if flags.buildOverride != "" {
-		override := Path(modRoot, flags.buildOverride)
+		override := modRoot.Join(flags.buildOverride)
 		if !override.Exists() {
 			log.Printf("Unable to locate build override '%s'\n", override)
 		}
