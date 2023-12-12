@@ -24,7 +24,7 @@ import (
 // If your build logic needs to cross into another go module, try using CallBuild.
 type GoTools struct {
 	goRootPath *cache.Value[string]
-	goModPath  *cache.Value[string]
+	goModPath  *cache.Value[PathString]
 	moduleName *cache.Value[string]
 }
 
@@ -52,6 +52,29 @@ func Go() *GoTools {
 	return inst
 }
 
+func GoToolsAt(path PathString) *GoTools {
+	if path.IsFile() {
+		path = path.Dir()
+	}
+	goModPath, found := scanGoMod(path)
+	if !found {
+		panic(fmt.Sprintf("Unable to locate go.mod from path '%s'", path.String()))
+	}
+	modName, err := moduleNameLookup(goModPath)
+	if err != nil {
+		panic(fmt.Sprintf("Failed to parse module name from file '%s': %v", goModPath, err))
+	}
+	return &GoTools{
+		goRootPath: Go().goRootPath,
+		goModPath: cache.New(func() (PathString, error) {
+			return goModPath, nil
+		}),
+		moduleName: cache.New[string](func() (string, error) {
+			return modName, nil
+		}),
+	}
+}
+
 func initGoInst() (*GoTools, error) {
 	_goMux.Lock()
 	defer _goMux.Unlock()
@@ -77,7 +100,7 @@ func initGoInst() (*GoTools, error) {
 		}
 		return goRootDir, nil
 	})
-	modPath := cache.New(func() (string, error) {
+	modPath := cache.New(func() (PathString, error) {
 		modPath, err := locateModRoot()
 		if err != nil {
 			return "", err
@@ -89,11 +112,7 @@ func initGoInst() (*GoTools, error) {
 		if err != nil {
 			return "", err
 		}
-		moduleName, err := parseModuleName(path)
-		if err != nil {
-			return "", err
-		}
-		return moduleName, nil
+		return moduleNameLookup(path)
 	})
 	inst := &GoTools{
 		goRootPath: goRootPath,
@@ -101,6 +120,14 @@ func initGoInst() (*GoTools, error) {
 		moduleName: moduleName,
 	}
 	return inst, nil
+}
+
+func moduleNameLookup(goModPath PathString) (string, error) {
+	moduleName, err := parseModuleName(goModPath)
+	if err != nil {
+		return "", err
+	}
+	return moduleName, nil
 }
 
 // InvalidateCache will break the instance cache, forcing the next call to Go to scan the filesystem's information again.
@@ -121,8 +148,8 @@ func (g *GoTools) goTool() string {
 }
 
 // ModuleRoot returns a filesystem path to the root of the current module.
-func (g *GoTools) ModuleRoot() string {
-	return filepath.Dir(g.goModPath.MustGet())
+func (g *GoTools) ModuleRoot() PathString {
+	return g.goModPath.MustGet().Dir()
 }
 
 // ModuleName returns the name of the current module as specified in the go.mod.
@@ -147,8 +174,8 @@ func (g *GoTools) ToModulePackage(pkg string) string {
 //
 // For example, given a module name of 'github.com/example/mymodule', and a relative path of 'app/main.go', the module path 'github.com/example/mymodule/app' is returned.
 func (g *GoTools) ToModulePath(dir string) string {
-	test := filepath.Join(g.ModuleRoot(), dir)
-	fi, err := os.Stat(test)
+	test := g.ModuleRoot().Join(dir)
+	fi, err := test.Stat()
 	if err != nil {
 		panic(fmt.Errorf("unable to stat path '%s': %w", test, err))
 	}
@@ -647,10 +674,18 @@ var (
 	modNamePattern = regexp.MustCompile(`^\s*module\s+(\S+)$`)
 )
 
-func locateModRoot() (string, error) {
-	dir, err := os.Getwd()
-	if err != nil {
-		return "", fmt.Errorf("unable to locate working directory: %v", err)
+func locateModRoot(base ...PathString) (PathString, error) {
+	var (
+		dir PathString
+	)
+	if len(base) > 0 {
+		dir = base[0]
+	} else {
+		_dir, err := os.Getwd()
+		if err != nil {
+			return "", fmt.Errorf("unable to locate working directory: %v", err)
+		}
+		dir = Path(_dir)
 	}
 	modPath, found := scanGoMod(dir)
 	if !found {
@@ -659,17 +694,18 @@ func locateModRoot() (string, error) {
 	return modPath, nil
 }
 
-func scanGoMod(root string) (string, bool) {
-	var found string
-	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
-		if path == root {
+func scanGoMod(root PathString) (PathString, bool) {
+	var found PathString
+	_root := root.String()
+	err := filepath.WalkDir(_root, func(path string, d fs.DirEntry, err error) error {
+		if path == _root {
 			return nil
 		}
 		if d.IsDir() {
 			return fs.SkipDir
 		}
 		if d.Name() == "go.mod" {
-			found = path
+			found = Path(path)
 			return modFound
 		}
 		return nil
@@ -680,17 +716,17 @@ func scanGoMod(root string) (string, bool) {
 		}
 		panic(err)
 	}
-	parent := filepath.Dir(root)
+	parent := root.Dir()
 	if parent == root {
 		return "", false
 	}
 	return scanGoMod(parent)
 }
 
-func parseModuleName(modPath string) (string, error) {
-	f, err := os.Open(modPath)
+func parseModuleName(goModPath PathString) (string, error) {
+	f, err := goModPath.Open()
 	if err != nil {
-		return "", fmt.Errorf("failed to open '%s': %w", modPath, err)
+		return "", fmt.Errorf("failed to open '%s': %w", goModPath, err)
 	}
 	defer func() {
 		_ = f.Close()
