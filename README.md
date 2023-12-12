@@ -1,5 +1,7 @@
 # Modmake Build System
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/saylorsolutions/modmake)](https://goreportcard.com/report/github.com/saylorsolutions/modmake)
+
 This is an attempt at creating a build system for Go using Go code and its toolchain.
 
 For an in-depth description of how Modmake works, check out the documentation [here](https://saylorsolutions.github.io/modmake).
