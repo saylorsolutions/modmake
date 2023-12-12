@@ -230,12 +230,12 @@ func (b *Build) graph(step *Step, indent int, buf *strings.Builder, visited map[
 	}
 
 	if visited[step.name] {
-		buf.WriteString(fmt.Sprintf("%s%s%s *\n", indentStr, step.name, skipStr))
+		buf.WriteString(fmt.Sprintf("%s%s%s *\n", indentStr, debugColor(step.name), skipStr))
 		return
 	}
 
 	visited[step.name] = true
-	buf.WriteString(fmt.Sprintf("%s%s%s - %s\n", indentStr, step.name, skipStr, step.description))
+	buf.WriteString(fmt.Sprintf("%s%s%s - %s\n", indentStr, debugColor(step.name), skipStr, step.description))
 
 	for _, dep := range step.dependencies {
 		if dep.name == step.name {
