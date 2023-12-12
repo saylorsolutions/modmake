@@ -90,16 +90,16 @@ func (i *Command) Env(key, value string) *Command {
 }
 
 // WorkDir sets the working directory in which to execute the Command.
-func (i *Command) WorkDir(workdir string) *Command {
+func (i *Command) WorkDir(workdir PathString) *Command {
 	if i.err != nil {
 		return i
 	}
-	work, err := filepath.Abs(workdir)
+	work, err := workdir.Abs()
 	if err != nil {
 		i.err = err
 		return i
 	}
-	i.workdir = work
+	i.workdir = work.String()
 	return i
 }
 

@@ -52,7 +52,7 @@ func (b *Build) ExecuteErr(args ...string) (err error) {
 			err = fmt.Errorf("caught panic while running build: %v\n%s", r, string(stack))
 		}
 	}()
-	if err := os.Chdir(Go().ModuleRoot()); err != nil {
+	if err := Go().ModuleRoot().Chdir(); err != nil {
 		return errors.New("failed to change working directory to module root: " + err.Error())
 	}
 	if err := b.cyclesCheck(); err != nil {

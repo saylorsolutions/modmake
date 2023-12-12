@@ -1,0 +1,14 @@
+github.com/bitfield/script v0.22.0 h1:LA7QHuEsXMPD52YLtxWrlqCCy+9FOpzNYfsRHC5Gsrc=
+github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
+github.com/itchyny/gojq v0.12.13 h1:IxyYlHYIlspQHHTE0f3cJF0NKDMfajxViuhBLnHd/QU=
+github.com/itchyny/timefmt-go v0.1.5 h1:G0INE2la8S6ru/ZI5JecgyzbbJNs5lG1RcBqa7Jm6GE=
+github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
+github.com/saylorsolutions/cache v1.1.0 h1:DNOBHCWZK0aUxviRnVLNyuF8HneiLCjpbLC3BCv9RN4=
+github.com/saylorsolutions/cache v1.1.0/go.mod h1:NXWMylDOfhrn9Jju2GnYXPlWCMDntw2rA9PBT3F0We8=
+github.com/saylorsolutions/modmake v0.2.0 h1:Vr1NTg6AoKb0hKdX+ZvjovG9b9Todup2vB2Jkn25GM4=
+github.com/saylorsolutions/modmake v0.2.0/go.mod h1:zKHy6MpE5nHK4OnKfvbJSb478Gakc0WslzoHWHpNI8U=
+github.com/spf13/pflag v1.0.5 h1:iy+VFUOCP1a+8yFto/drg2CJ5u0yRoB7fZw3DKv/JXA=
+github.com/spf13/pflag v1.0.5/go.mod h1:McXfInJRrz4CZXVZOBLb0bTZqETkiAhM9Iw0y3An2Bg=
+github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcUk=
+gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
+mvdan.cc/sh/v3 v3.7.0 h1:lSTjdP/1xsddtaKfGg7Myu7DnlHItd3/M2tomOcNNBg=

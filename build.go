@@ -67,16 +67,21 @@ func NewBuild() *Build {
 }
 
 // CallBuild allows easily referencing and calling another modmake build.
-// os.Chdir will be called before go-running the build file, so the buildFile parameter should be relative to the workdir.
+// os.Chdir will be called with the module root before go-running the build file, so the buildFile parameter should be relative to the module root.
+// This is safe to use with Git submodules because a GoTools instance will be created based on the location of the Modmake build file and the closest module.
 //
 // CallBuild is preferable over [Build.Import] for building separate go modules.
 // If you're building a component of the same go module, then use [Build.Import].
 //
-//   - workdir should be the root of the module
-//   - buildRef should be the module path to the build file
+//   - buildFile should be the filesystem path to the build that should be executed
 //   - args are flags and steps that should be executed in the build
-func CallBuild(workdir, buildRef string, args ...string) *Command {
-	return Go().Run(buildRef, args...).WorkDir(workdir)
+func CallBuild(buildFile PathString, args ...string) *Command {
+	gt := goToolsAt(buildFile)
+	rel, err := gt.ModuleRoot().Rel(buildFile)
+	if err != nil {
+		panic(fmt.Sprintf("Unable to determine relative location to '%s' from module root path: %v", buildFile, err))
+	}
+	return gt.Run(rel.String(), args...).WorkDir(gt.ModuleRoot())
 }
 
 // Workdir sets the working directory for running build steps.
