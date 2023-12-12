@@ -51,7 +51,7 @@ func Go() *GoTools {
 	return inst
 }
 
-func GoToolsAt(path PathString) *GoTools {
+func goToolsAt(path PathString) *GoTools {
 	if path.IsFile() {
 		path = path.Dir()
 	}
@@ -315,7 +315,7 @@ func (g *GoTools) Build(targets ...string) *GoBuild {
 
 // ChangeDir will change the working directory from the default to a new location.
 // If an absolute path cannot be derived from newDir, then this function will panic.
-func (b *GoBuild) ChangeDir(newDir string) *GoBuild {
+func (b *GoBuild) ChangeDir(newDir PathString) *GoBuild {
 	if b.err != nil {
 		return b
 	}
@@ -603,7 +603,7 @@ func (b *GoBuild) Env(key, value string) *GoBuild {
 	return b
 }
 
-func (b *GoBuild) Workdir(workdir string) *GoBuild {
+func (b *GoBuild) Workdir(workdir PathString) *GoBuild {
 	if b.err != nil {
 		return b
 	}
@@ -702,6 +702,12 @@ func scanGoMod(root PathString) (PathString, bool) {
 			return found, true
 		}
 		root = root.Dir()
+	}
+
+	// Need to check root too in case it's a relative path.
+	found := root.Join("go.mod")
+	if found.IsFile() {
+		return found, true
 	}
 	return "", false
 }

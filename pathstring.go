@@ -69,6 +69,29 @@ func (p PathString) Dir() PathString {
 	return Path(filepath.Dir(string(p)))
 }
 
+// Abs attempts to translate the PathString into an absolute path using filepath.Abs.
+func (p PathString) Abs() (PathString, error) {
+	abs, err := filepath.Abs(p.String())
+	return Path(abs), err
+}
+
+// Rel attempts to construct a relative path to other, with the current PathString as the base, much like filepath.Rel.
+func (p PathString) Rel(other PathString) (PathString, error) {
+	a, err := p.Abs()
+	if err != nil {
+		return "", err
+	}
+	b, err := other.Abs()
+	if err != nil {
+		return "", err
+	}
+	rel, err := filepath.Rel(a.String(), b.String())
+	if err != nil {
+		return "", err
+	}
+	return Path(rel), nil
+}
+
 // Exists returns true if the path references an existing file or directory.
 func (p PathString) Exists() bool {
 	_, err := os.Stat(string(p))
