@@ -87,3 +87,10 @@ func TestScanGoMod(t *testing.T) {
 	assert.True(t, found, "Should have found the root of the module")
 	assert.Equal(t, _cwd.Join("go.mod").String(), root.String(), "Current working directory should be the root of the module")
 }
+
+func TestModDownload(t *testing.T) {
+	modInfo, err := Go().modDownload(context.Background(), "github.com/saylorsolutions/modmake@v0.2.2")
+	assert.NoError(t, err)
+	assert.NotEmpty(t, modInfo.Dir)
+	t.Logf("%#v", modInfo)
+}
