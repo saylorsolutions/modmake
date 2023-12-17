@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"os"
 	"os/exec"
+	"strings"
 	"testing"
 )
 
@@ -93,4 +94,17 @@ func TestModDownload(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotEmpty(t, modInfo.Dir)
 	t.Logf("%#v", modInfo)
+}
+
+func TestGoTools_GetEnv(t *testing.T) {
+	cmd := exec.Command("go", "env", "GOPATH")
+	output, err := cmd.Output()
+	assert.NoError(t, err)
+	want := strings.TrimSpace(string(output))
+
+	var got string
+	assert.NotPanics(t, func() {
+		got = Go().GetEnv("GOPATH")
+	})
+	assert.Equal(t, want, got)
 }
