@@ -124,7 +124,7 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 		return
 	}
 
-	if flagDebugLog {
+	if flagDebugLog || flagDryRun {
 		_stepDebugLog = true
 	}
 

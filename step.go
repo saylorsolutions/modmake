@@ -241,7 +241,7 @@ func (s *Step) Run(ctx context.Context) error {
 				return err
 			}
 		}
-		s.Info("Successfully ran step in %s", time.Since(runStart).Round(time.Millisecond).String())
+		s.Info("%s step in %s", okColor("Successfully ran"), time.Since(runStart).Round(time.Millisecond).String())
 	}
 
 	if len(s.afterOp) > 0 {
