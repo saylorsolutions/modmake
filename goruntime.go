@@ -269,8 +269,8 @@ func (g *GoTools) ModTidy() *Command {
 	return Exec(g.goTool(), "mod", "tidy")
 }
 
-// ModuleInfo is a struct used to capture the JSON output of a module download.
-type ModuleInfo struct {
+// moduleInfo is a struct used to capture the JSON output of a module download.
+type moduleInfo struct {
 	Path     string // module path
 	Query    string // version query corresponding to this version
 	Version  string // module version
@@ -285,16 +285,16 @@ type ModuleInfo struct {
 	Reuse    bool   // reuse of old module info is safe
 }
 
-func (g *GoTools) modDownload(ctx context.Context, module string) (ModuleInfo, error) {
+func (g *GoTools) modDownload(ctx context.Context, module string) (moduleInfo, error) {
 	var (
 		output bytes.Buffer
 	)
 	if err := Go().Command("mod", "download", "-json", module).CaptureStdin().Stdout(&output).Run(ctx); err != nil {
-		return ModuleInfo{}, fmt.Errorf("failed to download module: %w", err)
+		return moduleInfo{}, fmt.Errorf("failed to download module: %w", err)
 	}
-	var mod ModuleInfo
+	var mod moduleInfo
 	if err := json.NewDecoder(bytes.NewReader(output.Bytes())).Decode(&mod); err != nil {
-		return ModuleInfo{}, fmt.Errorf("failed to decode module info: %w", err)
+		return moduleInfo{}, fmt.Errorf("failed to decode module info: %w", err)
 	}
 	return mod, nil
 }
