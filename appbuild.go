@@ -1,6 +1,7 @@
 package modmake
 
 import (
+	"context"
 	"fmt"
 	"github.com/saylorsolutions/modmake/assert"
 	"runtime"
@@ -158,6 +159,16 @@ func (a *AppBuild) generateBuild() *Build {
 			b.Package().DependsOn(pkgStep)
 		}
 	}
+	gopathBin := Path(Go().GetEnv("GOPATH"), "bin")
+	installVariant := a.NamedVariant("install", runtime.GOOS, runtime.GOARCH).Package(func(binaryPath, _ PathString, _, _, _ string) Task {
+		return func(ctx context.Context) error {
+			return binaryPath.CopyTo(gopathBin.JoinPath(binaryPath.Base()))
+		}
+	})
+	installStep := NewStep("install", "Installs "+a.appName+" to GOPATH/bin").Does(a.pkgTask(installVariant))
+	installStep.BeforeRun(a.goBuild(installVariant))
+	installStep.AfterRun(Print(warnColor("Ensure that " + gopathBin.String() + " is on your PATH to easily access " + a.appName)))
+	b.AddStep(installStep)
 	return b
 }
 
@@ -181,7 +192,7 @@ type AppVariant struct {
 // HostVariant creates an AppVariant with the current host's GOOS and GOARCH settings.
 // Packaging will be disabled by default for this variant.
 func (a *AppBuild) HostVariant() *AppVariant {
-	return a.NamedVariant("localtest", runtime.GOOS, runtime.GOARCH).NoPackage()
+	return a.NamedVariant("local", runtime.GOOS, runtime.GOARCH).NoPackage()
 }
 
 // Variant creates an AppVariant with the given OS and architecture settings.

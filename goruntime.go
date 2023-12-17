@@ -156,6 +156,19 @@ func (g *GoTools) goTool() string {
 	return filepath.Join(goRootPath, "bin", "go")
 }
 
+// GetEnv will call "go env $key", and return the value of the named environment variable.
+// If an error occurs, then the call will panic.
+func (g *GoTools) GetEnv(key string) string {
+	var output bytes.Buffer
+	timeout, cancelFunc := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFunc()
+	err := g.Command("env", key).CaptureStdin().Stdout(&output).Run(timeout)
+	if err != nil {
+		panic(err)
+	}
+	return strings.TrimSpace(output.String())
+}
+
 // ModuleRoot returns a filesystem path to the root of the current module.
 func (g *GoTools) ModuleRoot() PathString {
 	return g.goModPath.MustGet().Dir()
