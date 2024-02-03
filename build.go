@@ -73,9 +73,15 @@ func NewBuild() *Build {
 // CallBuild is preferable over [Build.Import] for building separate go modules.
 // If you're building a component of the same go module, then use [Build.Import].
 //
-//   - buildFile should be the filesystem path to the build that should be executed
-//   - args are flags and steps that should be executed in the build
+//   - buildFile should be the filesystem path to the build that should be executed. CallBuild will panic if the file doesn't exist.
+//   - args are flags and steps that should be executed in the build. If none are passed, then CallBuild will panic.
 func CallBuild(buildFile PathString, args ...string) *Command {
+	if !buildFile.Exists() {
+		panic(fmt.Sprintf("Unable to locate build file at '%s'. If this is in a Git submodule, try updating submodules first", buildFile.String()))
+	}
+	if len(args) == 0 {
+		panic("No build steps specified")
+	}
 	gt := goToolsAt(buildFile)
 	rel, err := gt.ModuleRoot().Rel(buildFile)
 	if err != nil {
