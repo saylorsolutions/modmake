@@ -77,7 +77,7 @@ func NewBuild() *Build {
 //   - args are flags and steps that should be executed in the build. If none are passed, then CallBuild will panic.
 func CallBuild(buildFile PathString, args ...string) *Command {
 	if !buildFile.Exists() {
-		panic(fmt.Sprintf("Unable to locate build file at '%s'. If this is in a Git submodule, try checking it out first", buildFile.String()))
+		panic(fmt.Sprintf("Unable to locate build file at '%s'. If this is in a Git submodule, try updating submodules first", buildFile.String()))
 	}
 	if len(args) == 0 {
 		panic("No build steps specified")
