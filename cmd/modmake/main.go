@@ -4,14 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	. "github.com/saylorsolutions/modmake"
 	"log"
 	"os"
 	"strings"
+
+	. "github.com/saylorsolutions/modmake"
 )
 
 var (
-	gitBranch = "UNKNONWN BRANCH"
+	gitBranch = "UNKNOWN BRANCH"
 	gitHash   = "UNKNOWN COMMIT"
 )
 
