@@ -1,6 +1,7 @@
 package modmake
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"sort"
@@ -88,6 +89,24 @@ func CallBuild(buildFile PathString, args ...string) *Command {
 		panic(fmt.Sprintf("Unable to determine relative location to '%s' from module root path: %v", buildFile, err))
 	}
 	return gt.Run(rel.String(), args...).WorkDir(gt.ModuleRoot())
+}
+
+// CallRemote will execute a Modmake build on a remote module.
+// The module parameter is the module name and version in the same form as would be used to 'go get' the module.
+// The buildPath parameter is the path within the module, relative to the module root, where the Modmake build file is located.
+// Finally, the args parameters are all steps and flags that should be used to invoke the build.
+func CallRemote(module string, buildPath PathString, args ...string) Task {
+	return func(ctx context.Context) error {
+		info, err := Go().modDownload(ctx, module)
+		if err != nil {
+			return fmt.Errorf("failed to download remote module '%s': %w", module, err)
+		}
+		path := Path(info.Dir).JoinPath(buildPath)
+		if err := CallBuild(path, args...).Run(ctx); err != nil {
+			return fmt.Errorf("failed to invoke module '%s' build at '%s' with build args '%s': %w", module, path.String(), strings.Join(args, " "), err)
+		}
+		return nil
+	}
 }
 
 // Workdir sets the working directory for running build steps.

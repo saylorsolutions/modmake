@@ -157,6 +157,17 @@ func TestSubmoduleCallBuild(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func ExampleCallBuild() {
+	callHelloWorldExample := Task(func(ctx context.Context) error {
+		return CallBuild("example/helloworld/build.go", "build").Run(ctx)
+	})
+	if err := callHelloWorldExample(context.TODO()); err != nil {
+		panic(err)
+	}
+
+	// Output:
+}
+
 func BenchmarkLargeCycle_1000(b *testing.B) {
 	build := func() *Build {
 		steps := make([]*Step, 1_000)
@@ -211,4 +222,24 @@ func TestBuild_Import(t *testing.T) {
 	assert.True(t, ok, "Step 'other:print' should have been imported")
 	_, ok = b.StepOk("print")
 	assert.False(t, ok, "Other 'print' step should not have been imported")
+}
+
+func TestCallRemote(t *testing.T) {
+	module := "github.com/saylorsolutions/modmake@v0.2.2"
+	buildPath := Path("example/helloworld/build.go")
+	err := CallRemote(module, buildPath, "build").Run(context.TODO())
+	assert.NoError(t, err)
+}
+
+func ExampleCallRemote() {
+	callHelloWorldExample := Task(func(ctx context.Context) error {
+		module := "github.com/saylorsolutions/modmake@v0.2.2"
+		buildPath := Path("example/helloworld/build.go")
+		return CallRemote(module, buildPath, "build").Run(context.TODO())
+	})
+	if err := callHelloWorldExample(context.TODO()); err != nil {
+		panic(err)
+	}
+
+	// Output:
 }

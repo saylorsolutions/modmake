@@ -1,10 +1,12 @@
 package modmake
 
 import (
+	"context"
 	"fmt"
-	"github.com/saylorsolutions/modmake/assert"
 	"runtime"
 	"strings"
+
+	"github.com/saylorsolutions/modmake/assert"
 )
 
 // AppBuildFunc is a function used to customize an AppBuild or AppVariant's build step.
@@ -57,16 +59,28 @@ func PackageZip() AppPackageFunc {
 	}
 }
 
+// PackageGoInstall will copy the binary to GOPATH/bin.
+// This is the default packaging for the AppBuild generated install step.
+func PackageGoInstall() AppPackageFunc {
+	return func(binaryPath, _ PathString, app, _, version string) Task {
+		gopathBin := Path(Go().GetEnv("GOPATH"), "bin")
+		return Task(func(ctx context.Context) error {
+			return binaryPath.CopyTo(gopathBin.JoinPath(binaryPath.Base()))
+		}).Then(Print(warnColor("Ensure that " + gopathBin.String() + " is on your PATH to easily access " + app)))
+	}
+}
+
 // AppBuild is a somewhat opinionated abstraction over the common pattern of building a static executable, including packaging.
 // The build step may be customized as needed, and different OS/Arch variants may be created as needed.
 // Each built executable will be output to ${MODROOT}/build/${APP}_${VARIANT_NAME}/${APP}
 // Default packaging will write a zip or tar.gz to ${MODROOT}/dist/${APP}/${APP}_${VARIANT_NAME}_${VERSION}.(zip|tar.gz)
 // Each variant may override or remove its packaging step.
 type AppBuild struct {
-	mainPath, version string
-	buildFunc         AppBuildFunc
-	variants          []*AppVariant
-	appName           string
+	mainPath, version  string
+	buildFunc          AppBuildFunc
+	variants           []*AppVariant
+	appName            string
+	installPackageFunc AppPackageFunc
 }
 
 // NewAppBuild creates a new AppBuild with the given details.
@@ -80,9 +94,10 @@ func NewAppBuild(appName, mainPath, version string) *AppBuild {
 		mainPath = Go().ToModulePath(mainPath)
 	}
 	return &AppBuild{
-		appName:  appName,
-		mainPath: mainPath,
-		version:  version,
+		appName:            appName,
+		mainPath:           mainPath,
+		version:            version,
+		installPackageFunc: PackageGoInstall(),
 	}
 }
 
@@ -95,8 +110,19 @@ func (a *AppBuild) hasVariant(variant string) bool {
 	return false
 }
 
+// Build allows customizing the GoBuild used to build all variants, which may be further customized for a specific AppVariant.
 func (a *AppBuild) Build(bf AppBuildFunc) *AppBuild {
 	a.buildFunc = bf
+	return a
+}
+
+// Install allows specifying the AppPackageFunc used for installation.
+// This defaults to PackageGoInstall.
+func (a *AppBuild) Install(pf AppPackageFunc) *AppBuild {
+	if pf == nil {
+		return a
+	}
+	a.installPackageFunc = pf
 	return a
 }
 
@@ -158,6 +184,10 @@ func (a *AppBuild) generateBuild() *Build {
 			b.Package().DependsOn(pkgStep)
 		}
 	}
+	installVariant := a.NamedVariant("install", runtime.GOOS, runtime.GOARCH).Package(a.installPackageFunc)
+	installStep := NewStep("install", "Installs "+a.appName).Does(a.pkgTask(installVariant))
+	installStep.BeforeRun(a.goBuild(installVariant))
+	b.AddStep(installStep)
 	return b
 }
 
@@ -173,7 +203,6 @@ func (b *Build) ImportApp(a *AppBuild) {
 type AppVariant struct {
 	variant, os, arch    string
 	buildOutput, distDir PathString
-	gobuild              *GoBuild
 	buildFunc            AppBuildFunc
 	packageFunc          AppPackageFunc
 }
@@ -181,7 +210,7 @@ type AppVariant struct {
 // HostVariant creates an AppVariant with the current host's GOOS and GOARCH settings.
 // Packaging will be disabled by default for this variant.
 func (a *AppBuild) HostVariant() *AppVariant {
-	return a.NamedVariant("localtest", runtime.GOOS, runtime.GOARCH).NoPackage()
+	return a.NamedVariant("local", runtime.GOOS, runtime.GOARCH).NoPackage()
 }
 
 // Variant creates an AppVariant with the given OS and architecture settings.

@@ -149,7 +149,11 @@ func main() {
             <li><code>test</code> - This step should run unit tests in the project. Depends on <code>generate</code>.</li>
             <li><code>benchmark</code> - This step is skipped by default (it's not very often that these need to be run), but the step is here when required. Depends on <code>test</code>.</li>
             <li><code>build</code> - This step is for building the code </li>
+            <li><code>package</code> - This step is for packaging executables into an easily distributable/deployable format. </li>
         </ul>
+        <aside>
+            Additionally, the steps <code>graph</code> and <code>steps</code> may not be created, as these are reserved for getting step dependencies and listing, respectively.
+        </aside>
         <h3 id="build-model_tasks">Tasks</h3>
         <p>
             At a more atomic level there exists a <code>Task</code>.
