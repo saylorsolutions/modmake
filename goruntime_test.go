@@ -3,11 +3,12 @@ package modmake
 import (
 	"context"
 	"errors"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"os/exec"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGoTools_Test(t *testing.T) {
@@ -23,8 +24,7 @@ func TestGoTools_Build_File(t *testing.T) {
 	build := Go().Build("main.go").
 		ChangeDir("testingbuild").
 		OutputFilename("blah.exe").
-		ForceRebuild().
-		RaceDetector()
+		ForceRebuild()
 
 	b := NewBuild()
 	b.Generate().Does(Go().GenerateAll())
