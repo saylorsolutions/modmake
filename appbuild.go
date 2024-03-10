@@ -3,9 +3,10 @@ package modmake
 import (
 	"context"
 	"fmt"
-	"github.com/saylorsolutions/modmake/assert"
 	"runtime"
 	"strings"
+
+	"github.com/saylorsolutions/modmake/assert"
 )
 
 // AppBuildFunc is a function used to customize an AppBuild or AppVariant's build step.
@@ -202,7 +203,6 @@ func (b *Build) ImportApp(a *AppBuild) {
 type AppVariant struct {
 	variant, os, arch    string
 	buildOutput, distDir PathString
-	gobuild              *GoBuild
 	buildFunc            AppBuildFunc
 	packageFunc          AppPackageFunc
 }

@@ -4,14 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/fatih/color"
-	flag "github.com/spf13/pflag"
 	"log"
 	"os"
 	"os/signal"
 	"runtime/debug"
 	"strings"
 	"time"
+
+	"github.com/fatih/color"
+	flag "github.com/spf13/pflag"
 )
 
 var (
@@ -195,6 +196,6 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 		}
 	}
 
-	log.Printf(okColor(fmt.Sprintf("Ran successfully in %s\n", time.Since(start).Round(time.Millisecond).String())))
+	log.Print(okColor(fmt.Sprintf("Ran successfully in %s\n", time.Since(start).Round(time.Millisecond).String())))
 	return nil
 }
