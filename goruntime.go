@@ -7,13 +7,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/saylorsolutions/cache"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/saylorsolutions/cache"
 )
 
 // GoTools provides some utility functions for interacting with the go tool chain.
@@ -288,12 +289,12 @@ type moduleInfo struct {
 func (g *GoTools) modDownload(ctx context.Context, module string) (moduleInfo, error) {
 	var (
 		output bytes.Buffer
+		mod    moduleInfo
 	)
 	if err := Go().Command("mod", "download", "-json", module).CaptureStdin().Stdout(&output).Run(ctx); err != nil {
 		return moduleInfo{}, fmt.Errorf("failed to download module: %w", err)
 	}
-	var mod moduleInfo
-	if err := json.NewDecoder(bytes.NewReader(output.Bytes())).Decode(&mod); err != nil {
+	if err := json.NewDecoder(&output).Decode(&mod); err != nil {
 		return moduleInfo{}, fmt.Errorf("failed to decode module info: %w", err)
 	}
 	return mod, nil
