@@ -16,6 +16,9 @@ func (m EnvMap) merge(other EnvMap) EnvMap {
 		return m
 	}
 	for k, v := range other {
+		if len(k) == 0 {
+			continue
+		}
 		m[strings.ToUpper(k)] = v
 	}
 	return m
