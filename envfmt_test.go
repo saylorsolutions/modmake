@@ -1,6 +1,7 @@
 package modmake
 
 import (
+	"os"
 	"strings"
 	"testing"
 
@@ -79,4 +80,17 @@ func TestF(t *testing.T) {
 			assert.Equal(t, tc.out, result)
 		})
 	}
+}
+
+func TestF_DynamicVariables(t *testing.T) {
+	const (
+		nonExistentKey = "SOME_KEY_THAT_SHOULD_NOT_BE_A_THING"
+		value          = "some value"
+	)
+	oldEnv := Environment()
+	assert.NoError(t, os.Setenv(nonExistentKey, value))
+	newEnv := Environment()
+	assert.Equal(t, "", oldEnv[nonExistentKey])
+	assert.NotEqual(t, oldEnv[nonExistentKey], newEnv[nonExistentKey])
+	assert.Equal(t, value, newEnv[nonExistentKey])
 }
