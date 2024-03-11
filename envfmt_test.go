@@ -1,11 +1,13 @@
 package modmake
 
 import (
+	"fmt"
 	"os"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestF(t *testing.T) {
@@ -69,6 +71,11 @@ func TestF(t *testing.T) {
 				"NAME": "Bob",
 			},
 		},
+		"Variables can have default values": {
+			in:   "A string with a name of ${ name : John }",
+			out:  "A string with a name of John",
+			data: nil,
+		},
 	}
 
 	for name, tc := range tests {
@@ -88,9 +95,25 @@ func TestF_DynamicVariables(t *testing.T) {
 		value          = "some value"
 	)
 	oldEnv := Environment()
+	require.Equal(t, "", oldEnv[nonExistentKey])
 	assert.NoError(t, os.Setenv(nonExistentKey, value))
 	newEnv := Environment()
 	assert.Equal(t, "", oldEnv[nonExistentKey])
 	assert.NotEqual(t, oldEnv[nonExistentKey], newEnv[nonExistentKey])
 	assert.Equal(t, value, newEnv[nonExistentKey])
+}
+
+func ExampleF() {
+	fmt.Println(F("My string has a variable reference ${BUILD_NUM}?", EnvMap{
+		"BUILD_NUM": "1",
+	}))
+	fmt.Println(F("My string has a variable reference ${:$}{BUILD_NUM}?"))
+	fmt.Println(F("My string that references build ${BUILD_NUM}."))
+	fmt.Println(F("My string that references build ${BUILD_NUM:0}."))
+
+	// Output:
+	// My string has a variable reference 1?
+	// My string has a variable reference ${BUILD_NUM}?
+	// My string that references build .
+	// My string that references build 0.
 }

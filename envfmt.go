@@ -40,10 +40,21 @@ func Environment() EnvMap {
 // Variable placeholders may be specified like ${ENV_VAR_NAME}. The example below will replace ${BUILD_NUM} with a value from the environment, or an empty string.
 // If a variable either doesn't exist in the environment, or has an empty value, then an empty string will replace the variable placeholder.
 //
-//	str := "My string that references build ${BUILD_NUM}"
+//	str := F("My string that references build ${BUILD_NUM}")
 //
 // Note that the "${" prefix and "}" suffix are required, but the variable name may be space padded for readability if desired.
 // Also, variable names are case insensitive.
+//
+// A default value for interpolation can be specified with a colon (":") separator after the key.
+// In the example below, if BUILD_NUM was not defined, then the string "0" would be used instead.
+//
+//	str := F("My string that references build ${BUILD_NUM:0}")
+//
+// Note that whitespace characters in default values will always be trimmed.
+// The string "${" can still be expressed in F strings, but it must be formatted to use a default value, which means that interpolation cannot be recursive.
+// The string output from the function call below will be "My string has a variable reference ${BUILD_NUM}".
+//
+//	str := F("My string has a variable reference ${:$}{BUILD_NUM}")
 func F(fmt string, data ...EnvMap) string {
 	return string(FReader(strings.NewReader(fmt), data...))
 }
@@ -100,7 +111,8 @@ func replaceIdentifier(in io.RuneReader, data EnvMap) []byte {
 		END_BRACE = '}'
 	)
 	var (
-		varBuf strings.Builder
+		varBuf       strings.Builder
+		defaultValue string
 	)
 	for {
 		r, _, err := in.ReadRune()
@@ -108,7 +120,15 @@ func replaceIdentifier(in io.RuneReader, data EnvMap) []byte {
 			return nil
 		}
 		if r == END_BRACE {
-			return []byte(data[strings.ToUpper(strings.TrimSpace(varBuf.String()))])
+			baseKey := strings.TrimSpace(varBuf.String())
+			if before, after, found := strings.Cut(baseKey, ":"); found {
+				baseKey, defaultValue = strings.TrimSpace(before), strings.TrimSpace(after)
+			}
+			baseKey = strings.ToUpper(baseKey)
+			if val, ok := data[baseKey]; ok {
+				return []byte(val)
+			}
+			return []byte(defaultValue)
 		}
 		varBuf.WriteRune(r)
 	}
