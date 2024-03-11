@@ -1,6 +1,7 @@
 package modmake
 
 import (
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -191,6 +192,9 @@ func (p PathString) CopyTo(other PathString) error {
 
 // Cat will - assuming the PathString points to a file - read all data from the file and return it as a byte slice.
 func (p PathString) Cat() ([]byte, error) {
+	if p.IsDir() {
+		return nil, errors.New("path references a directory")
+	}
 	f, err := p.Open()
 	if err != nil {
 		return nil, err
