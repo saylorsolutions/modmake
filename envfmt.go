@@ -9,6 +9,8 @@ import (
 )
 
 // EnvMap is a specialized map for holding environment variables that are used to interpolate strings.
+// Note that map keys are changed to a consistent case when merged with the environment values.
+// So if multiple keys with the same characters but different cases are merged, then the eventual merged value is non-deterministic.
 type EnvMap map[string]string
 
 func (m EnvMap) merge(other EnvMap) EnvMap {
