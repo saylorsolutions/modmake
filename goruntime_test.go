@@ -3,10 +3,12 @@ package modmake
 import (
 	"context"
 	"errors"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"os/exec"
+	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGoTools_Test(t *testing.T) {
@@ -22,8 +24,7 @@ func TestGoTools_Build_File(t *testing.T) {
 	build := Go().Build("main.go").
 		ChangeDir("testingbuild").
 		OutputFilename("blah.exe").
-		ForceRebuild().
-		RaceDetector()
+		ForceRebuild()
 
 	b := NewBuild()
 	b.Generate().Does(Go().GenerateAll())
@@ -86,4 +87,24 @@ func TestScanGoMod(t *testing.T) {
 	root, found = scanGoMod(_cwd)
 	assert.True(t, found, "Should have found the root of the module")
 	assert.Equal(t, _cwd.Join("go.mod").String(), root.String(), "Current working directory should be the root of the module")
+}
+
+func TestModDownload(t *testing.T) {
+	modInfo, err := Go().modDownload(context.Background(), "github.com/saylorsolutions/modmake@v0.2.2")
+	assert.NoError(t, err)
+	assert.NotEmpty(t, modInfo.Dir)
+	t.Logf("%#v", modInfo)
+}
+
+func TestGoTools_GetEnv(t *testing.T) {
+	cmd := exec.Command("go", "env", "GOPATH")
+	output, err := cmd.Output()
+	assert.NoError(t, err)
+	want := strings.TrimSpace(string(output))
+
+	var got string
+	assert.NotPanics(t, func() {
+		got = Go().GetEnv("GOPATH")
+	})
+	assert.Equal(t, want, got)
 }

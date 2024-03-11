@@ -2,16 +2,19 @@ package modmake
 
 import (
 	"bufio"
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/saylorsolutions/cache"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/saylorsolutions/cache"
 )
 
 // GoTools provides some utility functions for interacting with the go tool chain.
@@ -52,16 +55,24 @@ func Go() *GoTools {
 }
 
 func goToolsAt(path PathString) *GoTools {
+	gt, err := goToolsAtErr(path)
+	if err != nil {
+		panic(err)
+	}
+	return gt
+}
+
+func goToolsAtErr(path PathString) (*GoTools, error) {
 	if path.IsFile() {
 		path = path.Dir()
 	}
 	goModPath, found := scanGoMod(path)
 	if !found {
-		panic(fmt.Sprintf("Unable to locate go.mod from path '%s'", path.String()))
+		return nil, fmt.Errorf("unable to locate go.mod from path '%s'", path.String())
 	}
 	modName, err := moduleNameLookup(goModPath)
 	if err != nil {
-		panic(fmt.Sprintf("Failed to parse module name from file '%s': %v", goModPath, err))
+		return nil, fmt.Errorf("failed to parse module name from file '%s': %v", goModPath, err)
 	}
 	return &GoTools{
 		goRootPath: Go().goRootPath,
@@ -71,7 +82,7 @@ func goToolsAt(path PathString) *GoTools {
 		moduleName: cache.New[string](func() (string, error) {
 			return modName, nil
 		}),
-	}
+	}, nil
 }
 
 func initGoInst() (*GoTools, error) {
@@ -144,6 +155,19 @@ func (g *GoTools) InvalidateCache() {
 func (g *GoTools) goTool() string {
 	goRootPath, _ := g.goRootPath.Get()
 	return filepath.Join(goRootPath, "bin", "go")
+}
+
+// GetEnv will call "go env $key", and return the value of the named environment variable.
+// If an error occurs, then the call will panic.
+func (g *GoTools) GetEnv(key string) string {
+	var output bytes.Buffer
+	timeout, cancelFunc := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFunc()
+	err := g.Command("env", key).CaptureStdin().Stdout(&output).Run(timeout)
+	if err != nil {
+		panic(err)
+	}
+	return strings.TrimSpace(output.String())
 }
 
 // ModuleRoot returns a filesystem path to the root of the current module.
@@ -244,6 +268,36 @@ func (g *GoTools) GetUpdated(pkg string) *Command {
 
 func (g *GoTools) ModTidy() *Command {
 	return Exec(g.goTool(), "mod", "tidy")
+}
+
+// moduleInfo is a struct used to capture the JSON output of a module download.
+type moduleInfo struct {
+	Path     string // module path
+	Query    string // version query corresponding to this version
+	Version  string // module version
+	Error    string // error loading module
+	Info     string // absolute path to cached .info file
+	GoMod    string // absolute path to cached .mod file
+	Zip      string // absolute path to cached .zip file
+	Dir      string // absolute path to cached source root directory
+	Sum      string // checksum for path, version (as in go.sum)
+	GoModSum string // checksum for go.mod (as in go.sum)
+	Origin   any    // provenance of module
+	Reuse    bool   // reuse of old module info is safe
+}
+
+func (g *GoTools) modDownload(ctx context.Context, module string) (moduleInfo, error) {
+	var (
+		output bytes.Buffer
+		mod    moduleInfo
+	)
+	if err := Go().Command("mod", "download", "-json", module).CaptureStdin().Stdout(&output).Run(ctx); err != nil {
+		return moduleInfo{}, fmt.Errorf("failed to download module: %w", err)
+	}
+	if err := json.NewDecoder(&output).Decode(&mod); err != nil {
+		return moduleInfo{}, fmt.Errorf("failed to decode module info: %w", err)
+	}
+	return mod, nil
 }
 
 func (g *GoTools) Test(patterns ...string) *Command {

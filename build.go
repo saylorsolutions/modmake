@@ -1,6 +1,7 @@
 package modmake
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"sort"
@@ -73,15 +74,39 @@ func NewBuild() *Build {
 // CallBuild is preferable over [Build.Import] for building separate go modules.
 // If you're building a component of the same go module, then use [Build.Import].
 //
-//   - buildFile should be the filesystem path to the build that should be executed
-//   - args are flags and steps that should be executed in the build
+//   - buildFile should be the filesystem path to the build that should be executed. CallBuild will panic if the file doesn't exist.
+//   - args are flags and steps that should be executed in the build. If none are passed, then CallBuild will panic.
 func CallBuild(buildFile PathString, args ...string) *Command {
+	if !buildFile.Exists() {
+		panic(fmt.Sprintf("Unable to locate build file at '%s'. If this is in a Git submodule, try updating submodules first", buildFile.String()))
+	}
+	if len(args) == 0 {
+		panic("No build steps specified")
+	}
 	gt := goToolsAt(buildFile)
 	rel, err := gt.ModuleRoot().Rel(buildFile)
 	if err != nil {
 		panic(fmt.Sprintf("Unable to determine relative location to '%s' from module root path: %v", buildFile, err))
 	}
 	return gt.Run(rel.String(), args...).WorkDir(gt.ModuleRoot())
+}
+
+// CallRemote will execute a Modmake build on a remote module.
+// The module parameter is the module name and version in the same form as would be used to 'go get' the module.
+// The buildPath parameter is the path within the module, relative to the module root, where the Modmake build file is located.
+// Finally, the args parameters are all steps and flags that should be used to invoke the build.
+func CallRemote(module string, buildPath PathString, args ...string) Task {
+	return func(ctx context.Context) error {
+		info, err := Go().modDownload(ctx, module)
+		if err != nil {
+			return fmt.Errorf("failed to download remote module '%s': %w", module, err)
+		}
+		path := Path(info.Dir).JoinPath(buildPath)
+		if err := CallBuild(path, args...).Run(ctx); err != nil {
+			return fmt.Errorf("failed to invoke module '%s' build at '%s' with build args '%s': %w", module, path.String(), strings.Join(args, " "), err)
+		}
+		return nil
+	}
 }
 
 // Workdir sets the working directory for running build steps.

@@ -89,9 +89,9 @@ func TestBuild_ImportApp_Default(t *testing.T) {
 	b := NewBuild()
 	a := NewAppBuild("testapp", "cmd/modmake", "1.0.0")
 	b.ImportApp(a)
-	_, ok := b.StepOk("testapp:build-testapp_localtest")
+	_, ok := b.StepOk("testapp:build-testapp_local")
 	assert.True(t, ok, "A default task should be created when no variants are added")
-	assert.Len(t, a.variants, 1)
+	assert.Len(t, a.variants, 2) // Implied install variant.
 }
 
 func TestBuild_ImportApp(t *testing.T) {
@@ -101,9 +101,9 @@ func TestBuild_ImportApp(t *testing.T) {
 	mac := a.Variant("darwin", "amd64")
 	lin := a.Variant("linux", "arm64")
 	b.ImportApp(a)
-	_, ok := b.StepOk("testapp:localtest")
+	_, ok := b.StepOk("testapp:local")
 	assert.False(t, ok, "A default task should NOT be created when variants are added")
-	assert.Len(t, a.variants, 3)
+	assert.Len(t, a.variants, 4) // An extra install variant is created.
 
 	shouldExist := []string{
 		"testapp:build-testapp_windows_amd64",
@@ -112,6 +112,7 @@ func TestBuild_ImportApp(t *testing.T) {
 		"testapp:package-testapp_darwin_amd64",
 		"testapp:build-testapp_linux_arm64",
 		"testapp:package-testapp_linux_arm64",
+		"testapp:install",
 
 		// These should be equivalent to the list above
 		"testapp:" + a.buildName(win),
@@ -120,9 +121,10 @@ func TestBuild_ImportApp(t *testing.T) {
 		"testapp:" + a.packageName(mac),
 		"testapp:" + a.buildName(lin),
 		"testapp:" + a.packageName(lin),
+		"testapp:install", // Not referencable using app, implied creation at the time of build generation.
 	}
-	for i := 6; i < len(shouldExist); i++ {
-		assert.Equal(t, shouldExist[i-6], shouldExist[i])
+	for i := 7; i < len(shouldExist); i++ {
+		assert.Equal(t, shouldExist[i-7], shouldExist[i])
 	}
 	for _, step := range shouldExist {
 		_, ok := b.StepOk(step)
