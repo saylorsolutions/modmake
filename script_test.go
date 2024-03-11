@@ -3,26 +3,29 @@ package modmake
 import (
 	"context"
 	"fmt"
-	"github.com/bitfield/script"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestExecScript(t *testing.T) {
 	err := Script(
 		Task(func(_ context.Context) error {
-			_, err := script.File("script.go").WriteFile("script.go.copy")
+			return Path("script.go").CopyTo("script.go.copy")
+		}),
+		Task(func(_ context.Context) error {
+			data, err := Path("script.go.copy").Cat()
+			if err != nil {
+				return err
+			}
+			fmt.Println(string(data))
 			return err
 		}),
 		Task(func(_ context.Context) error {
-			_, err := script.File("script.go.copy").Stdout()
-			return err
-		}),
-		Task(func(_ context.Context) error {
-			return os.Remove("script.go.copy")
+			return Path("script.go.copy").Remove()
 		}),
 	).Run(context.Background())
 	assert.NoError(t, err)
@@ -68,9 +71,9 @@ func TestCopyFile_Abs(t *testing.T) {
 	assert.True(t, fname2.Exists())
 	assert.True(t, fname.Exists())
 
-	data, err := script.File(fname2.String()).String()
+	data, err := fname2.Cat()
 	assert.NoError(t, err)
-	assert.Equal(t, "Hello!", data)
+	assert.Equal(t, "Hello!", string(data))
 }
 
 func TestMoveFile(t *testing.T) {
@@ -93,9 +96,9 @@ func TestMoveFile(t *testing.T) {
 	assert.True(t, fname2.Exists())
 	assert.False(t, fname.Exists())
 
-	data, err := script.File(fname2.String()).String()
+	data, err := fname2.Cat()
 	assert.NoError(t, err)
-	assert.Equal(t, "Hello!", data)
+	assert.Equal(t, "Hello!", string(data))
 }
 
 func ExampleIfError() {
