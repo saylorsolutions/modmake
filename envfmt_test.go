@@ -104,16 +104,16 @@ func TestF_DynamicVariables(t *testing.T) {
 }
 
 func ExampleF() {
-	fmt.Println(F("My string has a variable reference ${BUILD_NUM}?", EnvMap{
-		"BUILD_NUM": "1",
+	fmt.Println(F("My string has a variable reference ${SOME_BUILD_NUM}?", EnvMap{
+		"SOME_BUILD_NUM": "1",
 	}))
-	fmt.Println(F("My string has a variable reference ${:$}{BUILD_NUM}?"))
-	fmt.Println(F("My string that references build ${BUILD_NUM}."))
-	fmt.Println(F("My string that references build ${BUILD_NUM:0}."))
+	fmt.Println(F("My string has a variable reference ${:$}{SOME_BUILD_NUM}?"))
+	fmt.Println(F("My string that references build ${SOME_BUILD_NUM}."))
+	fmt.Println(F("My string that references build ${SOME_BUILD_NUM:0}."))
 
 	// Output:
 	// My string has a variable reference 1?
-	// My string has a variable reference ${BUILD_NUM}?
+	// My string has a variable reference ${SOME_BUILD_NUM}?
 	// My string that references build .
 	// My string that references build 0.
 }
