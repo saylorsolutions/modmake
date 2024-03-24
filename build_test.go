@@ -225,7 +225,7 @@ func TestBuild_Import(t *testing.T) {
 	assert.False(t, ok, "Other 'print' step should not have been imported")
 }
 
-func TestBuild_Import_Recursive(t *testing.T) {
+func TestBuild_ImportAndLink(t *testing.T) {
 	outer := NewBuild()
 	middle := NewBuild()
 	inner := NewBuild()
