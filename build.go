@@ -152,7 +152,7 @@ func (b *Build) AddStep(step *Step) {
 	}
 	name := strings.ToLower(step.name)
 	step.name = name
-	if reservedStepNames[step.name] {
+	if _, ok := reservedStepNames[step.name]; ok {
 		panic(fmt.Errorf("step name '%s' is reserved", name))
 	}
 	if _, ok := b.stepNames[step.name]; ok {
@@ -191,6 +191,17 @@ func (b *Build) Import(prefix string, other *Build) {
 		step.name = prefix + ":" + name
 		b.AddStep(step)
 	}
+	for k := range standardStepNames {
+		b.Step(k).DependsOn(b.Step(prefix + ":" + k))
+	}
+}
+
+// ImportAndLink will import the build, and make its standard steps a dependency of the parent Build's standard steps.
+func (b *Build) ImportAndLink(prefix string, other *Build) {
+	b.Import(prefix, other)
+	for k := range standardStepNames {
+		b.Step(k).DependsOn(b.Step(prefix + ":" + k))
+	}
 }
 
 func (b *Build) Graph(verbose bool) {
@@ -221,7 +232,7 @@ func (b *Build) Graph(verbose bool) {
 	}
 
 	for _, stepName := range b.Steps() {
-		if reservedStepNames[stepName] {
+		if _, ok := reservedStepNames[stepName]; ok {
 			continue
 		}
 		step := b.Step(stepName)

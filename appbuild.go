@@ -194,9 +194,7 @@ func (a *AppBuild) generateBuild() *Build {
 // ImportApp imports an AppBuild as a new build, attaching its build and package steps as dependencies of the parent build.
 func (b *Build) ImportApp(a *AppBuild) {
 	other := a.generateBuild()
-	b.Import(a.appName, other)
-	b.Build().DependsOn(b.Step(a.appName + ":build"))
-	b.Package().DependsOn(b.Step(a.appName + ":package"))
+	b.ImportAndLink(a.appName, other)
 }
 
 // AppVariant is a variant of an AppBuild with an OS/Arch specified.
