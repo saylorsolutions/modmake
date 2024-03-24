@@ -42,17 +42,25 @@ const (
 	StateFailed                     // StateFailed means that the Step has already run and failed.
 )
 
-var reservedStepNames = map[string]bool{
-	"tools":     true,
-	"generate":  true,
-	"test":      true,
-	"benchmark": true,
-	"build":     true,
-	"package":   true,
+var standardStepNames = map[string]struct{}{
+	"tools":     {},
+	"generate":  {},
+	"test":      {},
+	"benchmark": {},
+	"build":     {},
+	"package":   {},
+}
+
+var reservedStepNames = map[string]struct{}{}
+
+func init() {
+	for k, v := range standardStepNames {
+		reservedStepNames[k] = v
+	}
 
 	// Reserved so they don't conflict with Execute commands.
-	"graph": true,
-	"steps": true,
+	reservedStepNames["graph"] = struct{}{}
+	reservedStepNames["steps"] = struct{}{}
 }
 
 // Step is a step in a Build, a consistent fixture that may be invoked.
@@ -91,7 +99,7 @@ func newStep(name, description string) *Step {
 // By default, [Step.Run] will do nothing, have no dependencies, and have no before/after hooks.
 func NewStep(name, description string) *Step {
 	name = strings.ToLower(name)
-	if ok := reservedStepNames[name]; ok {
+	if _, ok := reservedStepNames[name]; ok {
 		panic(fmt.Sprintf("step name '%s' is reserved by the build system", name))
 	}
 	if strings.Contains(name, ":") {

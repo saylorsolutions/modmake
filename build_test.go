@@ -3,9 +3,10 @@ package modmake
 import (
 	"context"
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func ExampleBuild_Graph() {
@@ -222,6 +223,39 @@ func TestBuild_Import(t *testing.T) {
 	assert.True(t, ok, "Step 'other:print' should have been imported")
 	_, ok = b.StepOk("print")
 	assert.False(t, ok, "Other 'print' step should not have been imported")
+}
+
+func TestBuild_ImportAndLink(t *testing.T) {
+	outer := NewBuild()
+	middle := NewBuild()
+	inner := NewBuild()
+
+	middle.ImportAndLink("inner", inner)
+	middle.Step("inner:build").DependsOn(middle.Test())
+	outer.ImportAndLink("middle", middle)
+
+	steps := outer.Steps()
+	expected := []string{
+		"benchmark",
+		"build",
+		"generate",
+		"middle:benchmark",
+		"middle:build",
+		"middle:generate",
+		"middle:inner:benchmark",
+		"middle:inner:build",
+		"middle:inner:generate",
+		"middle:inner:package",
+		"middle:inner:test",
+		"middle:inner:tools",
+		"middle:package",
+		"middle:test",
+		"middle:tools",
+		"package",
+		"test",
+		"tools",
+	}
+	assert.Equal(t, expected, steps)
 }
 
 func TestCallRemote(t *testing.T) {
