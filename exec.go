@@ -167,3 +167,7 @@ func (i *Command) Run(ctx context.Context) error {
 		return cmd.Run()
 	}
 }
+
+func (i *Command) Task() Task {
+	return i.Run
+}

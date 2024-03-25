@@ -254,6 +254,10 @@ func (c *GoClean) Run(ctx context.Context) error {
 	return c.Command.Run(ctx)
 }
 
+func (c *GoClean) Task() Task {
+	return c.Run
+}
+
 func (g *GoTools) Install(pkg string) *Command {
 	return Exec(g.goTool(), "install", pkg)
 }
@@ -708,6 +712,10 @@ func (b *GoBuild) Run(ctx context.Context) error {
 
 	b.cmd.Arg(keySlice(b.targets)...)
 	return b.cmd.Run(ctx)
+}
+
+func (b *GoBuild) Task() Task {
+	return b.Run
 }
 
 func (g *GoTools) Run(target string, args ...string) *Command {
