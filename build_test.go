@@ -11,11 +11,11 @@ import (
 
 func ExampleBuild_Graph() {
 	b := NewBuild()
-	b.Tools().DependsOn(NewStep("print-tools", "").Does(Task(func(ctx context.Context) error {
+	b.Tools().DependsOn(b.AddNewStep("print-tools", "", Task(func(ctx context.Context) error {
 		fmt.Println("Running in tools")
 		return nil
 	})))
-	b.Package().DependsOn(NewStep("print-pkg", "").Does(Task(func(ctx context.Context) error {
+	b.Package().DependsOn(b.AddNewStep("print-pkg", "", Task(func(ctx context.Context) error {
 		fmt.Println("Running in package")
 		return nil
 	})))

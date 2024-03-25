@@ -146,6 +146,7 @@ func (b *Build) Package() *Step {
 	return b.packageStep
 }
 
+// AddStep adds an existing custom step to the build.
 func (b *Build) AddStep(step *Step) {
 	if step == nil {
 		panic("nil step")
@@ -160,6 +161,13 @@ func (b *Build) AddStep(step *Step) {
 	}
 	b.stepNames[name] = step
 	step.build = b
+}
+
+// AddNewStep is a shortcut for adding a new step to a build.
+func (b *Build) AddNewStep(name, description string, run Runner) *Step {
+	step := NewStep(name, description).Does(run)
+	b.AddStep(step)
+	return step
 }
 
 func (b *Build) Step(name string) *Step {
