@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
 func TestContextAware(t *testing.T) {
@@ -36,4 +37,75 @@ func TestStepLifecycle(t *testing.T) {
 	step.Does(Print("Running the 'example' step"))
 	step.AfterRun(Print("Running after hook"))
 	assert.NoError(t, step.Run(context.Background()))
+}
+
+func TestStep_ResetState(t *testing.T) {
+	var (
+		aExecuted, bExecuted int
+		ctx                  = context.Background()
+	)
+	stepA := NewStep("step-a", "").Does(Plain(func() {
+		aExecuted++
+	}))
+	stepB := NewStep("step-b", "").Does(Plain(func() {
+		bExecuted++
+	}))
+	stepA.DependsOn(stepB)
+	assert.NoError(t, stepA.Run(ctx))
+	assert.Equal(t, 1, aExecuted)
+	assert.Equal(t, 1, bExecuted)
+	assert.NoError(t, stepA.Run(ctx))
+	assert.Equal(t, 1, aExecuted)
+	assert.Equal(t, 1, bExecuted)
+	assert.NoError(t, stepB.Run(ctx))
+	assert.Equal(t, 1, bExecuted)
+	stepA.ResetState()
+	assert.NoError(t, stepA.Run(ctx))
+	assert.Equal(t, 2, aExecuted)
+	assert.Equal(t, 2, bExecuted)
+	assert.NoError(t, stepB.Run(ctx))
+	assert.Equal(t, 2, bExecuted)
+}
+
+func TestStep_Debounce(t *testing.T) {
+	var (
+		executed int
+		stopped  int
+		ctx      = context.Background()
+	)
+	stepA := NewStep("step-a", "").Does(WithoutErr(func(ctx context.Context) {
+		select {
+		case <-ctx.Done():
+			t.Log("stopped")
+			stopped++
+		case <-time.After(200 * time.Millisecond):
+			t.Log("executed")
+			executed++
+		}
+	}))
+
+	debounced := stepA.Debounce(100 * time.Millisecond)
+	sync := func() { _ = debounced.Run(ctx) }
+	async := func() {
+		go func() {
+			_ = debounced.Run(ctx)
+		}()
+	}
+
+	assert.Equal(t, 0, executed)
+	assert.Equal(t, 0, stopped)
+	async()
+	async()
+	async()
+	time.Sleep(250 * time.Millisecond)
+	assert.Equal(t, 1, executed)
+	assert.Equal(t, 0, stopped)
+
+	async()
+	async()
+	async()
+	time.Sleep(150 * time.Millisecond)
+	sync()
+	assert.Equal(t, 2, executed)
+	assert.Equal(t, 1, stopped)
 }

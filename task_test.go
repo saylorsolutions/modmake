@@ -5,6 +5,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"log"
 	"testing"
+	"time"
 )
 
 func TestTask_Then(t *testing.T) {
@@ -73,4 +74,24 @@ func TestWithoutContext(t *testing.T) {
 	cancel()
 	err = fn.Run(ctx)
 	assert.ErrorIs(t, err, context.Canceled)
+}
+
+func TestTask_Debounce(t *testing.T) {
+	var (
+		ctx      = context.Background()
+		executed int
+	)
+	task := Plain(func() { executed++ }).Debounce(100 * time.Millisecond)
+	assert.NoError(t, task(ctx))
+	assert.NoError(t, task(ctx))
+	assert.NoError(t, task(ctx))
+	assert.Equal(t, 1, executed)
+	assert.NoError(t, task(ctx))
+	assert.Equal(t, 1, executed)
+	time.Sleep(50 * time.Millisecond)
+	assert.NoError(t, task(ctx))
+	assert.Equal(t, 1, executed)
+	time.Sleep(100 * time.Millisecond)
+	assert.NoError(t, task(ctx))
+	assert.Equal(t, 2, executed)
 }
