@@ -8,6 +8,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
+	"time"
 )
 
 type Command struct {
@@ -164,7 +166,24 @@ func (i *Command) Run(ctx context.Context) error {
 		cmd.Stderr = i.stderr
 		cmd.Stdin = i.stdin
 		cmd.Dir = i.workdir
-		return cmd.Run()
+		cmd.Cancel = func() error {
+			if cmd.Process != nil {
+				if runtime.GOOS == "windows" {
+					return cmd.Process.Kill()
+				} else {
+					return cmd.Process.Signal(os.Interrupt)
+				}
+			}
+			return nil
+		}
+		cmd.WaitDelay = 5 * time.Second
+		if err := cmd.Start(); err != nil {
+			return err
+		}
+		if err := cmd.Wait(); err != nil {
+			return err
+		}
+		return nil
 	}
 }
 
