@@ -2,17 +2,20 @@ package git
 
 import (
 	"github.com/stretchr/testify/assert"
+	"strings"
 	"testing"
 )
 
 func TestTools_BranchName(t *testing.T) {
-	g := NewTools()
-	b := g.BranchName()
-	assert.True(t, len(b) > 0)
+	branch := BranchName()
+	t.Log("branch:", branch)
+	assert.Equal(t, strings.TrimSpace(branch), branch)
+	assert.True(t, len(branch) > 0)
 }
 
 func TestTools_CommitHash(t *testing.T) {
-	g := NewTools()
-	h := g.CommitHash()
-	assert.True(t, len(h) > 0)
+	hash := CommitHash()
+	t.Log("hash:", hash)
+	assert.Equal(t, strings.TrimSpace(hash), hash)
+	assert.True(t, len(hash) > 0)
 }

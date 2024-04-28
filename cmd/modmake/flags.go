@@ -31,7 +31,7 @@ func setupFlags() *appFlags {
 	flags.BoolVar(&flags.printVersion, "version", false, "Prints the git branch and hash from which the CLI was built")
 	flags.StringVar(&flags.watchDir, "watch", "", "Watches a directory for changes and re-runs the given step when a file changes. A comma-separated filename glob pattern list can be added to the watch path to only restart the task when matching files are changed. Filename globs, if used, should be separated from the path by ':'.")
 	flags.BoolVar(&flags.watchSubdirs, "subdirs", false, "Used with 'watch' to also watch sub-directories for file changes. Sub-directories created after watching has started will not be watched for file changes.")
-	flags.DurationVar(&flags.watchInterval, "debounce", 2*time.Second, "Sets the debounce interval for watched tasks. This only applies if the 'watch' flag is used. Must be greater than zero.")
+	flags.DurationVar(&flags.watchInterval, "debounce", 200*time.Millisecond, "Sets the debounce interval for watched tasks. This only applies if the 'watch' flag is used. Must be greater than zero, and may need to be set higher if files matching a pattern are generated while the step(s) run.")
 
 	flags.Usage = func() {
 		fmt.Printf(`modmake is a convenience CLI that allows easily auto-discovering and running a modmake build.

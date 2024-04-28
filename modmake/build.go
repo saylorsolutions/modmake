@@ -9,10 +9,6 @@ const (
 	version = "0.4.0"
 )
 
-var (
-	_git = git.NewTools()
-)
-
 func main() {
 	b := NewBuild()
 	b.Tools().Does(Go().ModTidy())
@@ -25,8 +21,8 @@ func main() {
 		Build(func(gb *GoBuild) {
 			gb.
 				StripDebugSymbols().
-				SetVariable("main", "gitHash", _git.CommitHash()).
-				SetVariable("main", "gitBranch", _git.BranchName())
+				SetVariable("main", "gitHash", git.CommitHash()).
+				SetVariable("main", "gitBranch", git.BranchName())
 		})
 	a.HostVariant()
 	a.Variant("windows", "amd64")
