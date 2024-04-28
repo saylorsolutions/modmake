@@ -4,11 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	. "github.com/saylorsolutions/modmake"
 	"log"
 	"os"
 	"strings"
-
-	. "github.com/saylorsolutions/modmake"
 )
 
 var (
@@ -79,6 +78,9 @@ func runBuild(ctx context.Context, target string, flags *appFlags) error {
 			return fmt.Errorf("invalid environment variable format, '%s' must be 'KEY=VALUE'", env)
 		}
 		run.Env(strings.TrimSpace(kv[0]), strings.TrimSpace(kv[1]))
+	}
+	if len(flags.watchDir) > 0 {
+		return runWatching(ctx, run.Task(), flags)
 	}
 	return run.Run(ctx)
 }
