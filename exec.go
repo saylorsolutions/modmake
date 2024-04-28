@@ -8,7 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
+	"syscall"
 	"time"
 )
 
@@ -166,16 +166,8 @@ func (i *Command) Run(ctx context.Context) error {
 		cmd.Stderr = i.stderr
 		cmd.Stdin = i.stdin
 		cmd.Dir = i.workdir
-		cmd.Cancel = func() error {
-			if cmd.Process != nil {
-				if runtime.GOOS == "windows" {
-					return cmd.Process.Kill()
-				} else {
-					return cmd.Process.Signal(os.Interrupt)
-				}
-			}
-			return nil
-		}
+		cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+		cmd.Cancel = cancelIncludeChildren(cmd)
 		cmd.WaitDelay = 5 * time.Second
 		if err := cmd.Start(); err != nil {
 			return err
