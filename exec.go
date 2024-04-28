@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"syscall"
 	"time"
 )
 
@@ -166,7 +165,7 @@ func (i *Command) Run(ctx context.Context) error {
 		cmd.Stderr = i.stderr
 		cmd.Stdin = i.stdin
 		cmd.Dir = i.workdir
-		cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+		customizeCmd(cmd)
 		cmd.Cancel = cancelIncludeChildren(cmd)
 		cmd.WaitDelay = 5 * time.Second
 		if err := cmd.Start(); err != nil {

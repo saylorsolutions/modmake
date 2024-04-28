@@ -2,7 +2,12 @@ package modmake
 
 import (
 	"os/exec"
+	"strconv"
 )
+
+func customizeCmd(_ *exec.Cmd) {
+	return
+}
 
 func cancelIncludeChildren(cmd *exec.Cmd) func() error {
 	return func() error {
