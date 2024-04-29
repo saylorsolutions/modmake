@@ -1,92 +1,92 @@
 package git
 
 import (
+	"context"
 	"errors"
-	"github.com/go-git/go-billy/v5/osfs"
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
-	gitcache "github.com/go-git/go-git/v5/plumbing/cache"
-	"github.com/go-git/go-git/v5/storage/filesystem"
-	"github.com/saylorsolutions/cache"
+	"fmt"
+	"github.com/saylorsolutions/modmake"
 	"os"
+	"os/exec"
 	"path/filepath"
-	"sync"
+	"strings"
+	"time"
 )
 
-type Tools struct {
-	mux     sync.RWMutex
-	rootDir *cache.Value[string]
-	head    *cache.Value[*plumbing.Reference]
+var (
+	ErrNoGit = errors.New("unable to locate git executable")
+)
+
+// Exec will produce a [modmake.Command] that executes a git command.
+// This function will panic if a git executable cannot be located on the PATH.
+func Exec(subcmd string, args ...string) *modmake.Command {
+	path, err := exec.LookPath("git")
+	if err != nil {
+		panic(fmt.Errorf("%w: %v", ErrNoGit, err))
+	}
+	if len(path) == 0 {
+		panic(ErrNoGit)
+	}
+	return modmake.Exec(append([]string{"git", subcmd}, args...)...).CaptureStdin()
 }
 
-// NewTools returns a new instance of Tools that may be reused for multiple operations.
-// A single instance should only be used in a single repository or submodule.
-// If an error occurs while trying to cache the Git context, then this function will panic.
-func NewTools() *Tools {
-	return initGitInst()
+// ExecOutput will delegate to Exec and run the returned [modmake.Command], but will collect its output into a string.
+// This will also set a max execution time of 5 seconds.
+// If you want to override this timeout or exit after some other condition, then use [ExecOutputCtx].
+func ExecOutput(subcmd string, args ...string) (string, error) {
+	timeout, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	return ExecOutputCtx(timeout, subcmd, args...)
 }
 
-func initGitInst() *Tools {
-	tools := new(Tools)
-	tools.rootDir = cache.New[string](func() (string, error) {
-		tools.mux.RLock()
-		defer tools.mux.RUnlock()
-		cwd, err := os.Getwd()
-		if err != nil {
-			return "", err
+// ExecOutputCtx will delegate to Exec and run the returned [modmake.Command], but will collect its output into a string.
+// If the context is cancelled, then the command will exit.
+func ExecOutputCtx(ctx context.Context, subcmd string, args ...string) (string, error) {
+	var (
+		buf strings.Builder
+	)
+	if err := Exec(subcmd, args...).Output(&buf).Run(ctx); err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(buf.String()), nil
+}
+
+// RepositoryRoot will attempt to locate the root path of the git repository.
+func RepositoryRoot() string {
+	cwd, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	prev := ""
+	for {
+		if prev == cwd {
+			panic(fmt.Sprintf("directory '%s' is not in a git repository", cwd))
 		}
-		var (
-			prev = ""
-		)
-		for cwd != prev {
-			fd, err := os.Stat(filepath.Join(cwd, ".git"))
-			if err == nil && fd.IsDir() {
-				return cwd, nil
-			}
-			prev = cwd
-			cwd = filepath.Dir(cwd)
+		fi, err := os.Stat(filepath.Join(cwd, ".git"))
+		if errors.Is(err, os.ErrNotExist) {
+			continue
 		}
-		return "", errors.New("unable to find the git repository root directory")
-	})
-	tools.head = cache.New(func() (*plumbing.Reference, error) {
-		tools.mux.RLock()
-		defer tools.mux.RUnlock()
-		root, err := tools.rootDir.Get()
-		if err != nil {
-			return nil, err
+		if fi.IsDir() {
+			return cwd
 		}
-		fs := osfs.New(filepath.Join(root, ".git"))
-		s := filesystem.NewStorageWithOptions(fs, gitcache.NewObjectLRUDefault(), filesystem.Options{
-			KeepDescriptors: true,
-		})
-		r, err := git.Open(s, fs)
-		if err != nil {
-			return nil, err
-		}
-		ref, err := r.Head()
-		if err != nil {
-			return nil, err
-		}
-		return ref, nil
-	})
-	return tools
+		prev = cwd
+		cwd = filepath.Dir(cwd)
+	}
 }
 
-func (g *Tools) InvalidateCache() {
-	g.mux.Lock()
-	defer g.mux.Unlock()
-	g.rootDir.Invalidate()
-	g.head.Invalidate()
+// BranchName returns the name of the currently checked out branch.
+func BranchName() string {
+	output, err := ExecOutput("rev-parse", "--abbrev-ref", "HEAD")
+	if err != nil {
+		panic(err)
+	}
+	return output
 }
 
-func (g *Tools) RepositoryRoot() string {
-	return g.rootDir.MustGet()
-}
-
-func (g *Tools) BranchName() string {
-	return g.head.MustGet().Name().Short()
-}
-
-func (g *Tools) CommitHash() string {
-	return g.head.MustGet().Hash().String()
+// CommitHash returns the commit hash of the currently checked out commit.
+func CommitHash() string {
+	output, err := ExecOutput("rev-parse", "HEAD")
+	if err != nil {
+		panic(err)
+	}
+	return output
 }
