@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"time"
 )
 
 type Command struct {
@@ -167,11 +166,7 @@ func (i *Command) Run(ctx context.Context) error {
 		cmd.Dir = i.workdir
 		customizeCmd(cmd)
 		cmd.Cancel = cancelIncludeChildren(cmd)
-		cmd.WaitDelay = 5 * time.Second
-		if err := cmd.Start(); err != nil {
-			return err
-		}
-		if err := cmd.Wait(); err != nil {
+		if err := cmd.Run(); err != nil {
 			return err
 		}
 		return nil

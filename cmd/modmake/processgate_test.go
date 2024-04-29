@@ -18,7 +18,7 @@ func TestProcessGate_Start(t *testing.T) {
 	})
 	assert.Equal(t, 0, executed)
 	start := func() {
-		_ = gate.Start()
+		assert.NoError(t, gate.Start())
 	}
 	go start()
 	go start()
@@ -67,7 +67,7 @@ func TestProcessGate_Stop(t *testing.T) {
 	assert.Equal(t, 1, executed)
 	err := gate.Start()
 	assert.Error(t, err)
-	assert.NotErrorIs(t, err, ErrLocked, "The next call to start should report the error returned from the previous iteration")
+	assert.NotErrorIs(t, err, ErrLocked, "The next call to start should report the error returned from the previous execution")
 	time.Sleep(100 * time.Millisecond)
 	assert.Equal(t, 1, executed, "The task should not have run with a previous run returning an error")
 	assert.ErrorIs(t, gate.Stop(), ErrLocked, "The call to stop should report the gate is locked, due to the previous error")
