@@ -1,9 +1,10 @@
 module github.com/saylorsolutions/modmake
 
-go 1.19
+go 1.20
 
 require (
 	github.com/fatih/color v1.16.0
+	github.com/fsnotify/fsnotify v1.7.0
 	github.com/go-git/go-billy/v5 v5.5.0
 	github.com/go-git/go-git/v5 v5.11.0
 	github.com/saylorsolutions/cache v1.2.0

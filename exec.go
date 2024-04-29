@@ -164,7 +164,12 @@ func (i *Command) Run(ctx context.Context) error {
 		cmd.Stderr = i.stderr
 		cmd.Stdin = i.stdin
 		cmd.Dir = i.workdir
-		return cmd.Run()
+		customizeCmd(cmd)
+		cmd.Cancel = cancelIncludeChildren(cmd)
+		if err := cmd.Run(); err != nil {
+			return err
+		}
+		return nil
 	}
 }
 
