@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -293,4 +294,36 @@ func (s *Step) UnSkip() *Step {
 func (s *Step) SkipDependencies() *Step {
 	s.shouldSkipDeps = true
 	return s
+}
+
+// ResetState resets the state of a Step such that it can be run again.
+// This includes all of its dependencies.
+func (s *Step) ResetState() *Step {
+	for _, dep := range s.dependencies {
+		dep.ResetState()
+	}
+	s.state = StateNotRun
+	return s
+}
+
+func (s *Step) Debounce(interval time.Duration) Task {
+	if s == nil {
+		panic("nil step")
+	}
+	if interval <= time.Duration(0) {
+		panic(fmt.Sprintf("invalid debounce interval: %d", int64(interval)))
+	}
+	var (
+		reset = func() {}
+	)
+	return Task(func(base context.Context) error {
+		reset()
+		ctx, cancel := context.WithCancel(base)
+		reset = sync.OnceFunc(func() {
+			cancel()
+			s.ResetState()
+		})
+		defer reset()
+		return s.Run(ctx)
+	}).Debounce(interval)
 }

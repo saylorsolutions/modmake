@@ -3,6 +3,8 @@ package modmake
 import (
 	"context"
 	"fmt"
+	"sync/atomic"
+	"time"
 )
 
 // Task is a convenient way to make a function that satisfies the Runner interface, and allows for more flexible invocation options.
@@ -91,5 +93,23 @@ func (t Task) Catch(catch func(error) Task) Task {
 			return catch(err).Run(ctx)
 		}
 		return nil
+	}
+}
+
+func (t Task) Debounce(interval time.Duration) Task {
+	if interval <= time.Duration(0) {
+		panic(fmt.Sprintf("invalid debounce interval: %d", int64(interval)))
+	}
+
+	var bouncing atomic.Bool
+	return func(ctx context.Context) error {
+		ready := bouncing.CompareAndSwap(false, true)
+		if !ready {
+			return nil
+		}
+		time.AfterFunc(interval, func() {
+			bouncing.CompareAndSwap(true, false)
+		})
+		return t.Run(ctx)
 	}
 }

@@ -340,6 +340,7 @@ type GoBuild struct {
 	printPackages bool
 	printCommands bool
 	stripDebug    bool
+	trimPath      bool
 	buildMode     string
 	gcFlags       map[string]bool
 	ldFlags       map[string]bool
@@ -551,12 +552,23 @@ func (b *GoBuild) GoCompileFlags(flags ...string) *GoBuild {
 	return b
 }
 
-// StripDebugSymbols will remove debugging information from the built artifact, including file paths from panic output, reducing file size.
+// StripDebugSymbols will remove debugging information from the built artifact, reducing file size.
+// Assumes TrimPath as well.
 func (b *GoBuild) StripDebugSymbols() *GoBuild {
 	if b.err != nil {
 		return b
 	}
 	b.stripDebug = true
+	b.trimPath = true
+	return b
+}
+
+// TrimPath will remove build host filesystem path prefix information from the binary.
+func (b *GoBuild) TrimPath() *GoBuild {
+	if b.err != nil {
+		return b
+	}
+	b.trimPath = true
 	return b
 }
 
@@ -696,8 +708,8 @@ func (b *GoBuild) Run(ctx context.Context) error {
 	if len(b.gcFlags) > 0 {
 		b.cmd.Arg(fmt.Sprintf("-gcflags=%s", strings.Join(keySlice(b.gcFlags), " ")))
 	}
+	b.cmd.OptArg(b.trimPath, "-trimpath")
 	if b.stripDebug {
-		b.cmd.Arg("-trimpath")
 		b.LinkerFlags("-s", "-w")
 	}
 	if len(b.ldFlags) > 0 {
