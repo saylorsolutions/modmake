@@ -68,6 +68,10 @@ aside {
     margin: var(--base-pad) 0;
 }
 
+aside > p {
+    margin: 0;
+}
+
 .header {
     position: absolute;
     z-index: var(--z-header);
