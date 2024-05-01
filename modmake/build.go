@@ -1,17 +1,30 @@
 package main
 
 import (
+	"fmt"
 	. "github.com/saylorsolutions/modmake"
 	"github.com/saylorsolutions/modmake/pkg/git"
 )
 
 const (
-	version = "0.4.0"
+	version  = "0.4.0"
+	docsPath = "/modmake"
+	latestGo = 22
 )
 
 func main() {
 	b := NewBuild()
-	b.Tools().Does(Go().ModTidy())
+	b.Tools().DependsOnRunner("install-modmake-docs", "",
+		CallRemote("github.com/saylorsolutions/modmake-docs@latest", "modmake/build.go", "modmake-docs:install"))
+	b.Generate().DependsOnRunner("mod-tidy", "", Go().ModTidy())
+	b.Generate().DependsOnRunner("gen-docs", "",
+		Exec("modmake-docs", "generate").
+			Arg("--base-path="+docsPath).
+			Arg(fmt.Sprintf("--latest-go=1.%d", latestGo)).
+			Arg(fmt.Sprintf("--latest-supported=1.%d", latestGo-2)).
+			Arg("--modmake-version=v"+version).
+			WorkDir("./docs"),
+	)
 	b.Test().Does(Go().TestAll())
 	b.Benchmark().Does(Go().BenchmarkAll())
 	b.Build().DependsOnRunner("clean-build", "", RemoveDir("build"))
