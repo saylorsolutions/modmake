@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
+	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 )
@@ -102,11 +105,23 @@ func CallRemote(module string, buildPath PathString, args ...string) Task {
 			return fmt.Errorf("failed to download remote module '%s': %w", module, err)
 		}
 		path := Path(info.Dir).JoinPath(buildPath)
+		if err := chmodWrite(info.Dir); err != nil {
+			return err
+		}
 		if err := CallBuild(path, args...).Run(ctx); err != nil {
 			return fmt.Errorf("failed to invoke module '%s' build at '%s' with build args '%s': %w", module, path.String(), strings.Join(args, " "), err)
 		}
 		return nil
 	}
+}
+
+func chmodWrite(root string) error {
+	return filepath.Walk(root, func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		return os.Chmod(path, info.Mode()|0200)
+	})
 }
 
 // Workdir sets the working directory for running build steps.
