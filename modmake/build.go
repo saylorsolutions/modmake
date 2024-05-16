@@ -44,7 +44,8 @@ func main() {
 			gb.
 				StripDebugSymbols().
 				SetVariable("main", "gitHash", git.CommitHash()).
-				SetVariable("main", "gitBranch", git.BranchName())
+				SetVariable("main", "gitBranch", git.BranchName()).
+				SetVariable("main", "runtimeVersion", version)
 		})
 	a.HostVariant()
 	a.Variant("windows", "amd64")
