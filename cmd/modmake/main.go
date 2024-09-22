@@ -11,8 +11,9 @@ import (
 )
 
 var (
-	gitBranch = "UNKNOWN BRANCH"
-	gitHash   = "UNKNOWN COMMIT"
+	gitBranch      = "UNKNOWN BRANCH"
+	gitHash        = "UNKNOWN COMMIT"
+	runtimeVersion = "UNKNOWN VERSION"
 )
 
 func main() {
@@ -43,7 +44,7 @@ func run(ctx context.Context, flags *appFlags) error {
 		return nil
 	}
 	if flags.printVersion {
-		fmt.Printf("modmake branch: '%s', commit hash: '%s'\n", gitBranch, gitHash)
+		fmt.Printf("version: '%s', modmake branch: '%s', commit hash: '%s'\n", runtimeVersion, gitBranch, gitHash)
 		return nil
 	}
 	if flags.rootOverride != "" {
