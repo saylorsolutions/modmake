@@ -71,33 +71,41 @@ func NewBuild() *Build {
 }
 
 // CallBuild allows easily referencing and calling another modmake build.
-// os.Chdir will be called with the module root before go-running the build file, so the buildFile parameter should be relative to the module root.
+// os.Chdir will be called with the module root before go-running the build file, so the buildFile parameter should be relative to the module root, like any Modmake build.
 // This is safe to use with Git submodules because a GoTools instance will be created based on the location of the Modmake build file and the closest module.
 //
 // CallBuild is preferable over [Build.Import] for building separate go modules.
 // If you're building a component of the same go module, then use [Build.Import].
 //
-//   - buildFile should be the filesystem path to the build that should be executed. CallBuild will panic if the file doesn't exist.
+//   - buildLocation should be the filesystem path to the build (file or directory) that should be executed. CallBuild will panic if the file doesn't exist.
 //   - args are flags and steps that should be executed in the build. If none are passed, then CallBuild will panic.
-func CallBuild(buildFile PathString, args ...string) *Command {
-	if !buildFile.Exists() {
-		panic(fmt.Sprintf("Unable to locate build file at '%s'. If this is in a Git submodule, try updating submodules first", buildFile.String()))
+func CallBuild(buildLocation PathString, args ...string) *Command {
+	if !buildLocation.Exists() {
+		panic(fmt.Sprintf("Unable to locate build file at '%s'. If this is in a Git submodule, try updating submodules first", buildLocation.String()))
 	}
 	if len(args) == 0 {
 		panic("No build steps specified")
 	}
-	gt := goToolsAt(buildFile)
-	rel, err := gt.ModuleRoot().Rel(buildFile)
+	gt := goToolsAt(buildLocation)
+	rel, err := gt.ModuleRoot().Rel(buildLocation)
 	if err != nil {
-		panic(fmt.Sprintf("Unable to determine relative location to '%s' from module root path: %v", buildFile, err))
+		panic(fmt.Sprintf("Unable to determine relative location to '%s' from module root path: %v", buildLocation, err))
 	}
-	return gt.Run(rel.String(), args...).WorkDir(gt.ModuleRoot())
+	// Go tools expects slash format
+	relSlash := rel.ToSlash()
+	if !strings.HasPrefix(relSlash, "./") {
+		relSlash = "./" + relSlash
+	}
+	return gt.Run(relSlash, args...).WorkDir(gt.ModuleRoot())
 }
 
 // CallRemote will execute a Modmake build on a remote module.
 // The module parameter is the module name and version in the same form as would be used to 'go get' the module.
 // The buildPath parameter is the path within the module, relative to the module root, where the Modmake build file is located.
 // Finally, the args parameters are all steps and flags that should be used to invoke the build.
+//
+// NOTE: If the remote build relies on Git information, then this method of calling the remote build will not work.
+// Try using [TempDir] with [github.com/saylorsolutions/modmake/pkg/git.CloneAt] to make sure the build can reference those details.
 func CallRemote(module string, buildPath PathString, args ...string) Task {
 	return func(ctx context.Context) error {
 		info, err := Go().modDownload(ctx, module)
