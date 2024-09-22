@@ -96,6 +96,22 @@ func (t Task) Catch(catch func(error) Task) Task {
 	}
 }
 
+// Finally can be used to run a function after a [Task] executes, regardless whether it was successful.
+//
+// The given function will receive the error returned from the base [Task], and may be nil.
+// If the given function returns a non-nil error, it will be returned from the produced function.
+// Otherwise, the error from the underlying [Task] will be returned.
+func (t Task) Finally(finally func(err error) error) Task {
+	return func(ctx context.Context) (terr error) {
+		defer func() {
+			if err := finally(terr); err != nil {
+				terr = err
+			}
+		}()
+		return t.Run(ctx)
+	}
+}
+
 func (t Task) Debounce(interval time.Duration) Task {
 	if interval <= time.Duration(0) {
 		panic(fmt.Sprintf("invalid debounce interval: %d", int64(interval)))

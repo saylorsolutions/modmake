@@ -11,8 +11,8 @@ import (
 )
 
 // Script will execute each Task in order, returning the first error.
-func Script(fns ...Runner) Runner {
-	return Task(func(ctx context.Context) error {
+func Script(fns ...Runner) Task {
+	return func(ctx context.Context) error {
 		for i, fn := range fns {
 			run := ContextAware(fn)
 			if err := run.Run(ctx); err != nil {
@@ -20,7 +20,7 @@ func Script(fns ...Runner) Runner {
 			}
 		}
 		return nil
-	})
+	}
 }
 
 // IfNotExists will skip executing the Runner if the given file exists, returning nil.

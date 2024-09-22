@@ -95,3 +95,19 @@ func TestTask_Debounce(t *testing.T) {
 	assert.NoError(t, task(ctx))
 	assert.Equal(t, 2, executed)
 }
+
+func TestTask_Finally(t *testing.T) {
+	var didFinally bool
+	task := Plain(func() {
+		assert.False(t, didFinally, "'didFinally' should not have been set yet")
+	}).
+		Finally(func(_ error) error {
+			didFinally = true
+			return nil
+		}).
+		Finally(func(_ error) error {
+			assert.True(t, didFinally, "Should have done finally")
+			return nil
+		})
+	assert.NoError(t, task.Run(context.Background()))
+}

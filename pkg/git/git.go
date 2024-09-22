@@ -13,7 +13,8 @@ import (
 )
 
 var (
-	ErrNoGit = errors.New("unable to locate git executable")
+	ErrNoGit    = errors.New("unable to locate git executable")
+	ExecTimeout = 5 * time.Second // Used to limit how long [Exec] should operate. May be overridden.
 )
 
 // Exec will produce a [modmake.Command] that executes a git command.
@@ -26,14 +27,14 @@ func Exec(subcmd string, args ...string) *modmake.Command {
 	if len(path) == 0 {
 		panic(ErrNoGit)
 	}
-	return modmake.Exec(append([]string{"git", subcmd}, args...)...).CaptureStdin()
+	return modmake.Exec(append([]string{path, subcmd}, args...)...).CaptureStdin()
 }
 
 // ExecOutput will delegate to Exec and run the returned [modmake.Command], but will collect its output into a string.
-// This will also set a max execution time of 5 seconds.
+// This will also use the execution limit of [ExecTimeout].
 // If you want to override this timeout or exit after some other condition, then use [ExecOutputCtx].
 func ExecOutput(subcmd string, args ...string) (string, error) {
-	timeout, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	timeout, cancel := context.WithTimeout(context.Background(), ExecTimeout)
 	defer cancel()
 	return ExecOutputCtx(timeout, subcmd, args...)
 }
@@ -45,7 +46,7 @@ func ExecOutputCtx(ctx context.Context, subcmd string, args ...string) (string, 
 		buf strings.Builder
 	)
 	if err := Exec(subcmd, args...).Output(&buf).Run(ctx); err != nil {
-		return "", err
+		return buf.String(), err
 	}
 	return strings.TrimSpace(buf.String()), nil
 }
