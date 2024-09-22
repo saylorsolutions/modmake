@@ -36,7 +36,7 @@ func doInit(modRoot PathString) error {
 			}
 			if !strings.Contains(string(modFileContent), modmakeModuleName) {
 				version := runtimeVersion
-				if version == "UNKNOWN VERSION" {
+				if version == unknownVersion {
 					log.Println("Init is best used with a pre-built version of the Modmake CLI to enable pinning compatible runtime versions")
 					log.Println("Pinning to latest as the most reasonable default")
 					version = "latest"
@@ -63,7 +63,7 @@ func doInit(modRoot PathString) error {
 			return initTempl.Execute(fd, nil)
 		}),
 	)
-	timeout, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	timeout, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	return initScript.Run(timeout)
 }

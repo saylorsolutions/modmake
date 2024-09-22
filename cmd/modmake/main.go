@@ -10,10 +10,14 @@ import (
 	"strings"
 )
 
+const (
+	unknownVersion = "UNKNOWN VERSION"
+)
+
 var (
 	gitBranch      = "UNKNOWN BRANCH"
 	gitHash        = "UNKNOWN COMMIT"
-	runtimeVersion = "UNKNOWN VERSION"
+	runtimeVersion = unknownVersion
 )
 
 func main() {
