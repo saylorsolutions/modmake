@@ -45,9 +45,7 @@ func ExecOutputCtx(ctx context.Context, subcmd string, args ...string) (string, 
 	var (
 		buf strings.Builder
 	)
-	timeout, cancel := context.WithTimeout(ctx, ExecTimeout)
-	defer cancel()
-	if err := Exec(subcmd, args...).Output(&buf).Run(timeout); err != nil {
+	if err := Exec(subcmd, args...).Output(&buf).Run(ctx); err != nil {
 		return buf.String(), err
 	}
 	return strings.TrimSpace(buf.String()), nil
