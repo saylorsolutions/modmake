@@ -44,7 +44,7 @@ Here are some reasons you may want to use this:
 * You want the build's working directory to default to the root of your module.
 * You want to easily and consistently override the working directory for the build.
 * You want to easily set one or more environment variables for the build, maybe so they act as parameters.
-* You want an easier way to invoke the build multiple times with different Go versions (-e GOROOT=/other/go/root).
+* You want to run a Modmake step repeatedly when files change.
 
 USAGE: modmake MODMAKE_FLAGS [-- BUILD_FLAGS] BUILD_STEPS
 

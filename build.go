@@ -40,8 +40,8 @@ type Build struct {
 func NewBuild() *Build {
 	tools := newStep("tools", "Installs external tools that will be needed later")
 	generate := newStep("generate", "Generates code, possibly using external tools").DependsOn(tools)
-	test := newStep("test", "Runs unit tests on the code base").DependsOn(generate)
-	bench := newStep("benchmark", "Runs benchmarking on the code base").DependsOn(test)
+	test := newStep("test", "Runs unit tests on the code base").DependsOn(generate).Does(Go().TestAll())
+	bench := newStep("benchmark", "Runs benchmarking on the code base").DependsOn(test).Does(Go().BenchmarkAll())
 	build := newStep("build", "Builds the code base and outputs an artifact").DependsOn(bench)
 	pkg := newStep("package", "Bundles one or more built artifacts into one or more distributable packages").DependsOn(build)
 	b := &Build{
