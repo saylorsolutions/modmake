@@ -1,21 +1,31 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	. "github.com/saylorsolutions/modmake"
 	"github.com/saylorsolutions/modmake/pkg/git"
 )
 
 const (
-	version  = "0.4.0"
+	version  = "0.4.1"
 	docsPath = "/modmake"
-	latestGo = 22
+	latestGo = 23
 )
 
 func main() {
+	Go().PinLatest(latestGo)
 	b := NewBuild()
 	b.Tools().DependsOnRunner("install-modmake-docs", "",
-		CallRemote("github.com/saylorsolutions/modmake-docs@latest", "modmake/build.go", "modmake-docs:install"))
+		TempDir("modmake-docs-*", func(tmp PathString) Task {
+			return Script(
+				git.CloneAt("https://github.com/saylorsolutions/modmake-docs.git", tmp),
+				Task(func(ctx context.Context) error {
+					return CallBuild(tmp.Join("modmake"), "modmake-docs:install").Run(ctx)
+				}),
+			)
+		}),
+	)
 	b.Generate().DependsOnRunner("mod-tidy", "", Go().ModTidy())
 	b.Generate().DependsOnRunner("gen-docs", "",
 		Exec("modmake-docs", "generate").
@@ -25,7 +35,6 @@ func main() {
 			Arg("--modmake-version=v"+version).
 			WorkDir("./docs"),
 	)
-	b.Test().Does(Go().TestAll())
 	b.Benchmark().Does(Go().BenchmarkAll())
 	b.Build().DependsOnRunner("clean-build", "", RemoveDir("build"))
 	b.Package().DependsOnRunner("clean-dist", "", RemoveDir("dist"))
@@ -35,7 +44,8 @@ func main() {
 			gb.
 				StripDebugSymbols().
 				SetVariable("main", "gitHash", git.CommitHash()).
-				SetVariable("main", "gitBranch", git.BranchName())
+				SetVariable("main", "gitBranch", git.BranchName()).
+				SetVariable("main", "runtimeVersion", version)
 		})
 	a.HostVariant()
 	a.Variant("windows", "amd64")

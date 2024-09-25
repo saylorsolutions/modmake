@@ -4,7 +4,7 @@ import (
 	"github.com/saylorsolutions/modmake"
 )
 
-// SubmoduleUpdateInit will run 'git submodule update --init <path>'.
+// SubmoduleUpdateInit will run 'git submodule update --init <path>', using path if it's given.
 func SubmoduleUpdateInit(path ...string) modmake.Task {
 	args := []string{"update", "--init"}
 	if len(path) > 0 {
@@ -13,7 +13,7 @@ func SubmoduleUpdateInit(path ...string) modmake.Task {
 	return Exec("submodule", args...).Task()
 }
 
-// SubmoduleUpdateRemote will run 'git submodule update --remote <path>'.
+// SubmoduleUpdateRemote will run 'git submodule update --remote <path>', using path if it's given.
 func SubmoduleUpdateRemote(path ...string) modmake.Task {
 	args := []string{"update", "--remote"}
 	if len(path) > 0 {
