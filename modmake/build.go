@@ -35,7 +35,6 @@ func main() {
 			Arg("--modmake-version=v"+version).
 			WorkDir("./docs"),
 	)
-	b.Test().Does(Go().TestAll())
 	b.Benchmark().Does(Go().BenchmarkAll())
 	b.Build().DependsOnRunner("clean-build", "", RemoveDir("build"))
 	b.Package().DependsOnRunner("clean-dist", "", RemoveDir("dist"))

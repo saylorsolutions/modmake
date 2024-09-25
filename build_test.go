@@ -62,6 +62,8 @@ func ExampleBuild_Execute() {
 		ranGenerate = true
 		return nil
 	}))
+	// Skipping tests in tests
+	b.Test().Skip()
 	b.Package().DependsOnRunner("print-pkg", "", Task(func(ctx context.Context) error {
 		fmt.Println("Running in package")
 		return nil
