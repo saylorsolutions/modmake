@@ -12,7 +12,7 @@ func TestProcessGate_Start(t *testing.T) {
 	var (
 		executed int
 	)
-	gate := newProcessGate(context.Background(), 100*time.Millisecond, func(ctx context.Context) error {
+	gate := newProcessGate(context.Background(), 200*time.Millisecond, func(ctx context.Context) error {
 		executed++
 		return nil
 	})
@@ -24,12 +24,12 @@ func TestProcessGate_Start(t *testing.T) {
 	go start()
 	go start()
 	assert.Equal(t, 0, executed)
-	time.Sleep(200 * time.Millisecond)
+	time.Sleep(400 * time.Millisecond)
 	assert.Equal(t, 1, executed)
 	go start()
 	go start()
 	go start()
-	time.Sleep(200 * time.Millisecond)
+	time.Sleep(400 * time.Millisecond)
 	assert.Equal(t, 2, executed)
 	assert.NoError(t, gate.Stop())
 }

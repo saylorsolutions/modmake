@@ -86,27 +86,27 @@ func goToolsAtErr(path PathString) (*GoTools, error) {
 }
 
 func initGoInst() (*GoTools, error) {
+	return initGoInstNamed("go")
+}
+
+func initGoInstNamed(goName string) (*GoTools, error) {
 	_goMux.Lock()
 	defer _goMux.Unlock()
 	if _goInstance != nil {
 		return _goInstance, nil
 	}
 	goRootPath := cache.New(func() (string, error) {
-		goRootDir, ok := os.LookupEnv("GOROOT")
-		if !ok || len(goRootDir) == 0 {
-			errMsg := "unable to resolve GOROOT, Go may not be installed correctly or on the PATH"
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-			defer cancel()
-			var output strings.Builder
-			err := Exec("go", "env", "GOROOT").Silent().Stdout(&output).Run(ctx)
-			if err != nil {
-				return "", fmt.Errorf("%s: %v", errMsg, err)
-			}
-			goRootDir = strings.TrimSpace(output.String())
-			if len(goRootDir) == 0 {
-				return "", errors.New(errMsg)
-			}
-			return goRootDir, nil
+		errMsg := "unable to resolve GOROOT, Go may not be installed correctly or on the PATH"
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		var output strings.Builder
+		err := Exec(goName, "env", "GOROOT").Silent().Stdout(&output).Run(ctx)
+		if err != nil {
+			return "", fmt.Errorf("%s: %v", errMsg, err)
+		}
+		goRootDir := strings.TrimSpace(output.String())
+		if len(goRootDir) == 0 {
+			return "", errors.New(errMsg)
 		}
 		return goRootDir, nil
 	})
@@ -129,6 +129,7 @@ func initGoInst() (*GoTools, error) {
 		goModPath:  modPath,
 		moduleName: moduleName,
 	}
+	_goInstance = inst
 	return inst, nil
 }
 
@@ -144,12 +145,7 @@ func moduleNameLookup(goModPath PathString) (string, error) {
 func (g *GoTools) InvalidateCache() {
 	_goMux.Lock()
 	defer _goMux.Unlock()
-	if _goInstance == nil {
-		return
-	}
-	g.goRootPath.Invalidate()
-	g.goModPath.Invalidate()
-	g.moduleName.Invalidate()
+	_goInstance = nil
 }
 
 func (g *GoTools) goTool() string {
