@@ -18,16 +18,22 @@ var (
 	_goVersionCache map[int]string
 )
 
-// PinLatest will replace the cached [GoTools] instance with one pinned to the latest patch version of the specified minor version.
+// PinLatest just defers to [GoTools.PinLatestV1].
+//
+// Deprecated: Use PinLatestV1 instead to disambiguate if there's ever a go v2.
+func (g *GoTools) PinLatest(minorVersion int) *GoTools {
+	return g.PinLatestV1(minorVersion)
+}
+
+// PinLatestV1 will replace the cached [GoTools] instance with one pinned to the latest patch version of the specified minor version.
 // To revert back to the system go version, use [GoTools.InvalidateCache].
 //
 // Note: For safety reasons, unstable release candidate versions are not considered.
 // If there is not a stable version available, then this function will panic.
-func (g *GoTools) PinLatest(minorVersion int) *GoTools {
+func (g *GoTools) PinLatestV1(minorVersion int) *GoTools {
 	_goMux.RLock()
 	curSysInstance := _goInstance
 	_goMux.RUnlock()
-	_goInstance = nil
 	// Grab the current system go binary directory
 	curGoBinPath := Path(curSysInstance.GetEnv("GOPATH"), "bin")
 	// Get the latest patch version to pin to
@@ -49,6 +55,7 @@ func (g *GoTools) PinLatest(minorVersion int) *GoTools {
 		panic(err)
 	}
 	// Initialize the new GoTools instance
+	_goInstance = nil
 	pinnedInstance, err := initGoInstNamed(pinnedGo.String())
 	if err != nil {
 		panic(fmt.Errorf("failed to initialize pinned go version '%s': %w", version, err))

@@ -29,6 +29,19 @@ type Build struct {
 	stepNames map[string]*Step
 }
 
+var hasTested bool
+var testOnce Task = func(ctx context.Context) error {
+	if hasTested {
+		return nil
+	}
+	return Script(
+		Go().TestAll(),
+		Plain(func() {
+			hasTested = true
+		}),
+	).Run(ctx)
+}
+
 // NewBuild constructs a new Build with the standard structure.
 // This includes the following steps:
 //   - tools for installing and verifying required tooling.
@@ -40,7 +53,7 @@ type Build struct {
 func NewBuild() *Build {
 	tools := newStep("tools", "Installs external tools that will be needed later")
 	generate := newStep("generate", "Generates code, possibly using external tools").DependsOn(tools)
-	test := newStep("test", "Runs unit tests on the code base").DependsOn(generate).Does(Go().TestAll())
+	test := newStep("test", "Runs unit tests on the code base").DependsOn(generate).Does(testOnce)
 	bench := newStep("benchmark", "Runs benchmarking on the code base").DependsOn(test).Does(Go().BenchmarkAll())
 	build := newStep("build", "Builds the code base and outputs an artifact").DependsOn(bench)
 	pkg := newStep("package", "Bundles one or more built artifacts into one or more distributable packages").DependsOn(build)
