@@ -14,7 +14,7 @@ const (
 )
 
 func main() {
-	Go().PinLatest(latestGo)
+	Go().PinLatestV1(latestGo)
 	b := NewBuild()
 	b.Tools().DependsOnRunner("install-modmake-docs", "",
 		TempDir("modmake-docs-*", func(tmp PathString) Task {

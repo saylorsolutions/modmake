@@ -19,9 +19,13 @@ func TestGoTools_PinLatest(t *testing.T) {
 
 	buf.Reset()
 	assert.NotPanics(t, func() {
-		inst = Go().PinLatest(6)
+		inst = Go().PinLatestV1(6)
 	})
 	assert.NoError(t, inst.Command("version").Output(&buf).Run(context.Background()))
+	assert.Contains(t, buf.String(), "1.6.4")
+
+	buf.Reset()
+	assert.NoError(t, Go().Command("version").Output(&buf).Run(context.Background()))
 	assert.Contains(t, buf.String(), "1.6.4")
 
 	buf.Reset()
