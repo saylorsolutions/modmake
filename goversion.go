@@ -31,11 +31,14 @@ func (g *GoTools) PinLatest(minorVersion int) *GoTools {
 // Note: For safety reasons, unstable release candidate versions are not considered.
 // If there is not a stable version available, then this function will panic.
 func (g *GoTools) PinLatestV1(minorVersion int) *GoTools {
-	_goMux.RLock()
-	curSysInstance := _goInstance
-	_goMux.RUnlock()
+	Go().InvalidateCache()
+	curSysInstance := Go()
 	// Grab the current system go binary directory
-	curGoBinPath := Path(curSysInstance.GetEnv("GOPATH"), "bin")
+	curGoPath := curSysInstance.GetEnv("GOPATH")
+	if len(curGoPath) == 0 {
+		panic(fmt.Sprintf("Unable to locate GOPATH for current go binary"))
+	}
+	curGoBinPath := Path(curGoPath, "bin")
 	// Get the latest patch version to pin to
 	version, err := queryLatestPatch(minorVersion)
 	if err != nil {

@@ -25,6 +25,7 @@ import (
 //
 // If your build logic needs to cross into another go module, try using CallBuild.
 type GoTools struct {
+	goName     string
 	goRootPath *cache.Value[string]
 	goModPath  *cache.Value[PathString]
 	moduleName *cache.Value[string]
@@ -75,6 +76,7 @@ func goToolsAtErr(path PathString) (*GoTools, error) {
 		return nil, fmt.Errorf("failed to parse module name from file '%s': %v", goModPath, err)
 	}
 	return &GoTools{
+		goName:     Go().goName,
 		goRootPath: Go().goRootPath,
 		goModPath: cache.New(func() (PathString, error) {
 			return goModPath, nil
@@ -96,7 +98,7 @@ func initGoInstNamed(goName string) (*GoTools, error) {
 		return _goInstance, nil
 	}
 	goRootPath := cache.New(func() (string, error) {
-		errMsg := "unable to resolve GOROOT, Go may not be installed correctly or on the PATH"
+		errMsg := fmt.Sprintf("unable to resolve GOROOT, '%s' may not be installed correctly or on the PATH", goName)
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		var output strings.Builder
@@ -106,6 +108,10 @@ func initGoInstNamed(goName string) (*GoTools, error) {
 		}
 		goRootDir := strings.TrimSpace(output.String())
 		if len(goRootDir) == 0 {
+			// Reasonable fallback for when we can't get GOROOT
+			if goName != "go" {
+				return "", nil
+			}
 			return "", errors.New(errMsg)
 		}
 		return goRootDir, nil
@@ -125,6 +131,7 @@ func initGoInstNamed(goName string) (*GoTools, error) {
 		return moduleNameLookup(path)
 	})
 	inst := &GoTools{
+		goName:     goName,
 		goRootPath: goRootPath,
 		goModPath:  modPath,
 		moduleName: moduleName,
@@ -149,7 +156,14 @@ func (g *GoTools) InvalidateCache() {
 }
 
 func (g *GoTools) goTool() string {
-	goRootPath, _ := g.goRootPath.Get()
+	// Override for when we already have an absolute path to the executable.
+	if g.goName != "go" {
+		return g.goName
+	}
+	goRootPath, err := g.goRootPath.Get()
+	if err != nil {
+		panic(fmt.Sprintf("failed to get GOROOT: %v", err))
+	}
 	return filepath.Join(goRootPath, "bin", "go")
 }
 
