@@ -15,8 +15,6 @@ func TestGoTools_PinLatest(t *testing.T) {
 		buf  bytes.Buffer
 	)
 	Go().InvalidateCache()
-	goPath := Go().GetEnv("GOPATH")
-	goBin := Go().GetEnv("GOBIN")
 	assert.NoError(t, Go().Command("version").Output(&buf).Run(context.Background()))
 	assert.NotContains(t, buf.String(), "1.6.4")
 
