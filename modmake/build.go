@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	. "github.com/saylorsolutions/modmake"
 	"github.com/saylorsolutions/modmake/pkg/git"
@@ -17,15 +16,7 @@ func main() {
 	Go().PinLatestV1(latestGo)
 	b := NewBuild()
 	b.Tools().DependsOnRunner("install-modmake-docs", "",
-		TempDir("modmake-docs-*", func(tmp PathString) Task {
-			return Script(
-				git.CloneAt("https://github.com/saylorsolutions/modmake-docs.git", tmp),
-				Task(func(ctx context.Context) error {
-					return CallBuild(tmp.Join("modmake"), "modmake-docs:install").Run(ctx)
-				}),
-			)
-		}),
-	)
+		CallBuild(Path("./cmd/modmake-docs/modmake"), "modmake-docs:install"))
 	b.Generate().DependsOnRunner("mod-tidy", "", Go().ModTidy())
 	b.Generate().DependsOnRunner("gen-docs", "",
 		Exec("modmake-docs", "generate").

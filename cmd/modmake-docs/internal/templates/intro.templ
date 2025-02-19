@@ -1,0 +1,49 @@
+package templates
+
+templ Intro_ProjectCommitments(params Params) {
+    <ul>
+        <li>
+            The last 3 major Go versions will be supported. At the time of this writing {params.LatestGoVersion} is the latest, so this module specifies {params.LatestSupportedGoVersion}.
+        </li>
+        <li>
+            The primarily supported method for invoking Modmake builds is <code>go run</code>. The <a href="#modmake-cli">Modmake CLI</a> just makes that a little easier.
+        </li>
+        <li>
+            A user should need nothing more than the Go toolchain (of a supported version) to use Modmake. This supports an idealized slow ramp to onboarding with this system.
+            However, additional tooling may be required as more automation requirements are introduced, so the <code>tools</code> step should be used to <code>go install</code> additional dependencies.
+        </li>
+    </ul>
+}
+
+templ Intro_GettingStarted(params Params) {
+    <p>
+        To get started using Modmake in your own project, you'll first need to <code>go get</code> it.
+    </p>
+    <code class="block">go get github.com/saylorsolutions/modmake@{params.ModmakeVersion}</code>
+    <p>
+        Next, create <code>modmake/build.go</code> (relative to the root of your project)
+        and enter this code into it.
+    </p>
+    @CodeBlock(`
+package main
+
+import (
+    . "github.com/saylorsolutions/modmake"
+)
+
+func main() {
+    b := NewBuild()
+    // This is where you can customize your new Build.
+    b.Execute()
+}`)
+    <p>
+        You can run the default <code>build</code> step with <code>go run ./modmake build</code>
+    </p>
+    <p>
+        The rest of the docs will discuss the <i>concepts</i> of a build model in Modmake.
+    </p>
+    <aside>
+        Alternatively, you could use the <a href="#modmake-cli">Modmake CLI's</a> <code>init</code> sub-command to automate these steps.
+        For the impatient, take a look at the <a href="https://github.com/saylorsolutions/modmake/blob/main/example/helloworld/README.md">examples</a> to get more hands-on with Modmake.
+    </aside>
+}

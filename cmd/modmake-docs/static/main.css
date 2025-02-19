@@ -1,0 +1,166 @@
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    --header-size: 48px;
+    --z-header: 1000;
+    --side-panel-size: 200px;
+    --base-pad: 10px;
+
+    --bg-color: #2b2b2b;
+    --bg-color-dark: #1e1e1e;
+    --bg-color-frame: #7e7e7e;
+    --fg-color: #cbcbcb;
+    --accent-color: #5c159d;
+}
+
+html, body {
+    padding: 0;
+    margin: 0;
+    background-color: var(--bg-color);
+    color: var(--fg-color);
+    font-family: sans-serif;
+}
+
+a {
+    color: var(--fg-color);
+    font-weight: bold;
+    font-family: sans-serif;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+code {
+    background-color: var(--bg-color-dark);
+    padding: 2px 4px;
+    border-radius: 2px;
+}
+
+code.block {
+    display: block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    max-height: 250px;
+    overflow-y: auto;
+    border: 2px solid var(--bg-color-frame);
+}
+
+pre {
+    background-color: var(--bg-color-dark);
+    padding: 4px 8px;
+    border-radius: 4px;
+    max-height: 250px;
+    overflow-y: auto;
+    border: 2px solid var(--bg-color-frame);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: sans-serif;
+}
+
+aside {
+    display: block;
+    background-color: var(--bg-color-dark);
+    border-left: 6px solid var(--accent-color);
+    padding: 20px 22px;
+    font-family: sans-serif;
+    margin: var(--base-pad) 0;
+}
+
+aside > p {
+    margin: 0;
+}
+
+.header {
+    position: absolute;
+    z-index: var(--z-header);
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--header-size);
+    background-color: var(--accent-color);
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 var(--base-pad);
+    color: var(--fg-color);
+    font-weight: bold;
+    text-shadow: 0 0 4px black;
+    box-shadow: 0 2px 4px black;
+
+    font-family: sans-serif;
+}
+
+.header > div {
+    display: flex;
+    align-items: center;
+    gap: var(--base-pad);
+}
+
+#frame {
+    position: absolute;
+    height: calc(100vh - var(--header-size));
+    width: 100vw;
+    top: var(--header-size);
+    overflow: clip;
+}
+
+#side-panel {
+    position: absolute;
+    width: var(--side-panel-size);
+    height: 100%;
+    padding: var(--base-pad);
+    border-right: 2px solid var(--accent-color);
+}
+
+#side-panel a {
+    display: block;
+    margin-bottom: 4px;
+}
+
+#side-panel ul {
+    margin-top: 4px;
+    padding-left: calc(2 * var(--base-pad));
+}
+
+#content {
+    position: absolute;
+    width: calc(100vw - var(--side-panel-size));
+    height: 100%;
+    left: var(--side-panel-size);
+    padding: var(--base-pad);
+    padding-left: calc(2 * var(--base-pad));
+    padding-bottom: 100px;
+    overflow-y: auto;
+}
+
+#content img {
+    box-shadow: 0 0 10px black;
+    border-radius: 4px;
+}
+
+/* Overriding weird section h1 behavior. */
+#content h1 {
+    font-size: 2em;
+}
+
+#content p {
+    font-size: 1.1em;
+}
+
+@media (max-width:650px) {
+    :root {
+        --side-panel-size: 0;
+    }
+    #side-panel {
+        padding: 0;
+        border-right: inherit;
+        display: none;
+    }
+    #content {
+        width: 100%;
+    }
+}

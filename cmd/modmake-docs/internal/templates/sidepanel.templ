@@ -1,0 +1,18 @@
+package templates
+
+templ SidePanel(params Params) {
+	<div id="side-panel">
+		for _, section := range params.Content.Sections {
+			@HeadingLink(section)
+			if len(section.SubSections) > 0 {
+				<ul>
+				for _, subsection := range section.SubSections {
+					<li>
+						@SubHeadingLink(section, subsection)
+					</li>
+				}
+				</ul>
+			}
+		}
+	</div>
+}

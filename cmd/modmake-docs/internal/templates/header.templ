@@ -1,0 +1,15 @@
+package templates
+
+templ Header(params Params) {
+	<nav class="header">
+        <div>
+            <img src={params.Qual("/img/img.svg")} alt="logo"/>
+            <h3>Modmake</h3>
+        </div>
+        <div>
+            <a href="https://github.com/saylorsolutions/modmake" target="_blank">GitHub</a>
+            <a href="https://github.com/saylorsolutions/modmake/blob/main/example/helloworld/README.md" target="_blank">Examples</a>
+            <a href="https://pkg.go.dev/github.com/saylorsolutions/modmake" target="_blank">GoDoc</a>
+        </div>
+    </nav>
+}
