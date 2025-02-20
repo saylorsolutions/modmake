@@ -33,7 +33,7 @@ func Utilities() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocLink("", "Path").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DocAnchor("", "Path").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -41,7 +41,7 @@ func Utilities() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocLink("PathString", "CopyTo").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DocAnchor("PathString", "CopyTo").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -49,7 +49,7 @@ func Utilities() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocLink("PathString", "Create").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DocAnchor("PathString", "Create").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -57,7 +57,7 @@ func Utilities() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocLink("PathString", "Dir").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DocAnchor("PathString", "Dir").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -65,7 +65,7 @@ func Utilities() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocLink("PathString", "Exists").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DocAnchor("PathString", "Exists").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -102,7 +102,7 @@ func Utilities_TaskHelpers() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocLink("", "Script").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DocAnchor("", "Script").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -110,7 +110,7 @@ func Utilities_TaskHelpers() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocLink("", "NoOp").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DocAnchor("", "NoOp").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -118,7 +118,7 @@ func Utilities_TaskHelpers() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocLink("", "WithoutErr").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DocAnchor("", "WithoutErr").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -126,7 +126,7 @@ func Utilities_TaskHelpers() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocLink("", "WithoutContext").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DocAnchor("", "WithoutContext").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -134,7 +134,7 @@ func Utilities_TaskHelpers() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocLink("", "Plain").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DocAnchor("", "Plain").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -142,7 +142,7 @@ func Utilities_TaskHelpers() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocLink("", "Print").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DocAnchor("", "Print").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -150,7 +150,7 @@ func Utilities_TaskHelpers() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocLink("", "Error").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DocAnchor("", "Error").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -187,7 +187,7 @@ func Utilities_GoTools() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocLink("GoTools", "Build").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DocAnchor("GoTools", "Build").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -195,7 +195,7 @@ func Utilities_GoTools() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocLink("GoTools", "Run").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DocAnchor("GoTools", "Run").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -203,7 +203,7 @@ func Utilities_GoTools() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocLink("GoTools", "TestAll").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DocAnchor("GoTools", "TestAll").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -211,7 +211,7 @@ func Utilities_GoTools() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocLink("GoTools", "BenchmarkAll").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DocAnchor("GoTools", "BenchmarkAll").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -219,7 +219,7 @@ func Utilities_GoTools() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocLink("GoTools", "GenerateAll").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DocAnchor("GoTools", "GenerateAll").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -240,7 +240,7 @@ func Utilities_GoTools() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocLink("GoTools", "Clean").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DocAnchor("GoTools", "Clean").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -248,7 +248,7 @@ func Utilities_GoTools() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocLink("GoTools", "GetEnv").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DocAnchor("GoTools", "GetEnv").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -256,7 +256,7 @@ func Utilities_GoTools() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocLink("GoTools", "Command").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DocAnchor("GoTools", "Command").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -264,7 +264,7 @@ func Utilities_GoTools() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocLink("GoTools", "Get").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DocAnchor("GoTools", "Get").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -272,7 +272,7 @@ func Utilities_GoTools() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocLink("GoTools", "Install").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DocAnchor("GoTools", "Install").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -280,7 +280,7 @@ func Utilities_GoTools() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocLink("GoTools", "ModTidy").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DocAnchor("GoTools", "ModTidy").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -288,7 +288,7 @@ func Utilities_GoTools() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocLink("GoTools", "ModuleName").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DocAnchor("GoTools", "ModuleName").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -296,7 +296,7 @@ func Utilities_GoTools() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocLink("GoTools", "ModuleRoot").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DocAnchor("GoTools", "ModuleRoot").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -304,7 +304,7 @@ func Utilities_GoTools() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocLink("GoTools", "ToModulePackage").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DocAnchor("GoTools", "ToModulePackage").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -312,7 +312,7 @@ func Utilities_GoTools() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocLink("GoTools", "ToModulePath").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = DocAnchor("GoTools", "ToModulePath").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -378,7 +378,7 @@ func Utilities_Git() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = PkgDocLink("/pkg/git", "", "Exec").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = PkgDocAnchor("/pkg/git", "", "Exec").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -386,7 +386,7 @@ func Utilities_Git() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = PkgDocLink("/pkg/git", "", "ExecOutput").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = PkgDocAnchor("/pkg/git", "", "ExecOutput").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -394,7 +394,7 @@ func Utilities_Git() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = PkgDocLink("/pkg/git", "", "BranchName").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = PkgDocAnchor("/pkg/git", "", "BranchName").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -402,7 +402,7 @@ func Utilities_Git() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = PkgDocLink("/pkg/git", "", "CommitHash").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = PkgDocAnchor("/pkg/git", "", "CommitHash").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

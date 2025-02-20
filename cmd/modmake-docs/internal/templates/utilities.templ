@@ -13,23 +13,23 @@ templ Utilities() {
 		<ul>
 			<li>PathString can also be used to perform various filesystem operations.</li>
 			<li>
-				@DocLink("", "Path")
+				@DocAnchor("", "Path")
 				- Used to create a new <code>PathString</code>
 			</li>
 			<li>
-				@DocLink("PathString", "CopyTo")
+				@DocAnchor("PathString", "CopyTo")
 				- Used to copy the file referenced by this <code>PathString</code> to another location.
 			</li>
 			<li>
-				@DocLink("PathString", "Create")
+				@DocAnchor("PathString", "Create")
 				- Creates the file referenced by this <code>PathString</code>.
 			</li>
 			<li>
-				@DocLink("PathString", "Dir")
+				@DocAnchor("PathString", "Dir")
 				- Returns a <code>PathString</code> of the containing directory.
 			</li>
 			<li>
-				@DocLink("PathString", "Exists")
+				@DocAnchor("PathString", "Exists")
 				- Returns whether the <code>PathString</code> refers to a file that exists.
 			</li>
 			<li>And more...</li>
@@ -41,25 +41,25 @@ templ Utilities_TaskHelpers() {
 	<p>Here are the most common Task helpers.</p>
 	<ul>
 		<li>
-		@DocLink("", "Script")
+		@DocAnchor("", "Script")
 		 - Script allows creating a Task that executes each Runner in sequence, returning the first error encountered.</li>
 		<li>
-			@DocLink("", "NoOp")
+			@DocAnchor("", "NoOp")
 			 - Produces a Task that does nothing and returns a nil error. Most useful for testing purposes, or as a basis for extension with Then.</li>
 		<li>
-		@DocLink("", "WithoutErr")
+		@DocAnchor("", "WithoutErr")
 		 - Takes a function that does not return an error and returns a Task. This is mostly for simplifying calling conventions.</li>
 		<li>
-		@DocLink("", "WithoutContext")
+		@DocAnchor("", "WithoutContext")
 		 - Takes a function that does not listen to a context and returns a Task. This is mostly for simplifying calling conventions.</li>
 		<li>
-		@DocLink("", "Plain")
+		@DocAnchor("", "Plain")
 		 - Takes a simple function and returns a Task. This is mostly for simplifying calling conventions.</li>
 		<li>
-		@DocLink("", "Print")
+		@DocAnchor("", "Print")
 		 - Returns a Task that prints a message and returns.</li>
 		<li>
-		@DocLink("", "Error")
+		@DocAnchor("", "Error")
 		 - Returns a Task that returns an error.</li>
 		<li>And more...</li>
 	</ul>
@@ -72,52 +72,52 @@ templ Utilities_GoTools() {
 		<ul>
 			<li>These functions can be accessed by calling <code>Go()</code>, which enables accessing specific Go toolchain capabilities.</li>
 			<li>
-				@DocLink("GoTools", "Build")
+				@DocAnchor("GoTools", "Build")
 				 - Used to compile Go binaries. It can also compile shared libraries and other formats.</li>
 			<li>
-				@DocLink("GoTools", "Run")
+				@DocAnchor("GoTools", "Run")
 				 - Used to compile and run the code at a path in the module. The target path must reference a main package.</li>
 			<li>
-				@DocLink("GoTools", "TestAll")
+				@DocAnchor("GoTools", "TestAll")
 				 - Runs all tests in the module.</li>
 			<li>
-				@DocLink("GoTools", "BenchmarkAll")
+				@DocAnchor("GoTools", "BenchmarkAll")
 				 - Runs all benchmark tests. The default build model will leave the <code>benchmark</code> step disabled</li>
 			<li>
-				@DocLink("GoTools", "GenerateAll")
+				@DocAnchor("GoTools", "GenerateAll")
 				 - Run all <code>{"//"}go:generate</code> commands in the module.</li>
 			<li>
-				@DocLink("GoTools", "Clean")
+				@DocAnchor("GoTools", "Clean")
 				 - This can be used to clean various caches kept by the Go toolchain.</li>
 			<li>
-				@DocLink("GoTools", "GetEnv")
+				@DocAnchor("GoTools", "GetEnv")
 				 - Allows querying for Go tools environment variable state.</li>
 			<li>
-				@DocLink("GoTools", "Command")
+				@DocAnchor("GoTools", "Command")
 				 - For cases where the provided GoTools methods aren't sufficient, this is a good fallback because it allows more direct access to GoTools.</li>
 		</ul>
 		<li>There are also Go package management functions.</li>
 		<ul>
 			<li>
-				@DocLink("GoTools", "Get")
+				@DocAnchor("GoTools", "Get")
 				 - Gets a module and adds it to this modules dependencies.</li>
 			<li>
-				@DocLink("GoTools", "Install")
+				@DocAnchor("GoTools", "Install")
 				 - Installs a Go module in <code>$GOPATH/bin</code>.</li>
 			<li>
-				@DocLink("GoTools", "ModTidy")
+				@DocAnchor("GoTools", "ModTidy")
 				 - Tidies the module's go.mod and go.sum.</li>
 			<li>
-				@DocLink("GoTools", "ModuleName")
+				@DocAnchor("GoTools", "ModuleName")
 				 - Returns the current module's name.</li>
 			<li>
-				@DocLink("GoTools", "ModuleRoot")
+				@DocAnchor("GoTools", "ModuleRoot")
 				 - Returns the absolute path to the root of the current module.</li>
 			<li>
-				@DocLink("GoTools", "ToModulePackage")
+				@DocAnchor("GoTools", "ToModulePackage")
 				 - Returns the relative package path to a path rooted relative to the module.</li>
 			<li>
-				@DocLink("GoTools", "ToModulePath")
+				@DocAnchor("GoTools", "ToModulePath")
 				 - Works the opposite of <code>ToModulePackage</code>, converting a module package path to a regular path.</li>
 		</ul>
 		<li>And more...</li>
@@ -136,19 +136,19 @@ templ Utilities_Git() {
 	<p>There are a few Git-related functions in <a href="https://pkg.go.dev/github.com/saylorsolutions/modmake@v0.3.1/pkg/git#pkg-index">pkg/git</a> that could help with version tagging builds and general automation.</p>
 	<ul>
 		<li>
-			@PkgDocLink("/pkg/git", "", "Exec")
+			@PkgDocAnchor("/pkg/git", "", "Exec")
 			- Executes a git command.
 		</li>
 		<li>
-			@PkgDocLink("/pkg/git", "", "ExecOutput")
+			@PkgDocAnchor("/pkg/git", "", "ExecOutput")
 			- Executes a git command and returns its output.
 		</li>
 		<li>
-			@PkgDocLink("/pkg/git", "", "BranchName")
+			@PkgDocAnchor("/pkg/git", "", "BranchName")
 			- Returns the currently checked out branch.
 		</li>
 		<li>
-			@PkgDocLink("/pkg/git", "", "CommitHash")
+			@PkgDocAnchor("/pkg/git", "", "CommitHash")
 			- Returns the currently checked commit hash.
 		</li>
 		<li>And more...</li>

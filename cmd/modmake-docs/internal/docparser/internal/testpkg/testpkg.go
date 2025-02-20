@@ -8,14 +8,16 @@ type SomeEnum int
 var SomeVar string
 
 const (
-	SomeConst float64 = 3.14 // SomeConst is a test const
+	SomeConst float64 = 3.14 // SomeConst is a test constant
 )
+const AnotherConst = "const string"
 
 const (
 	A SomeEnum = iota + 1 // A
 	B                     // B
 	C                     // C
 )
+const D SomeEnum = 4
 
 // SomeType is a test struct type.
 type SomeType struct{}

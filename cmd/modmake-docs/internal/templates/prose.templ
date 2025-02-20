@@ -34,7 +34,7 @@ templ SubHeadingLink(section *Section, sub *SubSection) {
 	<a href={joinHref("#", section.ID, "_", sub.ID)}>{sub.HeaderText}</a>
 }
 
-templ DocLink(parent, child string) {
+templ DocAnchor(parent, child string) {
 	if len(parent) > 0 {
 		<a href={joinHref("https://pkg.go.dev/github.com/saylorsolutions/modmake#", parent, ".", child)}>{child}</a>{" "}
 	} else {
@@ -42,7 +42,7 @@ templ DocLink(parent, child string) {
 	}
 }
 
-templ PkgDocLink(pkg, parent, child string) {
+templ PkgDocAnchor(pkg, parent, child string) {
 	if len(parent) > 0 {
 		<a href={joinHref("https://pkg.go.dev/github.com/saylorsolutions/modmake", pkg, "#", parent, ".", child)}>{child}</a>{" "}
 	} else {

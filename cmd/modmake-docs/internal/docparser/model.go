@@ -1,6 +1,10 @@
-package parser
+package docparser
 
 import "sort"
+
+type Linker interface {
+	LinkID() string
+}
 
 type Module struct {
 	Packages map[string]*PackageDocs
@@ -77,16 +81,28 @@ type Constant struct {
 	Docs         string
 }
 
+func (c *Constant) LinkID() string {
+	return "const_" + c.ConstantName
+}
+
 type Variable struct {
 	VarName     string
 	Declaration string
 	Docs        string
 }
 
+func (v *Variable) LinkID() string {
+	return "var_" + v.VarName
+}
+
 type Function struct {
 	FunctionName string
 	Signature    string
 	Docs         string
+}
+
+func (f *Function) LinkID() string {
+	return "func_" + f.FunctionName
 }
 
 type Type struct {
@@ -106,10 +122,19 @@ func (t *Type) SortedMethods() []*Method {
 	})
 }
 
+func (t *Type) LinkID() string {
+	return t.TypeName
+}
+
 type Method struct {
 	MethodName string
+	TypeName   string
 	Signature  string
 	Docs       string
+}
+
+func (m *Method) LinkID() string {
+	return m.TypeName + "_" + m.MethodName
 }
 
 type nameSorter[T any] struct {

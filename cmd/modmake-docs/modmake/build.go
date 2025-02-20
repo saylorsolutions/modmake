@@ -12,7 +12,11 @@ var (
 func main() {
 	b := NewBuild()
 	b.Tools().DependsOnRunner("install-templ", "", Go().Install("github.com/a-h/templ/cmd/templ@"+templVersion))
-	b.Generate().DependsOnRunner("run-templ", "", Exec("templ", "generate"))
+	b.Generate().DependsOnRunner("run-templ", "",
+		Script(
+			Exec("templ", "generate"),
+			Go().VetAll(),
+		))
 	b.Test().Does(Go().TestAll().Silent())
 
 	docs := NewAppBuild("modmake-docs", ".", "0.1.0")

@@ -42,7 +42,7 @@ func Header(params Params) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" alt=\"logo\"><h3>Modmake</h3></div><div><a href=\"https://github.com/saylorsolutions/modmake\" target=\"_blank\">GitHub</a> <a href=\"https://github.com/saylorsolutions/modmake/blob/main/example/helloworld/README.md\" target=\"_blank\">Examples</a> <a href=\"https://pkg.go.dev/github.com/saylorsolutions/modmake\" target=\"_blank\">GoDoc</a></div></nav>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" alt=\"logo\"><h3>Modmake</h3></div><div><a href=\"https://github.com/saylorsolutions/modmake\" target=\"_blank\">GitHub</a> <a href=\"https://github.com/saylorsolutions/modmake/blob/main/example/helloworld/README.md\" target=\"_blank\">Examples</a> <a href=\"https://github.com/saylorsolutions/modmake/godoc\" target=\"_blank\">GoDoc</a></div></nav>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

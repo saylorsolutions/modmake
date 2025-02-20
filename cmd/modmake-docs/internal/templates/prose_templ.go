@@ -263,7 +263,7 @@ func SubHeadingLink(section *Section, sub *SubSection) templ.Component {
 	})
 }
 
-func DocLink(parent, child string) templ.Component {
+func DocAnchor(parent, child string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -361,7 +361,7 @@ func DocLink(parent, child string) templ.Component {
 	})
 }
 
-func PkgDocLink(pkg, parent, child string) templ.Component {
+func PkgDocAnchor(pkg, parent, child string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {

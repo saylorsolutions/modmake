@@ -1,4 +1,4 @@
-package parser
+package docparser
 
 import (
 	"bufio"
@@ -60,28 +60,30 @@ func (p *Parser) ParsePackageDir(pkgDir string) (*PackageDocs, error) {
 }
 
 var (
-	packagePattern   = regexp.MustCompile(`^package (\S+) // import "([^"]+)"$`)
-	commentPattern   = regexp.MustCompile(`^( {4})(.+)$`)
-	blockVarStart    = regexp.MustCompile(`^var \($`)
-	blockVarPattern  = regexp.MustCompile(`^\s+(\S+)[^/]+(// (.+))?$`)
-	blockVarEnd      = regexp.MustCompile(`^\)$`)
-	lineVarPattern   = regexp.MustCompile(`^var (\S+)[^/]+(// (.+))?$`)
-	methodPattern    = regexp.MustCompile(`^func \([A-Za-z0-9_]+ \*?([^\s)]+)\) ([^(\[]+).+$`)
-	funcPattern      = regexp.MustCompile(`^func ([^(\[]+).+$`)
-	typeStart        = regexp.MustCompile(`^type (\S+).+$`)
-	typeFieldPattern = regexp.MustCompile(`^\t(.+)$`)
-	typeEnd          = regexp.MustCompile(`^}$`)
-	constStart       = regexp.MustCompile(`^const \($`)
-	constPattern     = regexp.MustCompile(`^\t(\S+)[^/]+(// (.+))?$`)
-	constEnd         = regexp.MustCompile(`^\)$`)
-	boundaryPatterns = []*regexp.Regexp{
+	packagePattern    = regexp.MustCompile(`^package (\S+) // import "([^"]+)"$`)
+	commentPattern    = regexp.MustCompile(`^( {4})(.+)$`)
+	blockVarStart     = regexp.MustCompile(`^var \($`)
+	blockVarPattern   = regexp.MustCompile(`^\s+(\S+)[^/]+(// (.+))?$`)
+	blockVarEnd       = regexp.MustCompile(`^\)$`)
+	lineVarPattern    = regexp.MustCompile(`^var (\S+)[^/]+(// (.+))?$`)
+	methodPattern     = regexp.MustCompile(`^func \([A-Za-z0-9_]+ \*?([^\s)]+)\) ([^(\[]+).+$`)
+	funcPattern       = regexp.MustCompile(`^func ([^(\[]+).+$`)
+	typeStart         = regexp.MustCompile(`^type (\S+).+$`)
+	typeFieldPattern  = regexp.MustCompile(`^\t(.+)$`)
+	typeEnd           = regexp.MustCompile(`^}$`)
+	blockConstStart   = regexp.MustCompile(`^const \($`)
+	blockConstPattern = regexp.MustCompile(`^\t(\S+)[^/]+(// (.+))?$`)
+	blockConstEnd     = regexp.MustCompile(`^\)$`)
+	lineConstPattern  = regexp.MustCompile(`^const (\S+)[^/]+(// (.+))?$`)
+	boundaryPatterns  = []*regexp.Regexp{
 		packagePattern,
 		blockVarStart,
 		lineVarPattern,
 		funcPattern,
 		methodPattern,
 		typeStart,
-		constStart,
+		blockConstStart,
+		lineConstPattern,
 	}
 	boundaryStates = []parserState{
 		rPackage,
@@ -90,6 +92,7 @@ var (
 		rFunctions,
 		rMethods,
 		rTypes,
+		rConsts,
 		rConsts,
 	}
 )
@@ -261,6 +264,7 @@ func parseDocOutput(output []byte) (*PackageDocs, error) {
 				typName, methodName := string(groups[1]), string(groups[2])
 				method := &Method{
 					MethodName: methodName,
+					TypeName:   typName,
 					Signature:  string(line),
 				}
 				setTarget(&method.Docs)
@@ -269,7 +273,7 @@ func parseDocOutput(output []byte) (*PackageDocs, error) {
 			}
 			state = rComment
 		case rConsts:
-			if constStart.Match(line) {
+			if blockConstStart.Match(line) {
 				flushComment()
 				if lastType != nil {
 					lastType.ConstVals = "\nconst ("
@@ -277,13 +281,13 @@ func parseDocOutput(output []byte) (*PackageDocs, error) {
 				consumeLine()
 				continue
 			}
-			if constPattern.Match(line) {
+			if blockConstPattern.Match(line) {
 				if lastType != nil {
 					lastType.ConstVals += "\n" + string(line)
 					consumeLine()
 					continue
 				}
-				groups := constPattern.FindSubmatch(line)
+				groups := blockConstPattern.FindSubmatch(line)
 				name, comment := string(groups[1]), string(groups[3])
 				docs.Constants = append(docs.Constants, &Constant{
 					ConstantName: name,
@@ -291,10 +295,25 @@ func parseDocOutput(output []byte) (*PackageDocs, error) {
 					Docs:         comment,
 				})
 				consumeLine()
+				continue
 			}
-			if constEnd.Match(line) && lastType != nil {
+			if blockConstEnd.Match(line) && lastType != nil {
 				consumeLine()
 				lastType.ConstVals = strings.TrimSpace(lastType.ConstVals + "\n}")
+			}
+			if lineConstPattern.Match(line) {
+				groups := lineConstPattern.FindSubmatch(line)
+				_const := &Constant{
+					ConstantName: string(groups[1]),
+					Declaration:  string(groups[0]),
+					Docs:         string(groups[3]),
+				}
+				if lastType == nil {
+					docs.Constants = append(docs.Constants, _const)
+				} else {
+					lastType.ConstVals += "\n" + string(line)
+				}
+				consumeLine()
 			}
 			state = rComment
 		}

@@ -1,8 +1,8 @@
-package parser_test
+package docparser_test
 
 import (
 	"encoding/json"
-	"github.com/saylorsolutions/modmake/cmd/modmake-docs/internal/parser"
+	"github.com/saylorsolutions/modmake/cmd/modmake-docs/internal/docparser"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"path/filepath"
@@ -10,7 +10,7 @@ import (
 )
 
 func TestParser_ParsePackageDir(t *testing.T) {
-	p := parser.New()
+	p := docparser.New()
 	docs, err := p.ParsePackageDir(".")
 	assert.NoError(t, err)
 	data, err := json.MarshalIndent(docs, "", "  ")
@@ -29,7 +29,7 @@ func TestParser_ParsePackageDir(t *testing.T) {
 }
 
 func TestParser_ParsePackageDir_Internal(t *testing.T) {
-	p := parser.New()
+	p := docparser.New()
 	docs, err := p.ParsePackageDir(filepath.Join("internal", "testpkg"))
 	require.NoError(t, err)
 	require.NotNil(t, docs)
@@ -37,8 +37,9 @@ func TestParser_ParsePackageDir_Internal(t *testing.T) {
 	assert.NoError(t, err)
 	t.Log("\n" + string(data))
 
-	assert.Equal(t, "SomeConst", docs.Constants[0].ConstantName)
-	assert.Equal(t, "SomeConst is a test const", docs.Constants[0].Docs)
+	assert.Equal(t, "AnotherConst", docs.Constants[0].ConstantName)
+	assert.Equal(t, "SomeConst", docs.Constants[1].ConstantName)
+	assert.Equal(t, "SomeConst is a test constant", docs.Constants[1].Docs)
 	assert.Equal(t, "SomeVar", docs.Variables[0].VarName)
 	assert.Equal(t, "SomeVar is a test var", docs.Variables[0].Docs)
 	assert.NotNil(t, docs.Types["SomeEnum"])
@@ -49,4 +50,5 @@ func TestParser_ParsePackageDir_Internal(t *testing.T) {
 	assert.Equal(t, "DoTheThing does the thing.", docs.Types["SomeType"].Methods["DoTheThing"].Docs)
 	assert.NotNil(t, docs.Functions["DoTheThing"])
 	assert.Equal(t, "DoTheThing does the thing.", docs.Functions["DoTheThing"].Docs)
+	assert.Nil(t, docs.Functions["shouldNotAppearInResults"])
 }
