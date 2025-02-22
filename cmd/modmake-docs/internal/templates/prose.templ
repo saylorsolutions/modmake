@@ -52,7 +52,13 @@ templ PkgDocAnchor(pkg, parent, child, text string) {
 			}
 		</a>{" "}
 	} else {
-		<a href={joinHref("https://saylorsolutions.github.io/modmake/godoc/github.com/saylorsolutions/modmake", pkg, "#", child)}>{child}</a>{" "}
+		<a href={joinHref("https://saylorsolutions.github.io/modmake/godoc/github.com/saylorsolutions/modmake", pkg, "#", child)}>
+			if len(text) == 0 {
+				{child}
+			} else {
+				{text}
+			}
+		</a>{" "}
 	}
 }
 
