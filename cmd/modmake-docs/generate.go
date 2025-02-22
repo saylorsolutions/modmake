@@ -11,20 +11,30 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 func doGenerate(params templates.Params) error {
 	log.Println("Generating documentation...")
 	var buf bytes.Buffer
-	if err := templates.Main(params).Render(context.Background(), &buf); err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+	if err := templates.Main(params).Render(ctx, &buf); err != nil {
 		return fmt.Errorf("failed to generate index.html: %w", err)
 	}
+	relGenDir := func(segments ...string) string {
+		if len(segments) == 0 {
+			return params.GenDir
+		}
+		segments = append([]string{params.GenDir}, segments...)
+		return filepath.Join(segments...)
+	}
 
-	err := writeFile("index.html", "generated HTML", &buf)
+	err := writeFile(relGenDir("index.html"), "generated HTML", &buf)
 	if err != nil {
 		return err
 	}
-	err = writeFile("main.css", "CSS", bytes.NewReader(static.MainCSS))
+	err = writeFile(relGenDir("main.css"), "CSS", bytes.NewReader(static.MainCSS))
 	if err != nil {
 		return err
 	}
@@ -36,7 +46,7 @@ func doGenerate(params templates.Params) error {
 		if path == "." {
 			return nil
 		}
-		fileName := filepath.Join(".", path)
+		fileName := relGenDir(path)
 		if d.IsDir() {
 			log.Println("Creating dir:", fileName)
 			if err := os.MkdirAll(fileName, 0755); err != nil {
@@ -52,6 +62,9 @@ func doGenerate(params templates.Params) error {
 		return writeFile(fileName, "image", bytes.NewReader(data))
 	})
 	if err != nil {
+		return err
+	}
+	if err := generateCodeDocs(ctx, params); err != nil {
 		return err
 	}
 

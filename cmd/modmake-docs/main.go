@@ -24,7 +24,7 @@ func main() {
 		flags.Error("No subcommand specified")
 		os.Exit(1)
 	}
-	if err := flags.flags.Parse(args); err != nil {
+	if err := flags.Parse(args); err != nil {
 		flags.Error("Failed to parse flags: %v", err)
 		os.Exit(1)
 	}
@@ -32,8 +32,7 @@ func main() {
 		flags.Error("Help requested")
 		return
 	}
-	params := templates.Params{}
-	flags.LoadParams(&params)
+	params := flags.LoadParams()
 	params.Content.AddSection(
 		templates.IntroSection(params),
 		templates.BuildModelSection(params),
@@ -41,9 +40,9 @@ func main() {
 		templates.UtilitiesSection(),
 	)
 	var command string
-	if flags.flags.NArg() > 0 {
-		command = flags.flags.Arg(0)
-		if err := flags.flags.Parse(args[1:]); err != nil {
+	if flags.NArg() > 0 {
+		command = flags.Arg(0)
+		if err := flags.Parse(args[1:]); err != nil {
 			flags.Error("Failed to parse flags: %v", err)
 			os.Exit(1)
 		}

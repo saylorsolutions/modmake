@@ -10,7 +10,9 @@ import (
 	"path/filepath"
 )
 
-func generateCodeDocs(ctx context.Context, params templates.Params, genPath string, directories ...string) error {
+func generateCodeDocs(ctx context.Context, params templates.Params) error {
+	genPath := params.GenDir
+	directories := params.GoDocDirs
 	mod := docparser.NewModule()
 	for _, dir := range directories {
 		if err := mod.ParsePackageDir(dir); err != nil {
