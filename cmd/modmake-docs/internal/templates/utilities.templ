@@ -78,13 +78,19 @@ templ Utilities_GoTools() {
 				@ModmakeDocAnchor("GoTools", "Run", "")
 				 - Used to compile and run the code at a path in the module. The target path must reference a main package.</li>
 			<li>
-				@ModmakeDocAnchor("GoTools", "TestAll", "")
+				@ModmakeDocAnchor("GoTools", "Test", "")
 				 - Runs all tests in the module.</li>
 			<li>
-				@ModmakeDocAnchor("GoTools", "BenchmarkAll", "")
+				@ModmakeDocAnchor("GoTools", "Benchmark", "")
 				 - Runs all benchmark tests. The default build model will leave the <code>benchmark</code> step disabled</li>
 			<li>
-				@ModmakeDocAnchor("GoTools", "GenerateAll", "")
+				@ModmakeDocAnchor("GoTools", "Generate", "")
+				 - Run all <code>{"//"}go:generate</code> commands in the module.</li>
+			<li>
+				@ModmakeDocAnchor("GoTools", "Vet", "")
+				 - Run all <code>{"//"}go:generate</code> commands in the module.</li>
+			<li>
+				@ModmakeDocAnchor("GoTools", "Format", "")
 				 - Run all <code>{"//"}go:generate</code> commands in the module.</li>
 			<li>
 				@ModmakeDocAnchor("GoTools", "Clean", "")
@@ -134,7 +140,6 @@ templ Utilities_Compression() {
 
 templ Utilities_Git() {
 	<p>There are a few Git-related functions in <code>pkg/git</code> that could help with version tagging builds and general automation.</p>
-	<br/>
 	@GitDocAnchor("", "index", "See pkg/git for more details")
 	<ul>
 		<li>

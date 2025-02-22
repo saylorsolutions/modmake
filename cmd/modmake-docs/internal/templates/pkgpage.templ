@@ -9,20 +9,25 @@ templ PkgPage(params Params, pkg *docparser.PackageDocs) {
 			<h1>Overview</h1>
 			<p>{pkg.Docs}</p>
 			<a href={templ.SafeURL(params.Qual("/godoc"))}>All Packages</a>
+			<hr/>
 			<h1 id="index">Index <a href="#index">[link]</a></h1>
 			@IndexContent(params, pkg)
 			if len(pkg.Constants) > 0 {
+				<hr/>
 				<h1 id="constants">Constants <a href="#constants">[link]</a></h1>
 				for _, constant := range pkg.SortedConstants() {
+					<hr/>
 					<h2 id={constant.LinkID()}>{constant.ConstantName} <a href={PkgDocLink(params, pkg, constant)}>[link]</a></h2>
 					<pre><code>{constant.Declaration}</code></pre>
 					<p>{constant.Docs}</p>
 				}
 			}
 			if len(pkg.Variables) > 0 {
+				<hr/>
 				<h1 id="variables">Variables <a href="#variables">[link]</a></h1>
 				<ul>
 				for _, variable := range pkg.SortedVariables() {
+					<hr/>
 					<h2 id={variable.LinkID()}>{variable.VarName} <a href={PkgDocLink(params, pkg, variable)}>[link]</a></h2>
 					<pre><code>{variable.Declaration}</code></pre>
 					<p>{variable.Docs}</p>
@@ -30,16 +35,20 @@ templ PkgPage(params Params, pkg *docparser.PackageDocs) {
 				</ul>
 			}
 			if len(pkg.Functions) > 0 {
+				<hr/>
 				<h1 id="functions">Functions <a href="#functions">[link]</a></h1>
 				for _, function := range pkg.SortedFunctions() {
+					<hr/>
 					<h2 id={function.LinkID()}>{function.FunctionName} <a href={PkgDocLink(params, pkg, function)}>[link]</a></h2>
 					<pre><code>{function.Signature}</code></pre>
 					<p>{function.Docs}</p>
 				}
 			}
 			if len(pkg.Types) > 0 {
+				<hr/>
 				<h1 id="types">Types <a href="#types">[link]</a></h1>
 				for _, _type := range pkg.SortedTypes() {
+					<hr/>
 					<h2 id={_type.LinkID()}>{_type.TypeName} <a href={PkgDocLink(params, pkg, _type)}>[link]</a></h2>
 					<pre><code>{_type.Declaration}</code></pre>
 					<p>{_type.Docs}</p>
