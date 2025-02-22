@@ -17,3 +17,7 @@ func UtilitiesSection() *Section {
 func PkgDocLink(params Params, pkg *docparser.PackageDocs, linker docparser.Linker) templ.SafeURL {
 	return templ.SafeURL(params.Qual(fmt.Sprintf("/godoc/%s#%s", pkg.ImportName, linker.LinkID())))
 }
+
+func PkgLink(params Params, pkg *docparser.PackageDocs) templ.SafeURL {
+	return templ.SafeURL(params.Qual(fmt.Sprintf("/godoc/%s", pkg.ImportName)))
+}

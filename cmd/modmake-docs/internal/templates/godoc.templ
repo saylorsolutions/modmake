@@ -1,0 +1,19 @@
+package templates
+
+import "github.com/saylorsolutions/modmake/cmd/modmake-docs/internal/docparser"
+
+templ GoDocPage(params Params, mod *docparser.Module) {
+	@FrameTitle(params, "Code Documentation") {
+		<section id="content">
+		<h1>Documented packages</h1>
+		<ul>
+		for _, pkg := range mod.SortedPackageDocs() {
+			<li>
+				<a href={PkgLink(params, pkg)}>{pkg.PackageName} - {pkg.ImportName}</a>
+				<p>{pkg.Docs}</p>
+			</li>
+		}
+		</ul>
+		</section>
+	}
+}

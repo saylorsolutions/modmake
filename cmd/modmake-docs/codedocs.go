@@ -19,6 +19,16 @@ func generateCodeDocs(ctx context.Context, params templates.Params) error {
 			return err
 		}
 	}
+	var godocbuf bytes.Buffer
+	if err := templates.GoDocPage(params, mod).Render(ctx, &godocbuf); err != nil {
+		return fmt.Errorf("failed to render godoc page: %w", err)
+	}
+	if err := os.MkdirAll(filepath.Join(genPath, "godoc"), 0755); err != nil {
+		return fmt.Errorf("failed to create godoc directory: %w", err)
+	}
+	if err := os.WriteFile(filepath.Join(genPath, "godoc", "index.html"), godocbuf.Bytes(), 0644); err != nil {
+		return fmt.Errorf("failed to write generated godoc index.html: %w", err)
+	}
 	for _, pkg := range mod.Packages {
 		genPath := filepath.Join(genPath, "godoc", filepath.FromSlash(pkg.ImportName))
 		if err := os.MkdirAll(genPath, 0755); err != nil {

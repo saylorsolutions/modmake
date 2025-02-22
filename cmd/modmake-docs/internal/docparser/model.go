@@ -28,6 +28,12 @@ func (m *Module) ParsePackageDir(pkgDir string) error {
 	return nil
 }
 
+func (m *Module) SortedPackageDocs() []*PackageDocs {
+	return sortedMap(m.Packages, func(docs *PackageDocs) string {
+		return docs.ImportName
+	})
+}
+
 // PackageDocs collects the public symbols of a Go package into one struct.
 type PackageDocs struct {
 	PackageName string

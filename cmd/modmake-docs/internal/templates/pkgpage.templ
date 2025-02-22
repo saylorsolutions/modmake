@@ -3,20 +3,12 @@ package templates
 import "github.com/saylorsolutions/modmake/cmd/modmake-docs/internal/docparser"
 
 templ PkgPage(params Params, pkg *docparser.PackageDocs) {
-	<!DOCTYPE html>
-	<html lang="en">
-	<head>
-		<meta charset="UTF-8"/>
-		<title>Modmake Docs</title>
-		<link rel="stylesheet" href={params.Qual("/main.css")}/>
-	</head>
-	<body>
-	@Header(params)
-	<div id="frame">
+	@FrameTitle(params, pkg.ImportName) {
 		@PkgSidePanel(params, pkg)
 		<section id="content">
 			<h1>Overview</h1>
 			<p>{pkg.Docs}</p>
+			<a href={templ.SafeURL(params.Qual("/godoc"))}>All Packages</a>
 			<h1 id="index">Index <a href="#index">[link]</a></h1>
 			@IndexContent(params, pkg)
 			if len(pkg.Constants) > 0 {
@@ -59,9 +51,7 @@ templ PkgPage(params Params, pkg *docparser.PackageDocs) {
 				}
 			}
 		</section>
-	</div>
-	</body>
-	</html>
+	}
 }
 
 templ PkgSidePanel(params Params, pkg *docparser.PackageDocs) {
