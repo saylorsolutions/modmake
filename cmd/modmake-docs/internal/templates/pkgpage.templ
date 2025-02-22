@@ -5,7 +5,7 @@ import "github.com/saylorsolutions/modmake/cmd/modmake-docs/internal/docparser"
 templ PkgPage(params Params, pkg *docparser.PackageDocs) {
 	@FrameTitle(params, pkg.ImportName) {
 		@PkgSidePanel(params, pkg)
-		<section id="content">
+		<section id="content" class="code-docs">
 			<h1>Overview</h1>
 			<p>{pkg.Docs}</p>
 			<a href={templ.SafeURL(params.Qual("/godoc"))}>All Packages</a>

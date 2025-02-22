@@ -13,6 +13,7 @@
     --bg-color-frame: #7e7e7e;
     --fg-color: #cbcbcb;
     --accent-color: #5c159d;
+    --code-link-color: #6f19bd;
 }
 
 html, body {
@@ -164,4 +165,13 @@ aside > p {
     #content {
         width: 100%;
     }
+}
+
+.code-docs a, .code-docs a:visited {
+    color: var(--code-link-color);
+}
+
+.code-docs hr {
+    border-color: var(--accent-color);
+    background-color: var(--accent-color);
 }
