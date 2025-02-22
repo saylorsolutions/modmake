@@ -29,47 +29,63 @@ func Utilities() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<p>There are a few helpful, general purpose utilities that have been added to Modmake over time. Some of them in an attempt to have some level of parity with more mature build systems.</p><p>This is a subset of all functionality provided. For the full listing, see <a href=\"https://pkg.go.dev/github.com/saylorsolutions/modmake\">the API docs</a>.</p><ul><li><a href=\"https://pkg.go.dev/github.com/saylorsolutions/modmake#F\">Format strings</a> - Used to inject environment variable values into strings in one line. Allows providing defaults in case the environment variable is undefined.</li><li><a href=\"https://pkg.go.dev/github.com/saylorsolutions/modmake#PathString\">PathString</a> - Used to solve some of the cross-platform scripting incompatibilities. All paths in Modmake use forward slash (<code>/</code>) as a path separator, which is normalized upon use if needed.</li><ul><li>PathString can also be used to perform various filesystem operations.</li><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<p>There are a few helpful, general purpose utilities that have been added to Modmake over time. Some of them in an attempt to have some level of parity with more mature build systems.</p><p>This is a subset of all functionality provided. For the full listing, see <a href=\"https://saylorsolutions.github.io/modmake/godoc\">the API docs</a>.</p><ul><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocAnchor("", "Path").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = ModmakeDocAnchor("", "func_F", "Format strings").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "- Used to create a new <code>PathString</code></li><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "- Used to inject environment variable values into strings in one line. Allows providing defaults in case the environment variable is undefined.</li><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocAnchor("PathString", "CopyTo").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = ModmakeDocAnchor("", "PathString", "").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "- Used to copy the file referenced by this <code>PathString</code> to another location.</li><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "- Used to solve some of the cross-platform scripting incompatibilities. All paths in Modmake use forward slash (<code>/</code>) as a path separator, which is normalized upon use if needed.</li><ul><li>PathString can also be used to perform various filesystem operations.</li><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocAnchor("PathString", "Create").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = ModmakeDocAnchor("", "func_Path", "Path").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "- Creates the file referenced by this <code>PathString</code>.</li><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "- Used to create a new <code>PathString</code></li><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocAnchor("PathString", "Dir").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = ModmakeDocAnchor("PathString", "CopyTo", "").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "- Returns a <code>PathString</code> of the containing directory.</li><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "- Used to copy the file referenced by this <code>PathString</code> to another location.</li><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocAnchor("PathString", "Exists").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = ModmakeDocAnchor("PathString", "Create", "").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "- Returns whether the <code>PathString</code> refers to a file that exists.</li><li>And more...</li></ul></ul>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "- Creates the file referenced by this <code>PathString</code>.</li><li>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = ModmakeDocAnchor("PathString", "Dir", "").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "- Returns a <code>PathString</code> of the containing directory.</li><li>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = ModmakeDocAnchor("PathString", "Exists", "").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "- Returns whether the <code>PathString</code> refers to a file that exists.</li><li>And more...</li></ul></ul>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -98,63 +114,63 @@ func Utilities_TaskHelpers() templ.Component {
 			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<p>Here are the most common Task helpers.</p><ul><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<p>Here are the most common Task helpers.</p><ul><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocAnchor("", "Script").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = ModmakeDocAnchor("", "func_Script", "Script").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "- Script allows creating a Task that executes each Runner in sequence, returning the first error encountered.</li><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "- Script allows creating a Task that executes each Runner in sequence, returning the first error encountered.</li><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocAnchor("", "NoOp").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = ModmakeDocAnchor("", "func_NoOp", "NoOp").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "- Produces a Task that does nothing and returns a nil error. Most useful for testing purposes, or as a basis for extension with Then.</li><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "- Produces a Task that does nothing and returns a nil error. Most useful for testing purposes, or as a basis for extension with Then.</li><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocAnchor("", "WithoutErr").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = ModmakeDocAnchor("", "func_WithoutErr", "WithoutErr").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "- Takes a function that does not return an error and returns a Task. This is mostly for simplifying calling conventions.</li><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "- Takes a function that does not return an error and returns a Task. This is mostly for simplifying calling conventions.</li><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocAnchor("", "WithoutContext").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = ModmakeDocAnchor("", "func_WithoutContext", "WithoutContext").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "- Takes a function that does not listen to a context and returns a Task. This is mostly for simplifying calling conventions.</li><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "- Takes a function that does not listen to a context and returns a Task. This is mostly for simplifying calling conventions.</li><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocAnchor("", "Plain").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = ModmakeDocAnchor("", "func_Plain", "Plain").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "- Takes a simple function and returns a Task. This is mostly for simplifying calling conventions.</li><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "- Takes a simple function and returns a Task. This is mostly for simplifying calling conventions.</li><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocAnchor("", "Print").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = ModmakeDocAnchor("", "func_Print", "Print").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "- Returns a Task that prints a message and returns.</li><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "- Returns a Task that prints a message and returns.</li><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocAnchor("", "Error").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = ModmakeDocAnchor("", "func_Error", "Error").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "- Returns a Task that returns an error.</li><li>And more...</li></ul>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "- Returns a Task that returns an error.</li><li>And more...</li></ul>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -183,47 +199,55 @@ func Utilities_GoTools() templ.Component {
 			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<p>Accessing the Go toolchain.</p><ul><li><a href=\"https://pkg.go.dev/github.com/saylorsolutions/modmake#GoTools\">Go tools</a> - Using the <code>Go()</code> function provides programmatic access to the Go toolchain. This is used extensively in Modmake.</li><ul><li>These functions can be accessed by calling <code>Go()</code>, which enables accessing specific Go toolchain capabilities.</li><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "<p>Accessing the Go toolchain.</p><ul><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocAnchor("GoTools", "Build").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = ModmakeDocAnchor("", "GoTools", "Go Tools").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "- Used to compile Go binaries. It can also compile shared libraries and other formats.</li><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "- Using the <code>Go()</code> function provides programmatic access to the Go toolchain. This is used extensively in Modmake.</li><ul><li>These functions can be accessed by calling <code>Go()</code>, which enables accessing specific Go toolchain capabilities.</li><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocAnchor("GoTools", "Run").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = ModmakeDocAnchor("GoTools", "Build", "").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "- Used to compile and run the code at a path in the module. The target path must reference a main package.</li><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "- Used to compile Go binaries. It can also compile shared libraries and other formats.</li><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocAnchor("GoTools", "TestAll").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = ModmakeDocAnchor("GoTools", "Run", "").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "- Runs all tests in the module.</li><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "- Used to compile and run the code at a path in the module. The target path must reference a main package.</li><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocAnchor("GoTools", "BenchmarkAll").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = ModmakeDocAnchor("GoTools", "TestAll", "").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "- Runs all benchmark tests. The default build model will leave the <code>benchmark</code> step disabled</li><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "- Runs all tests in the module.</li><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocAnchor("GoTools", "GenerateAll").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = ModmakeDocAnchor("GoTools", "BenchmarkAll", "").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "- Run all <code>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "- Runs all benchmark tests. The default build model will leave the <code>benchmark</code> step disabled</li><li>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = ModmakeDocAnchor("GoTools", "GenerateAll", "").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "- Run all <code>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -236,87 +260,87 @@ func Utilities_GoTools() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "go:generate</code> commands in the module.</li><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "go:generate</code> commands in the module.</li><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocAnchor("GoTools", "Clean").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = ModmakeDocAnchor("GoTools", "Clean", "").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "- This can be used to clean various caches kept by the Go toolchain.</li><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "- This can be used to clean various caches kept by the Go toolchain.</li><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocAnchor("GoTools", "GetEnv").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = ModmakeDocAnchor("GoTools", "GetEnv", "").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "- Allows querying for Go tools environment variable state.</li><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "- Allows querying for Go tools environment variable state.</li><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocAnchor("GoTools", "Command").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = ModmakeDocAnchor("GoTools", "Command", "").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "- For cases where the provided GoTools methods aren't sufficient, this is a good fallback because it allows more direct access to GoTools.</li></ul><li>There are also Go package management functions.</li><ul><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "- For cases where the provided GoTools methods aren't sufficient, this is a good fallback because it allows more direct access to GoTools.</li></ul><li>There are also Go package management functions.</li><ul><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocAnchor("GoTools", "Get").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = ModmakeDocAnchor("GoTools", "Get", "").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "- Gets a module and adds it to this modules dependencies.</li><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "- Gets a module and adds it to this modules dependencies.</li><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocAnchor("GoTools", "Install").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = ModmakeDocAnchor("GoTools", "Install", "").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "- Installs a Go module in <code>$GOPATH/bin</code>.</li><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "- Installs a Go module in <code>$GOPATH/bin</code>.</li><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocAnchor("GoTools", "ModTidy").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = ModmakeDocAnchor("GoTools", "ModTidy", "").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "- Tidies the module's go.mod and go.sum.</li><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "- Tidies the module's go.mod and go.sum.</li><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocAnchor("GoTools", "ModuleName").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = ModmakeDocAnchor("GoTools", "ModuleName", "").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "- Returns the current module's name.</li><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "- Returns the current module's name.</li><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocAnchor("GoTools", "ModuleRoot").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = ModmakeDocAnchor("GoTools", "ModuleRoot", "").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "- Returns the absolute path to the root of the current module.</li><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "- Returns the absolute path to the root of the current module.</li><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocAnchor("GoTools", "ToModulePackage").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = ModmakeDocAnchor("GoTools", "ToModulePackage", "").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "- Returns the relative package path to a path rooted relative to the module.</li><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "- Returns the relative package path to a path rooted relative to the module.</li><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = DocAnchor("GoTools", "ToModulePath").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = ModmakeDocAnchor("GoTools", "ToModulePath", "").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "- Works the opposite of <code>ToModulePackage</code>, converting a module package path to a regular path.</li></ul><li>And more...</li></ul>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "- Works the opposite of <code>ToModulePackage</code>, converting a module package path to a regular path.</li></ul><li>And more...</li></ul>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -345,7 +369,23 @@ func Utilities_Compression() templ.Component {
 			templ_7745c5c3_Var5 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "<p>Currently available compression helpers.</p><ul><li><a href=\"https://pkg.go.dev/github.com/saylorsolutions/modmake#TarArchive\">TarArchive</a> - Provides a consistent interface to *.tar.gz compression.</li><li><a href=\"https://pkg.go.dev/github.com/saylorsolutions/modmake#ZipArchive\">ZipArchive</a> - Provides a consistent interface to *.zip compression.</li></ul>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "<p>Currently available compression helpers.</p><ul><li>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = ModmakeDocAnchor("", "TarArchive", "").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "- Provides a consistent interface to *.tar.gz compression.</li><li>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = ModmakeDocAnchor("", "ZipArchive", "").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "- Provides a consistent interface to *.zip compression.</li></ul>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -374,39 +414,39 @@ func Utilities_Git() templ.Component {
 			templ_7745c5c3_Var6 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "<p>There are a few Git-related functions in <a href=\"https://pkg.go.dev/github.com/saylorsolutions/modmake@v0.3.1/pkg/git#pkg-index\">pkg/git</a> that could help with version tagging builds and general automation.</p><ul><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, "<p>There are a few Git-related functions in @GitDocAnchor(\"\", \"index\", \"pkg/git\") that could help with version tagging builds and general automation.</p><ul><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = PkgDocAnchor("/pkg/git", "", "Exec").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = GitDocAnchor("", "func_Exec", "Exec").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "- Executes a git command.</li><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "- Executes a git command.</li><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = PkgDocAnchor("/pkg/git", "", "ExecOutput").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = GitDocAnchor("", "func_ExecOutput", "ExecOutput").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "- Executes a git command and returns its output.</li><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 40, "- Executes a git command and returns its output.</li><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = PkgDocAnchor("/pkg/git", "", "BranchName").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = GitDocAnchor("", "func_BranchName", "BranchName").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "- Returns the currently checked out branch.</li><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 41, "- Returns the currently checked out branch.</li><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = PkgDocAnchor("/pkg/git", "", "CommitHash").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = GitDocAnchor("", "func_CommitHash", "CommitHash").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "- Returns the currently checked commit hash.</li><li>And more...</li></ul>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 42, "- Returns the currently checked commit hash.</li><li>And more...</li></ul>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

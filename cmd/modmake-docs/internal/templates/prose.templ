@@ -36,18 +36,32 @@ templ SubHeadingLink(section *Section, sub *SubSection) {
 
 templ DocAnchor(parent, child string) {
 	if len(parent) > 0 {
-		<a href={joinHref("https://pkg.go.dev/github.com/saylorsolutions/modmake#", parent, ".", child)}>{child}</a>{" "}
+		<a href={joinHref("https://saylorsolutions.github.io/modmake#", parent, ".", child)}>{child}</a>{" "}
 	} else {
-		<a href={joinHref("https://pkg.go.dev/github.com/saylorsolutions/modmake#", child)}>{child}</a>{" "}
+		<a href={joinHref("https://saylorsolutions.github.io/modmake#", child)}>{child}</a>{" "}
 	}
 }
 
-templ PkgDocAnchor(pkg, parent, child string) {
+templ PkgDocAnchor(pkg, parent, child, text string) {
 	if len(parent) > 0 {
-		<a href={joinHref("https://pkg.go.dev/github.com/saylorsolutions/modmake", pkg, "#", parent, ".", child)}>{child}</a>{" "}
+		<a href={joinHref("https://saylorsolutions.github.io/modmake/godoc/github.com/saylorsolutions/modmake", pkg, "#", parent, "_", child)}>
+			if len(text) == 0 {
+				{child}
+			} else {
+				{text}
+			}
+		</a>{" "}
 	} else {
-		<a href={joinHref("https://pkg.go.dev/github.com/saylorsolutions/modmake", pkg, "#", child)}>{child}</a>{" "}
+		<a href={joinHref("https://saylorsolutions.github.io/modmake/godoc/github.com/saylorsolutions/modmake", pkg, "#", child)}>{child}</a>{" "}
 	}
+}
+
+templ ModmakeDocAnchor(parent, child, text string) {
+	@PkgDocAnchor("", parent, child, text)
+}
+
+templ GitDocAnchor(parent, child, text string) {
+	@PkgDocAnchor("/pkg/git", parent, child, text)
 }
 
 templ CodeBlock(text string) {

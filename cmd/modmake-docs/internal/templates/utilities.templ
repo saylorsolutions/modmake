@@ -5,31 +5,31 @@ templ Utilities() {
 		There are a few helpful, general purpose utilities that have been added to Modmake over time. Some of them in an attempt to have some level of parity with more mature build systems.
 	</p>
 	<p>
-		This is a subset of all functionality provided. For the full listing, see <a href="https://pkg.go.dev/github.com/saylorsolutions/modmake">the API docs</a>.
+		This is a subset of all functionality provided. For the full listing, see <a href="https://saylorsolutions.github.io/modmake/godoc">the API docs</a>.
 	</p>
 	<ul>
-		<li><a href="https://pkg.go.dev/github.com/saylorsolutions/modmake#F">Format strings</a> - Used to inject environment variable values into strings in one line. Allows providing defaults in case the environment variable is undefined.</li>
-		<li><a href="https://pkg.go.dev/github.com/saylorsolutions/modmake#PathString">PathString</a> - Used to solve some of the cross-platform scripting incompatibilities. All paths in Modmake use forward slash (<code>/</code>) as a path separator, which is normalized upon use if needed.</li>
+		<li>@ModmakeDocAnchor("", "func_F", "Format strings") - Used to inject environment variable values into strings in one line. Allows providing defaults in case the environment variable is undefined.</li>
+		<li>@ModmakeDocAnchor("", "PathString", "") - Used to solve some of the cross-platform scripting incompatibilities. All paths in Modmake use forward slash (<code>/</code>) as a path separator, which is normalized upon use if needed.</li>
 		<ul>
 			<li>PathString can also be used to perform various filesystem operations.</li>
 			<li>
-				@DocAnchor("", "Path")
+				@ModmakeDocAnchor("", "func_Path", "Path")
 				- Used to create a new <code>PathString</code>
 			</li>
 			<li>
-				@DocAnchor("PathString", "CopyTo")
+				@ModmakeDocAnchor("PathString", "CopyTo", "")
 				- Used to copy the file referenced by this <code>PathString</code> to another location.
 			</li>
 			<li>
-				@DocAnchor("PathString", "Create")
+				@ModmakeDocAnchor("PathString", "Create", "")
 				- Creates the file referenced by this <code>PathString</code>.
 			</li>
 			<li>
-				@DocAnchor("PathString", "Dir")
+				@ModmakeDocAnchor("PathString", "Dir", "")
 				- Returns a <code>PathString</code> of the containing directory.
 			</li>
 			<li>
-				@DocAnchor("PathString", "Exists")
+				@ModmakeDocAnchor("PathString", "Exists", "")
 				- Returns whether the <code>PathString</code> refers to a file that exists.
 			</li>
 			<li>And more...</li>
@@ -41,25 +41,25 @@ templ Utilities_TaskHelpers() {
 	<p>Here are the most common Task helpers.</p>
 	<ul>
 		<li>
-		@DocAnchor("", "Script")
+		@ModmakeDocAnchor("", "func_Script", "Script")
 		 - Script allows creating a Task that executes each Runner in sequence, returning the first error encountered.</li>
 		<li>
-			@DocAnchor("", "NoOp")
+			@ModmakeDocAnchor("", "func_NoOp", "NoOp")
 			 - Produces a Task that does nothing and returns a nil error. Most useful for testing purposes, or as a basis for extension with Then.</li>
 		<li>
-		@DocAnchor("", "WithoutErr")
+		@ModmakeDocAnchor("", "func_WithoutErr", "WithoutErr")
 		 - Takes a function that does not return an error and returns a Task. This is mostly for simplifying calling conventions.</li>
 		<li>
-		@DocAnchor("", "WithoutContext")
+		@ModmakeDocAnchor("", "func_WithoutContext", "WithoutContext")
 		 - Takes a function that does not listen to a context and returns a Task. This is mostly for simplifying calling conventions.</li>
 		<li>
-		@DocAnchor("", "Plain")
+		@ModmakeDocAnchor("", "func_Plain", "Plain")
 		 - Takes a simple function and returns a Task. This is mostly for simplifying calling conventions.</li>
 		<li>
-		@DocAnchor("", "Print")
+		@ModmakeDocAnchor("", "func_Print", "Print")
 		 - Returns a Task that prints a message and returns.</li>
 		<li>
-		@DocAnchor("", "Error")
+		@ModmakeDocAnchor("", "func_Error", "Error")
 		 - Returns a Task that returns an error.</li>
 		<li>And more...</li>
 	</ul>
@@ -68,56 +68,56 @@ templ Utilities_TaskHelpers() {
 templ Utilities_GoTools() {
 	<p>Accessing the Go toolchain.</p>
 	<ul>
-		<li><a href="https://pkg.go.dev/github.com/saylorsolutions/modmake#GoTools">Go tools</a> - Using the <code>Go()</code> function provides programmatic access to the Go toolchain. This is used extensively in Modmake.</li>
+		<li>@ModmakeDocAnchor("", "GoTools", "Go Tools") - Using the <code>Go()</code> function provides programmatic access to the Go toolchain. This is used extensively in Modmake.</li>
 		<ul>
 			<li>These functions can be accessed by calling <code>Go()</code>, which enables accessing specific Go toolchain capabilities.</li>
 			<li>
-				@DocAnchor("GoTools", "Build")
+				@ModmakeDocAnchor("GoTools", "Build", "")
 				 - Used to compile Go binaries. It can also compile shared libraries and other formats.</li>
 			<li>
-				@DocAnchor("GoTools", "Run")
+				@ModmakeDocAnchor("GoTools", "Run", "")
 				 - Used to compile and run the code at a path in the module. The target path must reference a main package.</li>
 			<li>
-				@DocAnchor("GoTools", "TestAll")
+				@ModmakeDocAnchor("GoTools", "TestAll", "")
 				 - Runs all tests in the module.</li>
 			<li>
-				@DocAnchor("GoTools", "BenchmarkAll")
+				@ModmakeDocAnchor("GoTools", "BenchmarkAll", "")
 				 - Runs all benchmark tests. The default build model will leave the <code>benchmark</code> step disabled</li>
 			<li>
-				@DocAnchor("GoTools", "GenerateAll")
+				@ModmakeDocAnchor("GoTools", "GenerateAll", "")
 				 - Run all <code>{"//"}go:generate</code> commands in the module.</li>
 			<li>
-				@DocAnchor("GoTools", "Clean")
+				@ModmakeDocAnchor("GoTools", "Clean", "")
 				 - This can be used to clean various caches kept by the Go toolchain.</li>
 			<li>
-				@DocAnchor("GoTools", "GetEnv")
+				@ModmakeDocAnchor("GoTools", "GetEnv", "")
 				 - Allows querying for Go tools environment variable state.</li>
 			<li>
-				@DocAnchor("GoTools", "Command")
+				@ModmakeDocAnchor("GoTools", "Command", "")
 				 - For cases where the provided GoTools methods aren't sufficient, this is a good fallback because it allows more direct access to GoTools.</li>
 		</ul>
 		<li>There are also Go package management functions.</li>
 		<ul>
 			<li>
-				@DocAnchor("GoTools", "Get")
+				@ModmakeDocAnchor("GoTools", "Get", "")
 				 - Gets a module and adds it to this modules dependencies.</li>
 			<li>
-				@DocAnchor("GoTools", "Install")
+				@ModmakeDocAnchor("GoTools", "Install", "")
 				 - Installs a Go module in <code>$GOPATH/bin</code>.</li>
 			<li>
-				@DocAnchor("GoTools", "ModTidy")
+				@ModmakeDocAnchor("GoTools", "ModTidy", "")
 				 - Tidies the module's go.mod and go.sum.</li>
 			<li>
-				@DocAnchor("GoTools", "ModuleName")
+				@ModmakeDocAnchor("GoTools", "ModuleName", "")
 				 - Returns the current module's name.</li>
 			<li>
-				@DocAnchor("GoTools", "ModuleRoot")
+				@ModmakeDocAnchor("GoTools", "ModuleRoot", "")
 				 - Returns the absolute path to the root of the current module.</li>
 			<li>
-				@DocAnchor("GoTools", "ToModulePackage")
+				@ModmakeDocAnchor("GoTools", "ToModulePackage", "")
 				 - Returns the relative package path to a path rooted relative to the module.</li>
 			<li>
-				@DocAnchor("GoTools", "ToModulePath")
+				@ModmakeDocAnchor("GoTools", "ToModulePath", "")
 				 - Works the opposite of <code>ToModulePackage</code>, converting a module package path to a regular path.</li>
 		</ul>
 		<li>And more...</li>
@@ -127,28 +127,28 @@ templ Utilities_GoTools() {
 templ Utilities_Compression() {
 	<p>Currently available compression helpers.</p>
 	<ul>
-		<li><a href="https://pkg.go.dev/github.com/saylorsolutions/modmake#TarArchive">TarArchive</a> - Provides a consistent interface to *.tar.gz compression.</li>
-		<li><a href="https://pkg.go.dev/github.com/saylorsolutions/modmake#ZipArchive">ZipArchive</a> - Provides a consistent interface to *.zip compression.</li>
+		<li>@ModmakeDocAnchor("", "TarArchive", "") - Provides a consistent interface to *.tar.gz compression.</li>
+		<li>@ModmakeDocAnchor("", "ZipArchive", "") - Provides a consistent interface to *.zip compression.</li>
 	</ul>
 }
 
 templ Utilities_Git() {
-	<p>There are a few Git-related functions in <a href="https://pkg.go.dev/github.com/saylorsolutions/modmake@v0.3.1/pkg/git#pkg-index">pkg/git</a> that could help with version tagging builds and general automation.</p>
+	<p>There are a few Git-related functions in @GitDocAnchor("", "index", "pkg/git") that could help with version tagging builds and general automation.</p>
 	<ul>
 		<li>
-			@PkgDocAnchor("/pkg/git", "", "Exec")
+			@GitDocAnchor("", "func_Exec", "Exec")
 			- Executes a git command.
 		</li>
 		<li>
-			@PkgDocAnchor("/pkg/git", "", "ExecOutput")
+			@GitDocAnchor("", "func_ExecOutput", "ExecOutput")
 			- Executes a git command and returns its output.
 		</li>
 		<li>
-			@PkgDocAnchor("/pkg/git", "", "BranchName")
+			@GitDocAnchor("", "func_BranchName", "BranchName")
 			- Returns the currently checked out branch.
 		</li>
 		<li>
-			@PkgDocAnchor("/pkg/git", "", "CommitHash")
+			@GitDocAnchor("", "func_CommitHash", "CommitHash")
 			- Returns the currently checked commit hash.
 		</li>
 		<li>And more...</li>
