@@ -16,7 +16,7 @@ func (p Params) Qual(path string) string {
 }
 
 templ Frame(params Params) {
-	@FrameTitle(params, "")
+	@FrameTitle(params, "") { children... }
 }
 
 templ FrameTitle(params Params, title string) {

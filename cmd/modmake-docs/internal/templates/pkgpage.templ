@@ -14,7 +14,7 @@ templ PkgPage(params Params, pkg *docparser.PackageDocs) {
 			if len(pkg.Constants) > 0 {
 				<h1 id="constants">Constants <a href="#constants">[link]</a></h1>
 				for _, constant := range pkg.SortedConstants() {
-					<h2>{constant.ConstantName} <a href={PkgDocLink(params, pkg, constant)}>[link]</a></h2>
+					<h2 id={constant.LinkID()}>{constant.ConstantName} <a href={PkgDocLink(params, pkg, constant)}>[link]</a></h2>
 					<pre><code>{constant.Declaration}</code></pre>
 					<p>{constant.Docs}</p>
 				}
@@ -23,7 +23,7 @@ templ PkgPage(params Params, pkg *docparser.PackageDocs) {
 				<h1 id="variables">Variables <a href="#variables">[link]</a></h1>
 				<ul>
 				for _, variable := range pkg.SortedVariables() {
-					<h2>{variable.VarName} <a href={PkgDocLink(params, pkg, variable)}>[link]</a></h2>
+					<h2 id={variable.LinkID()}>{variable.VarName} <a href={PkgDocLink(params, pkg, variable)}>[link]</a></h2>
 					<pre><code>{variable.Declaration}</code></pre>
 					<p>{variable.Docs}</p>
 				}
@@ -32,7 +32,7 @@ templ PkgPage(params Params, pkg *docparser.PackageDocs) {
 			if len(pkg.Functions) > 0 {
 				<h1 id="functions">Functions <a href="#functions">[link]</a></h1>
 				for _, function := range pkg.SortedFunctions() {
-					<h2>{function.FunctionName} <a href={PkgDocLink(params, pkg, function)}>[link]</a></h2>
+					<h2 id={function.LinkID()}>{function.FunctionName} <a href={PkgDocLink(params, pkg, function)}>[link]</a></h2>
 					<pre><code>{function.Signature}</code></pre>
 					<p>{function.Docs}</p>
 				}
@@ -40,11 +40,11 @@ templ PkgPage(params Params, pkg *docparser.PackageDocs) {
 			if len(pkg.Types) > 0 {
 				<h1 id="types">Types <a href="#types">[link]</a></h1>
 				for _, _type := range pkg.SortedTypes() {
-					<h2>{_type.TypeName} <a href={PkgDocLink(params, pkg, _type)}>[link]</a></h2>
+					<h2 id={_type.LinkID()}>{_type.TypeName} <a href={PkgDocLink(params, pkg, _type)}>[link]</a></h2>
 					<pre><code>{_type.Declaration}</code></pre>
 					<p>{_type.Docs}</p>
 					for _, method := range _type.SortedMethods() {
-						<h3>{method.MethodName} <a href={PkgDocLink(params, pkg, method)}>[link]</a></h3>
+						<h3 id={method.LinkID()}>{method.MethodName} <a href={PkgDocLink(params, pkg, method)}>[link]</a></h3>
 						<pre><code>{method.Signature}</code></pre>
 						<p>{method.Docs}</p>
 					}

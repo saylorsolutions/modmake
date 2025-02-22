@@ -114,6 +114,7 @@ aside > p {
     height: 100%;
     padding: var(--base-pad);
     border-right: 2px solid var(--accent-color);
+    overflow: auto;
 }
 
 #side-panel a {
