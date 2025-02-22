@@ -101,7 +101,9 @@ templ IndexContent(params Params, pkg *docparser.PackageDocs) {
 				if len(_type.Methods) > 0 {
 				<ul>
 					for _, method := range _type.SortedMethods() {
-						<a href={PkgDocLink(params, pkg, method)}>{method.MethodName}</a>
+						<li>
+							<a href={PkgDocLink(params, pkg, method)}>{method.MethodName}</a>
+						</li>
 					}
 				</ul>
 				}
