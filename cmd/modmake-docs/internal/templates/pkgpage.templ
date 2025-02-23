@@ -53,7 +53,7 @@ templ PkgPage(params Params, pkg *docparser.PackageDocs) {
 					<pre><code>{_type.Declaration}</code></pre>
 					<p>{_type.Docs}</p>
 					for _, method := range _type.SortedMethods() {
-						<h3 id={method.LinkID()}>{method.MethodName} <a href={PkgDocLink(params, pkg, method)}>[link]</a></h3>
+						<h3 id={method.LinkID()}><a href={PkgDocLink(params, pkg, _type)}>{_type.TypeName}.</a>{method.MethodName} <a href={PkgDocLink(params, pkg, method)}>[link]</a></h3>
 						<pre><code>{method.Signature}</code></pre>
 						<p>{method.Docs}</p>
 					}
