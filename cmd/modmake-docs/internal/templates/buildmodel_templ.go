@@ -55,7 +55,7 @@ func BuildModel() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, " consistency's sake. More build steps may be <a href=\"https://pkg.go.dev/github.com/saylorsolutions/modmake#Build.AddStep\">added as needed</a>.</p><p>A Build is intended to act much like any other Go-based CLI tool. The difference is that it's 100% intended to be run with <code>go run</code>. Of course — just like any other Go executable — a Modmake build may be built into a single static executable, but this is not required.</p><p>Several flags to control execution are provided, and a user may introspect a build model without looking at the code. See the <a href=\"https://github.com/saylorsolutions/modmake/blob/main/example/helloworld/README.md\">hello world example</a> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, " consistency's sake. More build steps may be <a href=\"https://saylorsolutions.github.io/modmake/godoc/github.com/saylorsolutions/modmake#Build_AddStep\">added as needed</a>.</p><p>A Build is intended to act much like any other Go-based CLI tool. The difference is that it's 100% intended to be run with <code>go run</code>. Of course — just like any other Go executable — a Modmake build may be built into a single static executable, but this is not required.</p><p>Several flags to control execution are provided, and a user may introspect a build model without looking at the code. See the <a href=\"https://github.com/saylorsolutions/modmake/blob/main/example/helloworld/README.md\">hello world example</a> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -97,7 +97,7 @@ func BuildModel_Tasks() templ.Component {
 			templ_7745c5c3_Var5 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<p>A <code>Task</code> fits into Modmake at a more atomic level.</p><ul><li>A <code>Task</code> enables more flexible expression of build logic, which contrasts with the structure and standardized expression of a <code>Step</code>.</li><li>While a <code>Task</code> and a <code>Step</code> have similarities, they serve very different purposes within a <code>Build</code>. Namely, only a <code>Step</code> may be invoked directly with <code>go run</code>.</li></ul><p>A Task is able to chain other tasks with <a href=\"https://pkg.go.dev/github.com/saylorsolutions/modmake#Task.Then\">Then</a>, and handle failure with <a href=\"https://pkg.go.dev/github.com/saylorsolutions/modmake#Task.Catch\">Catch</a>.</p><p>There are <a href=\"https://pkg.go.dev/github.com/saylorsolutions/modmake#Task\">several tasks</a> that may be used to express your desired logic. A custom Task may be created as a simple function with this signature.</p>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<p>A <code>Task</code> fits into Modmake at a more atomic level.</p><ul><li>A <code>Task</code> enables more flexible expression of build logic, which contrasts with the structure and standardized expression of a <code>Step</code>.</li><li>While a <code>Task</code> and a <code>Step</code> have similarities, they serve very different purposes within a <code>Build</code>. Namely, only a <code>Step</code> may be invoked directly with <code>go run</code>.</li></ul><p>A Task is able to chain other tasks with <a href=\"https://saylorsolutions.github.io/modmake/godoc/github.com/saylorsolutions/modmake#Task_Then\">Then</a>, and handle failure with <a href=\"https://saylorsolutions.github.io/modmake/godoc/github.com/saylorsolutions/modmake#Task_Catch\">Catch</a>.</p><p>There are <a href=\"https://saylorsolutions.github.io/modmake/godoc/github.com/saylorsolutions/modmake#Task\">several tasks</a> that may be used to express your desired logic. A custom Task may be created as a simple function with this signature.</p>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -109,7 +109,7 @@ Task(func(ctx context.Context) error {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<aside>Any Task can chain other operations after it, but this can be cumbersome with many Tasks. Many Tasks may instead be run in a sequence with the <a href=\"https://pkg.go.dev/github.com/saylorsolutions/modmake#Script\">Script</a> helper function. Any failure that occurs in the Script will stop the sequence, and the error will be returned.</aside>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<aside>Any Task can chain other operations after it, but this can be cumbersome with many Tasks. Many Tasks may instead be run in a sequence with the <a href=\"https://saylorsolutions.github.io/modmake/godoc/github.com/saylorsolutions/modmake#func_Script\">Script</a> helper function. Any failure that occurs in the Script will stop the sequence, and the error will be returned.</aside>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

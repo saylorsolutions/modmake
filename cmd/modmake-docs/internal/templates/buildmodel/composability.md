@@ -2,7 +2,7 @@ Modmake build logic can be composed of many pieces, and there are a few approach
 
 ### Import
 
-The [Import](https://pkg.go.dev/github.com/saylorsolutions/modmake#Build.Import) function is one of the main methods used.
+The [Import](https://saylorsolutions.github.io/modmake/godoc/github.com/saylorsolutions/modmake#Build_Import) function is one of the main methods used.
 
 * A build can be divided into multiple *sub-builds* that are then imported together.
 * A build must be imported with a name that becomes its prefix.
@@ -21,14 +21,14 @@ b.Step("other:test")
 b.Execute() // Because "other:test" is now an established step, it can be invoked with "go run" too.
 ```
 
-A variant of `Import` is [ImportAndLink](https://pkg.go.dev/github.com/saylorsolutions/modmake#Build.ImportAndLink), which intrinsically links the sub-build steps to that of its parent.
+A variant of `Import` is [ImportAndLink](https://saylorsolutions.github.io/modmake/godoc/github.com/saylorsolutions/modmake#Build_ImportAndLink), which intrinsically links the sub-build steps to that of its parent.
 
 ### CallBuild
 
-Another mechanism is [CallBuild](https://pkg.go.dev/github.com/saylorsolutions/modmake#CallBuild), which allows invoking steps in an unrelated build.
+Another mechanism is [CallBuild](https://saylorsolutions.github.io/modmake/godoc/github.com/saylorsolutions/modmake#func_CallBuild), which allows invoking steps in an unrelated build.
 This is a very useful mechanism when working with Git submodules that use modmake.
 
-There's an [example](https://pkg.go.dev/github.com/saylorsolutions/modmake#example-CallBuild) for reference.
+There's an example for reference.
 
 ### CallRemote
 
@@ -51,7 +51,7 @@ b.Generate().DependsOnRunner("gen-docs", "", Exec("modmake-docs", "generate").
 
 ### AppBuild
 
-[AppBuild](https://pkg.go.dev/github.com/saylorsolutions/modmake#AppBuild) is a higher level concept that allows for a lot less typing and more convenience.
+[AppBuild](https://saylorsolutions.github.io/modmake/godoc/github.com/saylorsolutions/modmake#AppBuild) is a higher level concept that allows for a lot less typing and more convenience.
 This is a good fit when an app's build follows a common way of producing distributions.
 
 `AppBuild` is great for any of these cases.

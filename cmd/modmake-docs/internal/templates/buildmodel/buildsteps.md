@@ -1,11 +1,11 @@
 A `Step` is something that may be invoked with either `go run` or the [modmake CLI](#modmake-cli), but may also
-have [dependencies](https://pkg.go.dev/github.com/saylorsolutions/modmake#Step.DependsOn) and
-[pre/post](https://pkg.go.dev/github.com/saylorsolutions/modmake#Step.BeforeRun) actions.
+have [dependencies](https://saylorsolutions.github.io/modmake/godoc/github.com/saylorsolutions/modmake#Step_DependsOn) and
+[pre/post](https://saylorsolutions.github.io/modmake/godoc/github.com/saylorsolutions/modmake#Step_BeforeRun) actions.
 
 Step dependencies are arranged as a directed acyclic graph (a [DAG](https://en.wikipedia.org/wiki/Directed_acyclic_graph)).
 If a cycle is detected during invocation — or while running the builtin `graph` step — then the Build will panic to include details of the error.
 
-A step's [BeforeRun](https://pkg.go.dev/github.com/saylorsolutions/modmake#Step.BeforeRun) hooks will run in order _after_ dependency steps have executed in order.
+A step's [BeforeRun](https://saylorsolutions.github.io/modmake/godoc/github.com/saylorsolutions/modmake#Step_BeforeRun) hooks will run in order _after_ dependency steps have executed in order.
 
   - Dependencies are good for orchestration and ensuring order of operations.
   - Before/After hooks are good for actions that are <em>intrinsic</em> to a `Step`'s execution.
@@ -23,7 +23,7 @@ This is done to ensure a consistent base structure for every build.
   - `package` - This step is for packaging executables into an easily distributable/deployable format. 
 
 > **Note:** the default build Steps do nothing by default. 
-> A default Step's [Does](https://pkg.go.dev/github.com/saylorsolutions/modmake#Step.Does) or [DependsOn](https://pkg.go.dev/github.com/saylorsolutions/modmake#Step.DependsOn) method must be used to make it perform some operation.
+> A default Step's [Does](https://saylorsolutions.github.io/modmake/godoc/github.com/saylorsolutions/modmake#Step_Does) or [DependsOn](https://saylorsolutions.github.io/modmake/godoc/github.com/saylorsolutions/modmake#Step_DependsOn) method must be used to make it perform some operation.
 
 ### Utility Steps
 
