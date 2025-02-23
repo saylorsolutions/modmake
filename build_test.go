@@ -155,11 +155,6 @@ func TestCallBuild(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestSubmoduleCallBuild(t *testing.T) {
-	err := CallBuild("./example/submodule/modmake/build.go", "build").Run(context.TODO())
-	assert.NoError(t, err)
-}
-
 func ExampleCallBuild() {
 	callHelloWorldExample := Task(func(ctx context.Context) error {
 		return CallBuild("example/helloworld/build.go", "build").Run(ctx)

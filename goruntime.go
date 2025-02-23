@@ -232,7 +232,7 @@ type GoClean struct {
 
 func (g *GoTools) Clean() *GoClean {
 	return &GoClean{
-		Command: Exec(g.goTool(), "clean"),
+		Command: g.Command("clean"),
 	}
 }
 
@@ -269,19 +269,19 @@ func (c *GoClean) Task() Task {
 }
 
 func (g *GoTools) Install(pkg string) *Command {
-	return Exec(g.goTool(), "install", pkg)
+	return g.Command("install", pkg)
 }
 
 func (g *GoTools) Get(pkg string) *Command {
-	return Exec(g.goTool(), "get").Arg(pkg)
+	return g.Command("get").Arg(pkg)
 }
 
 func (g *GoTools) GetUpdated(pkg string) *Command {
-	return Exec(g.goTool(), "get", "-u").Arg(pkg)
+	return g.Command("get", "-u").Arg(pkg)
 }
 
 func (g *GoTools) ModTidy() *Command {
-	return Exec(g.goTool(), "mod", "tidy")
+	return g.Command("mod", "tidy")
 }
 
 // moduleInfo is a struct used to capture the JSON output of a module download.
@@ -305,7 +305,7 @@ func (g *GoTools) modDownload(ctx context.Context, module string) (moduleInfo, e
 		output bytes.Buffer
 		mod    moduleInfo
 	)
-	if err := Go().Command("mod", "download", "-json", module).CaptureStdin().Stdout(&output).Run(ctx); err != nil {
+	if err := g.Command("mod", "download", "-json", module).CaptureStdin().Stdout(&output).Run(ctx); err != nil {
 		return moduleInfo{}, fmt.Errorf("failed to download module: %w", err)
 	}
 	if err := json.NewDecoder(&output).Decode(&mod); err != nil {
@@ -315,7 +315,7 @@ func (g *GoTools) modDownload(ctx context.Context, module string) (moduleInfo, e
 }
 
 func (g *GoTools) Test(patterns ...string) *Command {
-	return Exec(g.goTool(), "test", "-v").Arg(patterns...)
+	return g.Command("test", "-v").Arg(patterns...)
 }
 
 func (g *GoTools) TestAll() *Command {
@@ -323,7 +323,7 @@ func (g *GoTools) TestAll() *Command {
 }
 
 func (g *GoTools) Generate(patterns ...string) *Command {
-	return Exec(g.goTool(), "generate").Arg(patterns...)
+	return g.Command("generate", patterns...)
 }
 
 func (g *GoTools) GenerateAll() *Command {
@@ -331,11 +331,27 @@ func (g *GoTools) GenerateAll() *Command {
 }
 
 func (g *GoTools) Benchmark(pattern string) *Command {
-	return Exec(g.goTool(), "test", "-bench="+pattern, "-run=^$", "-v")
+	return g.Command("test", "-bench="+pattern, "-run=^$", "-v")
 }
 
 func (g *GoTools) BenchmarkAll() *Command {
 	return g.Benchmark(".")
+}
+
+func (g *GoTools) Vet(patterns ...string) *Command {
+	return g.Command("vet", patterns...)
+}
+
+func (g *GoTools) VetAll() *Command {
+	return g.Vet("./...")
+}
+
+func (g *GoTools) Format(patterns ...string) *Command {
+	return g.Command("fmt", patterns...)
+}
+
+func (g *GoTools) FormatAll() *Command {
+	return g.Format("./...")
 }
 
 type GoBuild struct {
@@ -374,7 +390,7 @@ func (g *GoTools) Build(targets ...string) *GoBuild {
 		}
 	}
 	return &GoBuild{
-		cmd:     Exec(g.goTool(), "build"),
+		cmd:     g.Command("build"),
 		targets: _targets,
 		gcFlags: map[string]bool{},
 		ldFlags: map[string]bool{},
@@ -741,7 +757,7 @@ func (b *GoBuild) Task() Task {
 }
 
 func (g *GoTools) Run(target string, args ...string) *Command {
-	return Exec(g.goTool(), "run").Arg(target).Arg(args...).CaptureStdin()
+	return g.Command("run", target).Arg(args...).CaptureStdin()
 }
 
 func keySlice[T any](set map[string]T) []string {

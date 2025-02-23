@@ -1,0 +1,123 @@
+package templates
+
+import "github.com/saylorsolutions/modmake/cmd/modmake-docs/internal/docparser"
+
+templ PkgPage(params Params, pkg *docparser.PackageDocs) {
+	@FrameTitle(params, pkg.ImportName) {
+		@PkgSidePanel(params, pkg)
+		<section id="content" class="code-docs">
+			<h1>Overview</h1>
+			<p>{pkg.Docs}</p>
+			<a href={templ.SafeURL(params.Qual("/godoc"))}>All Packages</a>
+			<hr/>
+			<h1 id="index">Index <a href="#index">[link]</a></h1>
+			@IndexContent(params, pkg)
+			if len(pkg.Constants) > 0 {
+				<hr/>
+				<h1 id="constants">Constants <a href="#constants">[link]</a></h1>
+				for _, constant := range pkg.SortedConstants() {
+					<hr/>
+					<h2 id={constant.LinkID()}>{constant.ConstantName} <a href={PkgDocLink(params, pkg, constant)}>[link]</a></h2>
+					<pre><code>{constant.Declaration}</code></pre>
+					<p>{constant.Docs}</p>
+				}
+			}
+			if len(pkg.Variables) > 0 {
+				<hr/>
+				<h1 id="variables">Variables <a href="#variables">[link]</a></h1>
+				<ul>
+				for _, variable := range pkg.SortedVariables() {
+					<hr/>
+					<h2 id={variable.LinkID()}>{variable.VarName} <a href={PkgDocLink(params, pkg, variable)}>[link]</a></h2>
+					<pre><code>{variable.Declaration}</code></pre>
+					<p>{variable.Docs}</p>
+				}
+				</ul>
+			}
+			if len(pkg.Functions) > 0 {
+				<hr/>
+				<h1 id="functions">Functions <a href="#functions">[link]</a></h1>
+				for _, function := range pkg.SortedFunctions() {
+					<hr/>
+					<h2 id={function.LinkID()}>{function.FunctionName} <a href={PkgDocLink(params, pkg, function)}>[link]</a></h2>
+					<pre><code>{function.Signature}</code></pre>
+					<p>{function.Docs}</p>
+				}
+			}
+			if len(pkg.Types) > 0 {
+				<hr/>
+				<h1 id="types">Types <a href="#types">[link]</a></h1>
+				for _, _type := range pkg.SortedTypes() {
+					<hr/>
+					<h2 id={_type.LinkID()}>{_type.TypeName} <a href={PkgDocLink(params, pkg, _type)}>[link]</a></h2>
+					<pre><code>{_type.Declaration}</code></pre>
+					<p>{_type.Docs}</p>
+					for _, method := range _type.SortedMethods() {
+						<h3 id={method.LinkID()}><a href={PkgDocLink(params, pkg, _type)}>{_type.TypeName}.</a>{method.MethodName} <a href={PkgDocLink(params, pkg, method)}>[link]</a></h3>
+						<pre><code>{method.Signature}</code></pre>
+						<p>{method.Docs}</p>
+					}
+				}
+			}
+		</section>
+	}
+}
+
+templ PkgSidePanel(params Params, pkg *docparser.PackageDocs) {
+	<div id="side-panel">
+		<a href="#index">Index</a>
+		@IndexContent(params, pkg)
+	</div>
+}
+
+templ IndexContent(params Params, pkg *docparser.PackageDocs) {
+	if len(pkg.Constants) > 0 {
+		<a href="#constants">Constants</a>
+		<ul>
+		for _, constant := range pkg.SortedConstants() {
+			<li>
+				<a href={PkgDocLink(params, pkg, constant)}>{constant.ConstantName}</a>
+			</li>
+		}
+		</ul>
+	}
+	if len(pkg.Variables) > 0 {
+		<a href="#variables">Variables</a>
+		<ul>
+		for _, variable := range pkg.SortedVariables() {
+			<li>
+				<a href={PkgDocLink(params, pkg, variable)}>{variable.VarName}</a>
+			</li>
+		}
+		</ul>
+	}
+	if len(pkg.Functions) > 0 {
+		<a href="#functions">Functions</a>
+		<ul>
+		for _, function := range pkg.SortedFunctions() {
+			<li>
+				<a href={PkgDocLink(params, pkg, function)}>{function.FunctionName}</a>
+			</li>
+		}
+		</ul>
+	}
+	if len(pkg.Types) > 0 {
+		<a href="#types">Types</a>
+		<ul>
+		for _, _type := range pkg.SortedTypes() {
+			<li>
+				<a href={PkgDocLink(params, pkg, _type)}>{_type.TypeName}</a>
+				if len(_type.Methods) > 0 {
+				<ul>
+					for _, method := range _type.SortedMethods() {
+						<li>
+							<a href={PkgDocLink(params, pkg, method)}>{method.MethodName}</a>
+						</li>
+					}
+				</ul>
+				}
+			</li>
+		}
+		</ul>
+	}
+}

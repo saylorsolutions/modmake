@@ -1,0 +1,59 @@
+package templates
+
+type Params struct {
+	BasePath string
+	LatestGoVersion string
+	LatestSupportedGoVersion string
+	ModmakeVersion string
+	GenDir string
+	GoDocDirs []string
+	Content Content
+}
+
+// Qual will qualify a URL's path with the Param's BasePath.
+func (p Params) Qual(path string) string {
+	return p.BasePath + path
+}
+
+templ Frame(params Params) {
+	@FrameTitle(params, "") {
+		{children...}
+	}
+}
+
+templ FrameTitle(params Params, title string) {
+	<!DOCTYPE html>
+	<html lang="en">
+	<head>
+		<meta charset="UTF-8"/>
+		if len(title) > 0 {
+		<title>Modmake Docs - {title}</title>
+		} else {
+		<title>Modmake Docs</title>
+		}
+		<link rel="stylesheet" href={params.Qual("/main.css")}/>
+	</head>
+	<body>
+	@Header(params)
+	<div id="frame">
+		{ children... }
+	</div>
+	</body>
+	</html>
+}
+
+templ Main(params Params) {
+	@Frame(params) {
+		@SidePanel(params)
+		<section id="content">
+			for _, section := range params.Content.Sections {
+				@Heading(section)
+				@Prose(section.Prose...)
+				for _, sub := range section.SubSections {
+					@SubHeading(section, sub)
+					@Prose(sub.Prose...)
+				}
+			}
+		</section>
+	}
+}

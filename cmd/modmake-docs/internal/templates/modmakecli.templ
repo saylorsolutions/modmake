@@ -1,0 +1,115 @@
+package templates
+
+templ ModmakeCLI(params Params) {
+    <p>
+        The CLI is 100% optional.
+        It's provided to make working with Modmake builds a little more convenient.
+        That being said, there are some features that make a lot more sense to add to the CLI.
+    </p>
+    <p>
+        Using plain <code>go run</code> is still a primarily supported Modmake invocation method, and likely will be in perpetuity, but the CLI can provide more consistency to both build resolution and invocation.
+        It can also be used to set environment variables that may influence build behavior, providing a sort of build parameterization mechanism when used with <a href="https://pkg.go.dev/github.com/saylorsolutions/modmake#F">Format strings</a>.
+    </p>
+    <aside>
+        By default, the CLI will change its working directory to the root of your Go module (the directory where <code>go.mod</code> resides) if not already run in that location.
+        This behavior <i>can</i> be overridden, but it's not recommended, and this override may be removed in a later version.
+    </aside>
+    <p>
+        Since this is a 100% Go tool, you could use <code>go install</code> to install the CLI, like this.
+    </p>
+    <code class="block">
+        go install github.com/saylorsolutions/modmake/cmd/modmake@{params.ModmakeVersion}
+    </code>
+    <p>
+        However, you can get a CLI release for your OS <a href="https://github.com/saylorsolutions/modmake/releases">here</a>. The release bundles have binaries with version information embedded within them for transparency.
+    </p>
+    <p>
+        Once downloaded and added to your <code>PATH</code>, run <code>modmake --version</code> to see these details.
+    </p>
+}
+
+templ ModmakeCLI_Resolution() {
+    <p>
+        By default, the CLI looks {"for"} your Modmake build in this order:
+    </p>
+    <ol>
+        <li>In a directory called <code>modmake</code> at the root of your module.</li>
+        <li>In a Go file called <code>build.go</code> at the root of your module.</li>
+    </ol>
+    <p>
+        If none of the locations above are found, then you will need to tell the CLI where to locate your build code with.
+        See <code>modmake --help</code> {"for"} details.
+    </p>
+    <aside>
+        It's recommended to use the <code>modmake</code> directory for all but the most trivial builds. This provides the best known tradeoff of flexibility and discoverability.
+    </aside>
+}
+
+templ ModmakeCLI_Invocation() {
+    <p>
+        The CLI has its own flags that may be used to influence the Modmake build invocation context.
+        To see a listing of these flags see the output of <code>modmake --help</code>
+    </p>
+    <p>
+        Because a Modmake build may <i>also</i> accept flags, the user will need to disambiguate between CLI flags and build flags.
+        To pass build flags through the CLI, prefix build flags and arguments with <code>--</code> like this.
+    </p>
+    <code class="block">
+        modmake -e SOME_VAR=value -- --skip generate build
+    </code>
+}
+
+templ ModmakeCLI_Watch() {
+	<p>
+		A new feature was recently added to help developers iterate quickly: file watching.<br/>
+		A directory (and optionally its subdirectories) can be watched {"for"} changes using the CLI.
+	</p>
+	<code class="block">
+		modmake --watch=./some/dir:*.js,*.css --subdirs --debounce=1s run-dev
+	</code>
+	<ul>
+		<li>The command above will watch the <code>./some/dir</code> directory, and match files using the glob patterns <code>*.js</code> or <code>*.css</code>.</li>
+		<ul>
+			<li>Watch path and file patterns must be separated with <code>:</code>.</li>
+			<li>Different file patterns may be specified and separated by <code>,</code> characters.</li>
+			<li>If no file patterns are specified, then any changed files will match and trigger a rerun.</li>
+		</ul>
+		<li>The <code>--subdirs</code> says that modmake should watch subdirectories too, and <code>--debounce</code> prevents automated processes from triggering another run prematurely.</li>
+		<ul>
+			<li>It's best to set <code>debounce</code> when matching files would be changed as a circumstance of running the named step.</li>
+		</ul>
+		<li>Finally, <code>run-dev</code> is the step in the modmake build that should be run initially and each time a matching file changes.</li>
+		<ul>
+			<li>This works for any step in any modmake build.</li>
+			<li>Child processes will be safely cleaned up.</li>
+		</ul>
+	</ul>
+}
+
+templ ModmakeCLI_WatchRecipes() {
+	<p>
+		Here are some helpful recipes with file watching.
+	</p>
+	<p>
+		<b>Run tests every time a go file anywhere in the module changes.</b>
+		<code class="block">
+			modmake --watch=.:*.go --subdirs test
+		</code>
+	</p>
+	<p>
+		<b>Watch {"for"} UI changes to re-run a web server.</b>
+		<code class="block">
+			modmake --watch=./frontend/static:*.js,*.css --subdirs --debounce=1s run
+		</code>
+	</p>
+	<p>
+		<b>Regenerate templ code when changed. Multiple steps can be run just like normal.</b>
+		<code class="block">
+			modmake --watch=./cmd/modmake-docs:*.templ,*.css,*.go --subdirs --debounce=1s generate run
+		</code>
+	</p>
+	<aside>
+		This is still a very new feature, so please <a href="https://github.com/saylorsolutions/modmake/issues/new/choose">report an issue</a> {"if"} you encounter one.
+		Feel free to use the same mechanism to suggest more recipes for this section of the docs.
+	</aside>
+}
