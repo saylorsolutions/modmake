@@ -12,7 +12,7 @@ import (
 
 var shortStatPattern = regexp.MustCompile(`^(\d+) files? changed(, (\d+) insertions?\(\+\))?(, (\d+) deletions?\(-\))?$`)
 
-// Changes outputs how many files were changed according to Git, with the number of assertions and deletions.
+// Changes outputs how many files were changed according to Git, with the number of insertions and deletions.
 func Changes(ctx context.Context) (files, insertions, deletions int, err error) {
 	var buf bytes.Buffer
 	err = Exec("diff", "--shortstat").Output(&buf).Run(ctx)

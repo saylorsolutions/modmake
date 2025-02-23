@@ -1,0 +1,96 @@
+package templates
+
+templ BuildModel() {
+	<p>
+		A <code>Build</code> model includes a set of standard steps that do little by default.
+		This is to establish a standard structure {"for"} a Build {"for"} consistency's sake.
+		More build steps may be <a href="https://pkg.go.dev/github.com/saylorsolutions/modmake#Build.AddStep">added as needed</a>.
+	</p>
+	<p>
+		A Build is intended to act much like any other Go-based CLI tool. The difference is that it's 100% intended to be run with <code>go run</code>.
+		Of course — just like any other Go executable — a Modmake build may be built into a single static executable, but this is not required.
+	</p>
+	<p>
+		Several flags to control execution are provided, and a user may introspect a build model without looking at the code.
+		See the <a href="https://github.com/saylorsolutions/modmake/blob/main/example/helloworld/README.md">hello world example</a> {"for"} more details on <code>steps</code> and <code>graph</code> output.
+	</p>
+	<aside>
+		Skipped steps will not run their operation or before/after run hooks, but will still invoke dependencies.
+		To prevent executing dependencies and only run the specified Step(s), use the <code>--only</code> flag when calling the build.
+	</aside>
+	<aside>
+		One or more Steps may be skipped with the <code>--skip</code> flag, but any step specified when the Build is invoked will be run regardless.
+	</aside>
+}
+
+templ BuildModel_Tasks() {
+	<p>
+		A <code>Task</code> fits into Modmake at a more atomic level.
+	</p>
+	<ul>
+		<li>A <code>Task</code> enables more flexible expression of build logic, which contrasts with the structure and standardized expression of a <code>Step</code>.</li>
+		<li>While a <code>Task</code> and a <code>Step</code> have similarities, they serve very different purposes within a <code>Build</code>. Namely, only a <code>Step</code> may be invoked directly with <code>go run</code>.</li>
+	</ul>
+	<p>
+		A Task is able to chain other tasks with <a href="https://pkg.go.dev/github.com/saylorsolutions/modmake#Task.Then">Then</a>,
+		and handle failure with <a href="https://pkg.go.dev/github.com/saylorsolutions/modmake#Task.Catch">Catch</a>.
+	</p>
+	<p>
+		There are <a href="https://pkg.go.dev/github.com/saylorsolutions/modmake#Task">several tasks</a> that may be used to express your desired logic.
+		A custom Task may be created as a simple function with this signature.
+	</p>
+	@CodeBlock(`
+Task(func(ctx context.Context) error {
+    // Custom task logic here
+    return nil
+})`)
+	<aside>
+		Any Task can chain other operations after it, but this can be cumbersome with many Tasks. Many Tasks may instead be run in a sequence with the <a href="https://pkg.go.dev/github.com/saylorsolutions/modmake#Script">Script</a> helper function.
+		Any failure that occurs in the Script will stop the sequence, and the error will be returned.
+	</aside>
+}
+
+templ BuildModel_Invocation(params Params) {
+	<p>
+		Any Build step may be invoked with either <code>go run</code> or the <a href="#modmake-cli">Modmake CLI</a>, whichever is most convenient.
+		Here are the basic steps for setting up a Modmake build.
+	</p>
+	<ol>
+		<li>Create a build file relative to the root of your Go module code in either <code>/modmake/build.go</code>, or at the root, generally as <code>/build.go</code>.</li>
+		<li>Configure and test the various steps needed by calling them with <code>go run</code>.</li>
+		<li>Commit build code to version control so others can use the Build steps.</li>
+	</ol>
+	<img src={join(params.BasePath, "/img/invocation.png")} alt="invocation example"/>
+}
+
+templ BuildModel_APIPatterns() {
+	<p>There are a few common patterns that should be consistently represented around the code base.</p>
+	<ul>
+		<li>
+			<code>Runner</code> may be a parameter or a return value, but <code>Task</code> may only be a return value.
+			<ul>
+				<li>This is because a Task is just a function implementing Runner, but a Runner may be <i>anything</i> with a <code>Run</code> method.</li>
+				<li>There are a few exceptions to this, mainly for utilities that are specialized for working with Tasks.</li>
+			</ul>
+		</li>
+		<li>
+			When a filesystem path is an expected parameter, it should be represented as a <a href="https://github.com/saylorsolutions/modmake/blob/main/pathstring.go">PathString</a>.
+			This allows for more consistent, safe, and convenient manipulation of paths throughout the package, without mistaking them for normal strings or module paths.
+		</li>
+		<li>
+			The API may panic at configuration time, but should always return an error at run time.
+			<ul>
+				<li>
+					A panic at configuration time is intended to be a clear indicator to the developer that something is configured incorrectly, or some invariant has been violated.
+				</li>
+				<li>
+					Runners and Tasks should always return an error from their Run method instead of panicking. If a panic happens inside a Run function, then it's very likely a bug.
+				</li>
+			</ul>
+		</li>
+		<li>
+			If a goroutine is started in a Task, it should exit before the Task returns.
+			This makes Task execution more predictable and easier to understand.
+		</li>
+	</ul>
+}
