@@ -27,6 +27,7 @@ func main() {
 			Env("MD_GODOC_DIRS", ".,./pkg/git").
 			Env("MD_GEN_DIR", "./docs"),
 	)
+	b.Test().AfterRun(git.AssertNoChanges())
 	b.Benchmark().Does(Go().BenchmarkAll())
 	b.Build().DependsOnRunner("clean-build", "", RemoveDir("build"))
 	b.Package().DependsOnRunner("clean-dist", "", RemoveDir("dist"))
