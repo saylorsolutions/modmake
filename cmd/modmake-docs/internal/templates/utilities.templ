@@ -73,58 +73,75 @@ templ Utilities_GoTools() {
 			<li>These functions can be accessed by calling <code>Go()</code>, which enables accessing specific Go toolchain capabilities.</li>
 			<li>
 				@ModmakeDocAnchor("GoTools", "Build", "")
-				 - Used to compile Go binaries. It can also compile shared libraries and other formats.</li>
+				 - Used to compile Go binaries. It can also compile shared libraries and other formats.
+			 </li>
 			<li>
 				@ModmakeDocAnchor("GoTools", "Run", "")
-				 - Used to compile and run the code at a path in the module. The target path must reference a main package.</li>
+				 - Used to compile and run the code at a path in the module. The target path must reference a main package.
+			 </li>
 			<li>
 				@ModmakeDocAnchor("GoTools", "Test", "")
-				 - Runs all tests in the module.</li>
+				 - Runs all tests in the module.
+			 </li>
 			<li>
 				@ModmakeDocAnchor("GoTools", "Benchmark", "")
-				 - Runs all benchmark tests. The default build model will leave the <code>benchmark</code> step disabled</li>
+				 - Runs all benchmark tests. The default build model will leave the <code>benchmark</code> step disabled
+			</li>
 			<li>
 				@ModmakeDocAnchor("GoTools", "Generate", "")
-				 - Run all <code>{"//"}go:generate</code> commands in the module.</li>
+				 - Run all <code>{"//"}go:generate</code> commands in the module.
+			</li>
 			<li>
 				@ModmakeDocAnchor("GoTools", "Vet", "")
 				 - Vets code in the given path(s).
+			</li>
 			<li>
 				@ModmakeDocAnchor("GoTools", "Format", "")
 				 - Formats code in the given path(s).
+			</li>
 			<li>
 				@ModmakeDocAnchor("GoTools", "Clean", "")
-				 - This can be used to clean various caches kept by the Go toolchain.</li>
+				 - This can be used to clean various caches kept by the Go toolchain.
+			</li>
 			<li>
 				@ModmakeDocAnchor("GoTools", "GetEnv", "")
-				 - Allows querying for Go tools environment variable state.</li>
+				 - Allows querying for Go tools environment variable state.
+			</li>
 			<li>
 				@ModmakeDocAnchor("GoTools", "Command", "")
-				 - For cases where the provided GoTools methods aren't sufficient, this is a good fallback because it allows more direct access to GoTools.</li>
+				 - For cases where the provided GoTools methods aren't sufficient, this is a good fallback because it allows more direct access to GoTools.
+			</li>
 		</ul>
 		<li>There are also Go package management functions.</li>
 		<ul>
 			<li>
 				@ModmakeDocAnchor("GoTools", "Get", "")
-				 - Gets a module and adds it to this modules dependencies.</li>
+				 - Gets a module and adds it to this modules dependencies.
+			</li>
 			<li>
 				@ModmakeDocAnchor("GoTools", "Install", "")
-				 - Installs a Go module in <code>$GOPATH/bin</code>.</li>
+				 - Installs a Go module in <code>$GOPATH/bin</code>.
+			</li>
 			<li>
 				@ModmakeDocAnchor("GoTools", "ModTidy", "")
-				 - Tidies the module's go.mod and go.sum.</li>
+				 - Tidies the module's go.mod and go.sum.
+			</li>
 			<li>
 				@ModmakeDocAnchor("GoTools", "ModuleName", "")
-				 - Returns the current module's name.</li>
+				 - Returns the current module's name.
+			</li>
 			<li>
 				@ModmakeDocAnchor("GoTools", "ModuleRoot", "")
-				 - Returns the absolute path to the root of the current module.</li>
+				 - Returns the absolute path to the root of the current module.
+			</li>
 			<li>
 				@ModmakeDocAnchor("GoTools", "ToModulePackage", "")
-				 - Returns the relative package path to a path rooted relative to the module.</li>
+				 - Returns the relative package path to a path rooted relative to the module.
+			</li>
 			<li>
 				@ModmakeDocAnchor("GoTools", "ToModulePath", "")
-				 - Works the opposite of <code>ToModulePackage</code>, converting a module package path to a regular path.</li>
+				 - Works the opposite of <code>ToModulePackage</code>, converting a module package path to a regular path.
+			</li>
 		</ul>
 		<li>And more...</li>
 	</ul>
