@@ -31,9 +31,9 @@ func main() {
 
 	b.AddNewStep("run", "serves the docs locally", Go().Run(".", "serve",
 		F("--base-path=${MM_BASE_PATH:/modmake}"),
-		F("--latest-go=${MM_LATEST_GO:1.23}"),
-		F("--latest-supported=${MM_LATEST_GO_SUPPORTED:1.21}"),
-		F("--modmake-version=v${MM_VERSION:0.4.4}"),
+		F("--latest-go=${MM_LATEST_GO:1.24}"),
+		F("--latest-supported=${MM_LATEST_GO_SUPPORTED:1.22}"),
+		F("--modmake-version=v${MM_VERSION:0.5.0}"),
 	)).DependsOn(b.Generate())
 
 	b.Execute()
