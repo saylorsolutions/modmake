@@ -702,6 +702,18 @@ func (b *GoBuild) Env(key, value string) *GoBuild {
 	return b
 }
 
+func (b *GoBuild) CgoEnabled(enabled bool) *GoBuild {
+	if b.err != nil {
+		return b
+	}
+	val := "0"
+	if enabled {
+		val = "1"
+	}
+	b.cmd.Env("CGO_ENABLED", val)
+	return b
+}
+
 func (b *GoBuild) Workdir(workdir PathString) *GoBuild {
 	if b.err != nil {
 		return b
