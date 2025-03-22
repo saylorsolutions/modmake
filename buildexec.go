@@ -183,6 +183,10 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 				run = step.DryRun
 			}
 			if err := run(ctx); err != nil {
+				var scErr = new(StepContextError)
+				if errors.As(err, &scErr) {
+					return fmt.Errorf("error running build in step '%s' group '%s': %v", scErr.LogName, scErr.LogGroup, err)
+				}
 				return fmt.Errorf("error running build: %v", err)
 			}
 		}

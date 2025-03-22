@@ -18,13 +18,6 @@ var (
 	_goVersionCache map[int]string
 )
 
-// PinLatest just defers to [GoTools.PinLatestV1].
-//
-// Deprecated: Use PinLatestV1 instead to disambiguate if there's ever a go v2.
-func (g *GoTools) PinLatest(minorVersion int) *GoTools {
-	return g.PinLatestV1(minorVersion)
-}
-
 // PinLatestV1 will replace the cached [GoTools] instance with one pinned to the latest patch version of the specified minor version.
 // To revert back to the system go version, use [GoTools.InvalidateCache].
 //
@@ -54,7 +47,7 @@ func (g *GoTools) PinLatestV1(minorVersion int) *GoTools {
 	// Get a direct reference to the executable
 	pinnedGo := curGoBinPath.Join(version)
 	// Download the GOROOT equivalent
-	if err := Exec(pinnedGo.String(), "download").Run(context.Background()); err != nil {
+	if err := Exec(pinnedGo.String(), "download").LogGroup("go download").Run(context.Background()); err != nil {
 		panic(err)
 	}
 	// Initialize the new GoTools instance

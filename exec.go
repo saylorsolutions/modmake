@@ -11,15 +11,17 @@ import (
 )
 
 type Command struct {
-	err         error
-	workdir     string
-	cmd         string
-	initialArgs []string
-	args        []string
-	env         []string
-	stdout      io.Writer
-	stderr      io.Writer
-	stdin       io.Reader
+	err          error
+	workdir      string
+	cmd          string
+	initialArgs  []string
+	args         []string
+	trailingArgs []string
+	env          []string
+	stdout       io.Writer
+	stderr       io.Writer
+	stdin        io.Reader
+	logGroup     string
 }
 
 // Exec creates a new Command representing running an external application.
@@ -48,6 +50,12 @@ func Exec(cmdAndInitArgs ...string) *Command {
 	return i
 }
 
+// LogGroup specifies a logging group to which this Command is associated.
+func (i *Command) LogGroup(group string) *Command {
+	i.logGroup = group
+	return i
+}
+
 // OptArg will add the specified arg(s) if the condition evaluates to true.
 func (i *Command) OptArg(condition bool, args ...string) *Command {
 	if i.err != nil {
@@ -68,11 +76,28 @@ func (i *Command) Arg(args ...string) *Command {
 		return i
 	}
 	i.args = append(i.args, args...)
-	if len(i.args) == cap(i.args) {
-		newArgs := make([]string, len(i.args), 2*len(i.args))
-		copy(newArgs, i.args)
-		i.args = newArgs
+	return i
+}
+
+func (i *Command) LeadingArg(args ...string) *Command {
+	if i.err != nil {
+		return i
 	}
+	if len(args) == 0 {
+		return i
+	}
+	i.initialArgs = append(i.initialArgs, args...)
+	return i
+}
+
+func (i *Command) TrailingArg(args ...string) *Command {
+	if i.err != nil {
+		return i
+	}
+	if len(args) == 0 {
+		return i
+	}
+	i.trailingArgs = append(i.trailingArgs, args...)
 	return i
 }
 
@@ -151,26 +176,31 @@ func (i *Command) Output(w io.Writer) *Command {
 }
 
 func (i *Command) Run(ctx context.Context) error {
+	var log Logger
+	if len(i.logGroup) > 0 {
+		ctx, log = WithGroup(ctx, i.logGroup)
+	}
+	ctx, log = WithGroup(ctx, "exec")
 	if i.err != nil {
-		return i.err
+		log.Error(i.err.Error())
+		return log.WrapErr(i.err)
 	}
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	default:
-		cmd := exec.CommandContext(ctx, i.cmd, append(i.initialArgs, i.args...)...)
-		cmd.Env = i.env
-		cmd.Stdout = i.stdout
-		cmd.Stderr = i.stderr
-		cmd.Stdin = i.stdin
-		cmd.Dir = i.workdir
-		customizeCmd(cmd)
-		cmd.Cancel = cancelIncludeChildren(cmd)
-		if err := cmd.Run(); err != nil {
-			return err
-		}
-		return nil
+	if err := ctx.Err(); err != nil {
+		return err
 	}
+	cmd := exec.CommandContext(ctx, i.cmd, append(append(i.initialArgs, i.args...), i.trailingArgs...)...)
+	cmd.Env = i.env
+	cmd.Stdout = i.stdout
+	cmd.Stderr = i.stderr
+	cmd.Stdin = i.stdin
+	cmd.Dir = i.workdir
+	customizeCmd(cmd)
+	cmd.Cancel = cancelIncludeChildren(cmd)
+	if err := cmd.Run(); err != nil {
+		log.Error(err.Error())
+		return log.WrapErr(err)
+	}
+	return nil
 }
 
 func (i *Command) Task() Task {

@@ -58,9 +58,10 @@ func (t *TarArchive) AddFileWithPath(sourcePath, archivePath PathString) *TarArc
 // Ensure that all files referenced with AddFile (or AddFileWithPath) and directories exist before running this Runner, because it doesn't try to create them.
 func (t *TarArchive) Create() Task {
 	runner := Task(func(ctx context.Context) error {
+		ctx, log := WithGroup(ctx, "tar create")
 		tarFile, err := t.path.Create()
 		if err != nil {
-			return err
+			return log.WrapErr(err)
 		}
 		defer func() {
 			_ = tarFile.Close()
@@ -75,11 +76,11 @@ func (t *TarArchive) Create() Task {
 		}()
 		err = t.writeFilesToTarArchive(ctx, tw)
 		if err != nil {
-			return err
+			return log.WrapErr(err)
 		}
 		return nil
 	})
-	return ContextAware(runner).Run
+	return ContextAware(runner)
 }
 
 // Update will return a Runner that creates a new tar file with the given files loaded.
@@ -88,9 +89,10 @@ func (t *TarArchive) Create() Task {
 // Ensure that all files referenced with AddFile (or AddFileWithPath) and directories exist before running this Runner, because it doesn't try to create them.
 func (t *TarArchive) Update() Task {
 	runner := Task(func(ctx context.Context) error {
+		ctx, log := WithGroup(ctx, "tar update")
 		tarFile, err := t.path.OpenFile(os.O_RDWR, 0644)
 		if err != nil {
-			return err
+			return log.WrapErr(err)
 		}
 		defer func() {
 			_ = tarFile.Close()
@@ -105,51 +107,50 @@ func (t *TarArchive) Update() Task {
 		}()
 		err = t.writeFilesToTarArchive(ctx, tw)
 		if err != nil {
-			return err
+			return log.WrapErr(err)
 		}
 		return nil
 	})
-	return ContextAware(runner).Run
+	return ContextAware(runner)
 }
 
 func (t *TarArchive) writeFilesToTarArchive(ctx context.Context, tw *tar.Writer) error {
+	ctx, log := WithGroup(ctx, "write files")
 	for source, target := range t.addFiles {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		default:
-			source, target := source, target
-			err := func() error {
-				if !source.Exists() {
-					return fmt.Errorf("unable to locate source file: %s", source)
-				}
-				f, err := source.Open()
-				if err != nil {
-					return err
-				}
-				defer func() {
-					_ = f.Close()
-				}()
-				fi, err := f.Stat()
-				if err != nil {
-					return err
-				}
-				header, err := tar.FileInfoHeader(fi, target)
-				if err != nil {
-					return fmt.Errorf("failed to get file info for '%s': %w", source, err)
-				}
-				if err := tw.WriteHeader(header); err != nil {
-					return err
-				}
-				_, err = io.Copy(tw, f)
-				if err != nil {
-					return err
-				}
-				return nil
-			}()
+		if err := ctx.Err(); err != nil {
+			return log.WrapErr(err)
+		}
+		source, target := source, target
+		err := func() error {
+			if !source.Exists() {
+				return fmt.Errorf("unable to locate source file: %s", source)
+			}
+			f, err := source.Open()
 			if err != nil {
 				return err
 			}
+			defer func() {
+				_ = f.Close()
+			}()
+			fi, err := f.Stat()
+			if err != nil {
+				return err
+			}
+			header, err := tar.FileInfoHeader(fi, target)
+			if err != nil {
+				return fmt.Errorf("failed to get file info for '%s': %w", source, err)
+			}
+			if err := tw.WriteHeader(header); err != nil {
+				return err
+			}
+			_, err = io.Copy(tw, f)
+			if err != nil {
+				return err
+			}
+			return nil
+		}()
+		if err != nil {
+			return log.WrapErr(err)
 		}
 	}
 	return nil
@@ -159,20 +160,21 @@ func (t *TarArchive) writeFilesToTarArchive(ctx context.Context, tw *tar.Writer)
 // Any errors encountered while doing so will be immediately returned.
 func (t *TarArchive) Extract(extractDir PathString) Task {
 	runner := Task(func(ctx context.Context) error {
+		ctx, log := WithGroup(ctx, "tar extract")
 		src, err := t.path.Open()
 		if err != nil {
-			return fmt.Errorf("unable to open tar archive: %w", err)
+			return log.WrapErr(fmt.Errorf("unable to open tar archive: %w", err))
 		}
 		defer func() {
 			_ = src.Close()
 		}()
 		err = extractDir.MkdirAll(0755)
 		if err != nil {
-			return fmt.Errorf("unable to create extraction directory: %w", err)
+			return log.WrapErr(fmt.Errorf("unable to create extraction directory: %w", err))
 		}
 		gz, err := gzip.NewReader(src)
 		if err != nil {
-			return fmt.Errorf("unable to create gzip reader for '%s': %w", t.path, err)
+			return log.WrapErr(fmt.Errorf("unable to create gzip reader for '%s': %w", t.path, err))
 		}
 		tr := tar.NewReader(gz)
 		for {
@@ -187,35 +189,33 @@ func (t *TarArchive) Extract(extractDir PathString) Task {
 			if header.FileInfo().IsDir() {
 				continue
 			}
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			default:
-				err := func() error {
-					output := extractDir.Join(header.Name)
-					outputDir := output.Dir()
-					if err := outputDir.MkdirAll(0755); err != nil {
-						return fmt.Errorf("failed to make parent directory for file '%s' at '%s': %w", header.Name, outputDir, err)
-					}
-					out, err := output.Create()
-					if err != nil {
-						return fmt.Errorf("failed to create file '%s': %w", output, err)
-					}
-					defer func() {
-						_ = out.Close()
-					}()
-					_, err = io.CopyN(out, tr, header.Size)
-					if err != nil {
-						return fmt.Errorf("failed to extract '%s': %w", output, err)
-					}
-					return nil
-				}()
-				if err != nil {
-					return err
+			if err := ctx.Err(); err != nil {
+				return err
+			}
+			err = func() error {
+				output := extractDir.Join(header.Name)
+				outputDir := output.Dir()
+				if err := outputDir.MkdirAll(0755); err != nil {
+					return fmt.Errorf("failed to make parent directory for file '%s' at '%s': %w", header.Name, outputDir, err)
 				}
+				out, err := output.Create()
+				if err != nil {
+					return fmt.Errorf("failed to create file '%s': %w", output, err)
+				}
+				defer func() {
+					_ = out.Close()
+				}()
+				_, err = io.CopyN(out, tr, header.Size)
+				if err != nil {
+					return fmt.Errorf("failed to extract '%s': %w", output, err)
+				}
+				return nil
+			}()
+			if err != nil {
+				return log.WrapErr(err)
 			}
 		}
 		return nil
 	})
-	return ContextAware(runner).Run
+	return ContextAware(runner)
 }

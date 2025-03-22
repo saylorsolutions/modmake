@@ -30,18 +30,10 @@ type Build struct {
 	stepNames map[string]*Step
 }
 
-var hasTested bool
-var testOnce Task = func(ctx context.Context) error {
-	if hasTested {
-		return nil
-	}
-	return Script(
-		Go().TestAll(),
-		Plain(func() {
-			hasTested = true
-		}),
-	).Run(ctx)
-}
+var (
+	testOnce      = Go().TestAll().Task().Once()
+	benchmarkOnce = Go().BenchmarkAll().Task().Once()
+)
 
 // NewBuild constructs a new Build with the standard structure.
 // This includes the following steps:
@@ -55,7 +47,7 @@ func NewBuild() *Build {
 	tools := newStep("tools", "Installs external tools that will be needed later")
 	generate := newStep("generate", "Generates code, possibly using external tools").DependsOn(tools)
 	test := newStep("test", "Runs unit tests on the code base").DependsOn(generate).Does(testOnce)
-	bench := newStep("benchmark", "Runs benchmarking on the code base").DependsOn(test).Does(Go().BenchmarkAll())
+	bench := newStep("benchmark", "Runs benchmarking on the code base").DependsOn(test).Does(benchmarkOnce)
 	build := newStep("build", "Builds the code base and outputs an artifact").DependsOn(bench)
 	pkg := newStep("package", "Bundles one or more built artifacts into one or more distributable packages").DependsOn(build)
 	b := &Build{
@@ -118,23 +110,24 @@ func CallBuild(buildLocation PathString, args ...string) *Command {
 
 // CallRemote will execute a Modmake build on a remote module.
 // The module parameter is the module name and version in the same form as would be used to 'go get' the module.
-// The buildPath parameter is the path within the module, relative to the module root, where the Modmake build file is located.
+// The buildPath parameter is the path within the module, relative to the module root, where the Modmake build is located.
 // Finally, the args parameters are all steps and flags that should be used to invoke the build.
 //
 // NOTE: If the remote build relies on Git information, then this method of calling the remote build will not work.
 // Try using [TempDir] with [github.com/saylorsolutions/modmake/pkg/git.CloneAt] to make sure the build can reference those details.
 func CallRemote(module string, buildPath PathString, args ...string) Task {
 	return func(ctx context.Context) error {
+		ctx, log := WithGroup(ctx, "call remote")
 		info, err := Go().modDownload(ctx, module)
 		if err != nil {
-			return fmt.Errorf("failed to download remote module '%s': %w", module, err)
+			return log.WrapErr(fmt.Errorf("failed to download remote module '%s': %w", module, err))
 		}
 		path := Path(info.Dir).JoinPath(buildPath)
 		if err := chmodWrite(info.Dir); err != nil {
-			return err
+			return log.WrapErr(err)
 		}
 		if err := CallBuild(path, args...).Run(ctx); err != nil {
-			return fmt.Errorf("failed to invoke module '%s' build at '%s' with build args '%s': %w", module, path.String(), strings.Join(args, " "), err)
+			return log.WrapErr(fmt.Errorf("failed to invoke module '%s' build at '%s' with build args '%s': %w", module, path.String(), strings.Join(args, " "), err))
 		}
 		return nil
 	}

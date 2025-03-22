@@ -10,16 +10,14 @@ import (
 
 func TestGetLogger(t *testing.T) {
 	ctx := context.Background()
-	log, ok := mm.GetLogger(ctx)
-	assert.False(t, ok)
-	assert.Nil(t, log)
+	log := mm.GetLogger(ctx)
+	assert.NotNil(t, log, "Should produce a logger regardless of whether one exists in the context")
 
 	ctx, log = mm.WithLogger(ctx, "name")
 	assert.NotNil(t, ctx)
 	assert.NotNil(t, log)
 
-	log, ok = mm.GetLogger(ctx)
-	assert.True(t, ok)
+	log = mm.GetLogger(ctx)
 	assert.NotNil(t, log)
 }
 

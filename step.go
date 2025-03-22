@@ -8,30 +8,11 @@ import (
 	"time"
 )
 
-// Runner is any type that may be executed.
+// Runner is any type that may be executed with a [context.Context], and could return an error.
 type Runner interface {
 	// Run should immediately execute in the current goroutine when called to ensure predictable build semantics.
 	// Run may initiate other goroutines, but they should complete and be cleaned up before Run returns.
 	Run(context.Context) error
-}
-
-// ContextAware creates a Runner that wraps the parameter with context handling logic.
-// In the event that the context is done, the context's error is returned.
-// This should not be used if custom [context.Context] handling is desired.
-func ContextAware(r Runner) Runner {
-	return Task(func(ctx context.Context) error {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		default:
-			return r.Run(ctx)
-		}
-	})
-}
-
-// NoOp is a Task placeholder that immediately returns nil.
-func NoOp() Task {
-	return nil
 }
 
 // RunState indicates the state of a Step.
@@ -175,8 +156,8 @@ func (s *Step) hasDepOperation() bool {
 	return false
 }
 
-// BeforeRun adds an operation that will execute before this Step.
-// BeforeRun operations will happen after this Step's dependencies.
+// BeforeRun adds an operation that will execute before this Step's operation.
+// BeforeRun operations will execute after this Step's dependencies, but before the operation performed during this Step.
 func (s *Step) BeforeRun(op Runner) *Step {
 	if op == nil {
 		return s
@@ -185,8 +166,8 @@ func (s *Step) BeforeRun(op Runner) *Step {
 	return s
 }
 
-// AfterRun adds an operation that will execute after this Step.
-// AfterRun operations will happen before any dependent Step.
+// AfterRun adds an operation that will execute after this Step's operation.
+// AfterRun operations will execute before any Step that depends on this Step.
 func (s *Step) AfterRun(op Runner) *Step {
 	if op == nil {
 		return s
@@ -210,7 +191,7 @@ func (s *Step) Run(ctx context.Context) error {
 			}
 			if err := run(ctx); err != nil {
 				s.state = StateFailed
-				return err
+				return log.WrapErr(err)
 			}
 		}
 	}
@@ -229,11 +210,13 @@ func (s *Step) Run(ctx context.Context) error {
 		if s.dryRun {
 			log.Debug("Would have run %d before operations", len(s.beforeOp))
 		} else {
-			for _, before := range s.beforeOp {
+			ctx, _ := WithGroup(ctx, "before hooks")
+			for i, before := range s.beforeOp {
+				ctx, log := WithGroup(ctx, fmt.Sprintf("%d", i))
 				if err := before.Run(ctx); err != nil {
 					log.Error("Error running step: %v", err)
 					s.state = StateFailed
-					return err
+					return log.WrapErr(err)
 				}
 			}
 		}
@@ -248,7 +231,7 @@ func (s *Step) Run(ctx context.Context) error {
 			if err := s.operation.Run(ctx); err != nil {
 				log.Error("Error running step: %v", err)
 				s.state = StateFailed
-				return err
+				return log.WrapErr(err)
 			}
 		}
 		log.Info("%s step in %s", okColor("Successfully ran"), time.Since(runStart).Round(time.Millisecond).String())
@@ -260,11 +243,13 @@ func (s *Step) Run(ctx context.Context) error {
 		if s.dryRun {
 			log.Debug("Would have run %d after hooks", len(s.afterOp))
 		} else {
-			for _, after := range s.afterOp {
+			ctx, _ := WithGroup(ctx, "after hooks")
+			for i, after := range s.afterOp {
+				ctx, log := WithGroup(ctx, fmt.Sprintf("%d", i))
 				if err := after.Run(ctx); err != nil {
 					log.Error("Error running after hooks: %v", err)
 					s.state = StateFailed
-					return err
+					return log.WrapErr(err)
 				}
 			}
 		}
@@ -307,6 +292,8 @@ func (s *Step) ResetState() *Step {
 	return s
 }
 
+// Debounce
+// Deprecated: use a Task if debounce or multiple executions are needed.
 func (s *Step) Debounce(interval time.Duration) Task {
 	if s == nil {
 		panic("nil step")

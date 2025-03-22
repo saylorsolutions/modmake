@@ -72,7 +72,7 @@ func (l *stepLogger) Debug(msg string, args ...any) {
 
 func (l *stepLogger) WrapErr(err error) error {
 	if err == nil {
-		panic("nil error")
+		return nil
 	}
 	var ctxErr = new(StepContextError)
 	if errors.As(err, &ctxErr) {
@@ -124,9 +124,12 @@ func WithGroup(ctx context.Context, group string) (context.Context, Logger) {
 
 // GetLogger gets the [Logger] from the given context.
 // Returns false if there is no [Logger] available.
-func GetLogger(ctx context.Context) (Logger, bool) {
+func GetLogger(ctx context.Context) Logger {
 	val, ok := ctx.Value(loggerKey).(Logger)
-	return val, ok
+	if !ok {
+		return new(stepLogger)
+	}
+	return val
 }
 
 // SetStepDebug sets the global policy on debug step logs.
