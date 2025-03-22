@@ -177,10 +177,10 @@ func (i *Command) Output(w io.Writer) *Command {
 
 func (i *Command) Run(ctx context.Context) error {
 	var log Logger
-	if len(i.logGroup) > 0 {
-		ctx, log = WithGroup(ctx, i.logGroup)
+	if len(i.logGroup) == 0 {
+		i.logGroup = "exec"
 	}
-	ctx, log = WithGroup(ctx, "exec")
+	ctx, log = WithGroup(ctx, i.logGroup)
 	if i.err != nil {
 		log.Error(i.err.Error())
 		return log.WrapErr(i.err)

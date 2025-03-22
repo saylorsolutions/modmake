@@ -27,7 +27,7 @@ func Exec(subcmd string, args ...string) *modmake.Command {
 	if len(path) == 0 {
 		panic(ErrNoGit)
 	}
-	return modmake.Exec(append([]string{path, subcmd}, args...)...).CaptureStdin()
+	return modmake.Exec(append([]string{path, subcmd}, args...)...).LogGroup("git " + subcmd).CaptureStdin()
 }
 
 // ExecOutput will delegate to Exec and run the returned [modmake.Command], but will collect its output into a string.
