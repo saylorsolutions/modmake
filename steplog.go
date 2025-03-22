@@ -134,8 +134,7 @@ func WithGroup(ctx context.Context, group string) (context.Context, Logger) {
 	return ctx, newLogger
 }
 
-// GetLogger gets the [Logger] from the given context.
-// Returns false if there is no [Logger] available.
+// GetLogger gets the [Logger] from the given context, or creates a new one if the context doesn't have a logger.
 func GetLogger(ctx context.Context) Logger {
 	val, ok := ctx.Value(loggerKey).(Logger)
 	if !ok {
