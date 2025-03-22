@@ -87,15 +87,18 @@ func (b *Build) ExecuteErr(args ...string) (err error) {
 		fmt.Printf(`Executes this modmake build
 
 Usage:
-	go run BUILD_FILE.go graph
-	go run BUILD_FILE.go steps
-	go run BUILD_FILE.go [FLAGS] STEP...
+	go run ./BUILD_FILE [FLAGS] STEP...
+	go run ./BUILD_DIR [FLAGS] STEP...
 
-There are specialized commands that can be used to introspect the build.
+BUILD_FILE is a Go source file that contains a main function that configures and executes a Modmake build.
+BUILD_DIR is a directory in a Go module that contains a BUILD_FILE.
+STEP is a named step in a Modmake build that may have dependencies, before/after hooks, and an operation. Multiple steps may be specified, and they will be executed in order.
+
+There are specialized commands that can be used to introspect the build, represented as STEPs.
   - graph: Passing this command as the first argument will emit a step dependency graph with descriptions on standard out. This can also be generated with Build.Graph().
   - steps: Prints the list of all steps in this build.
 
-See https://github.com/saylorsolutions/modmake for detailed usage information.
+See https://saylorsolutions.github.io/modmake for detailed usage information.
 
 %s
 
