@@ -27,7 +27,7 @@ func TempDirAt(location, pattern string, fn func(tmp PathString) Task) Task {
 			panic(fmt.Sprintf("Encountered panic in TempDir function using temp dir '%s': %v", dir, r))
 		}
 	}()
-	return fn(dirPath).Finally(func(_ error) error {
+	return fn(dirPath).LogGroup("temp dir").Finally(func(_ error) error {
 		return dirPath.RemoveAll()
 	})
 }

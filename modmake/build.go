@@ -7,9 +7,9 @@ import (
 )
 
 const (
-	version  = "0.4.4"
+	version  = "0.5.0"
 	docsPath = "/modmake"
-	latestGo = 23
+	latestGo = 24
 )
 
 func main() {

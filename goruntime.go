@@ -102,7 +102,7 @@ func initGoInstNamed(goName string) (*GoTools, error) {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		var output strings.Builder
-		err := Exec(goName, "env", "GOROOT").Silent().Stdout(&output).Run(ctx)
+		err := Exec(goName, "env", "GOROOT").Silent().Stdout(&output).LogGroup("go env").Run(ctx)
 		if err != nil {
 			return "", fmt.Errorf("%s: %v", errMsg, err)
 		}
@@ -219,7 +219,7 @@ func (g *GoTools) ToModulePath(dir string) string {
 }
 
 func (g *GoTools) Command(command string, args ...string) *Command {
-	return Exec(g.goTool(), command).Arg(args...)
+	return Exec(g.goTool(), command).Arg(args...).LogGroup("go " + command)
 }
 
 type GoClean struct {
@@ -261,7 +261,10 @@ func (c *GoClean) Run(ctx context.Context) error {
 	c.OptArg(c.testCache, "-testcache")
 	c.OptArg(c.modCache, "-modcache")
 	c.OptArg(c.fuzzCache, "-fuzzcache")
-	return c.Command.Run(ctx)
+	if err := c.Command.Run(ctx); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (c *GoClean) Task() Task {
@@ -323,7 +326,7 @@ func (g *GoTools) TestAll() *Command {
 }
 
 func (g *GoTools) Generate(patterns ...string) *Command {
-	return g.Command("generate", patterns...)
+	return g.Command("generate").TrailingArg(patterns...)
 }
 
 func (g *GoTools) GenerateAll() *Command {
@@ -339,7 +342,7 @@ func (g *GoTools) BenchmarkAll() *Command {
 }
 
 func (g *GoTools) Vet(patterns ...string) *Command {
-	return g.Command("vet", patterns...)
+	return g.Command("vet").TrailingArg(patterns...)
 }
 
 func (g *GoTools) VetAll() *Command {
@@ -699,6 +702,18 @@ func (b *GoBuild) Env(key, value string) *GoBuild {
 	return b
 }
 
+func (b *GoBuild) CgoEnabled(enabled bool) *GoBuild {
+	if b.err != nil {
+		return b
+	}
+	val := "0"
+	if enabled {
+		val = "1"
+	}
+	b.cmd.Env("CGO_ENABLED", val)
+	return b
+}
+
 func (b *GoBuild) Workdir(workdir PathString) *GoBuild {
 	if b.err != nil {
 		return b
@@ -716,8 +731,9 @@ func (b *GoBuild) Silent() *GoBuild {
 }
 
 func (b *GoBuild) Run(ctx context.Context) error {
+	ctx, log := WithGroup(ctx, "go build")
 	if b.err != nil {
-		return b.err
+		return log.WrapErr(b.err)
 	}
 
 	b.cmd.OptArg(len(b.output) > 0, "-o", b.output.String())

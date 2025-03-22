@@ -20,11 +20,11 @@ func TestTempDir(t *testing.T) {
 
 	dir = ""
 	assert.Panics(t, func() {
-		TempDir("TestTempDir-*", func(tmp PathString) Task {
+		_ = TempDir("TestTempDir-*", func(tmp PathString) Task {
 			dir = tmp
 			assert.True(t, tmp.Exists(), "Again, tmp should exist at this point")
 			panic("panic while producing Task")
-		})
+		}).Run(context.Background())
 	})
 	assert.NotEqual(t, "", dir.String())
 	assert.False(t, dir.Exists(), "Temp directory should still be removed if the Task producer function panics")

@@ -9,6 +9,11 @@ import (
 	"github.com/saylorsolutions/modmake/assert"
 )
 
+var (
+	BuildPath = F("${MODMAKE_BUILD:build}") // BuildPath defines the root directory where built artifacts are written, defaults to 'build'.
+	DistPath  = F("${MODMAKE_DIST:dist}")   // DistPath defines the root directory where packaged artifacts are written, defaults to 'dist'.
+)
+
 // AppBuildFunc is a function used to customize an AppBuild or AppVariant's build step.
 type AppBuildFunc func(gb *GoBuild)
 
@@ -151,18 +156,21 @@ func (a *AppBuild) goBuild(v *AppVariant) *GoBuild {
 
 func (a *AppBuild) pkgTask(v *AppVariant) Task {
 	if v.packageFunc != nil {
-		return v.packageFunc(v.buildOutput, Path("dist", a.appName), a.appName, v.variant, a.version)
+		return v.packageFunc(v.buildOutput, Path(DistPath, a.appName), a.appName, v.variant, a.version)
 	}
 	return nil
 }
 
-func (a *AppBuild) generateBuild() *Build {
+// AsBuild generates a modmake [Build] from the steps in this [AppBuild].
+// This is useful in the case where additional customization is needed.
+// Note that changing the [AppBuild] after calling this method has no effect on the generated Build.
+func (a *AppBuild) AsBuild() *Build {
 	if len(a.variants) == 0 {
 		a.HostVariant()
 	}
 	b := NewBuild()
 	b.Package().DependsOnRunner("create-"+a.appName+"-dist", "Ensures the application dist directory exists",
-		RemoveDir(Path("dist", a.appName)),
+		RemoveDir(Path(DistPath, a.appName)),
 	)
 	for _, v := range a.variants {
 		buildStep := NewStep(a.buildName(v), fmt.Sprintf("Builds %s for %s/%s", a.appName, v.os, v.arch))
@@ -178,7 +186,7 @@ func (a *AppBuild) generateBuild() *Build {
 			pkgStep := NewStep(a.packageName(v), fmt.Sprintf("Packages %s for %s/%s", a.appName, v.os, v.arch))
 			pkgStep.Does(a.pkgTask(v))
 			pkgStep.DependsOnRunner("ensure-dist-"+a.packageName(v), "Ensures the application dist directory exists",
-				MkdirAll(Path("dist", a.appName), 0755),
+				MkdirAll(Path(DistPath, a.appName), 0755),
 			)
 			b.AddStep(pkgStep)
 			b.Package().DependsOn(pkgStep)
@@ -191,10 +199,9 @@ func (a *AppBuild) generateBuild() *Build {
 	return b
 }
 
-// ImportApp imports an AppBuild as a new build, attaching its build and package steps as dependencies of the parent build.
+// ImportApp imports an AppBuild as a new [Build], attaching its build and package steps as dependencies of the parent build's steps.
 func (b *Build) ImportApp(a *AppBuild) {
-	other := a.generateBuild()
-	b.ImportAndLink(a.appName, other)
+	b.ImportAndLink(a.appName, a.AsBuild())
 }
 
 // AppVariant is a variant of an AppBuild with an OS/Arch specified.
@@ -234,8 +241,8 @@ func (a *AppBuild) NamedVariant(variant, os, arch string) *AppVariant {
 		variant:     variant,
 		os:          os,
 		arch:        arch,
-		buildOutput: Path("build", fmt.Sprintf("%s_%s", a.appName, variant), exeName),
-		distDir:     Path("dist", a.appName),
+		buildOutput: Path(BuildPath, fmt.Sprintf("%s_%s", a.appName, variant), exeName),
+		distDir:     Path(DistPath, a.appName),
 		packageFunc: pkgFunc,
 	}
 	a.variants = append(a.variants, v)

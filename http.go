@@ -17,13 +17,14 @@ func Download(url string, location PathString) Task {
 		panic("empty download location")
 	}
 	return func(ctx context.Context) error {
+		ctx, log := WithGroup(ctx, "download")
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 		if err != nil {
-			return fmt.Errorf("failed to create request: %v", err)
+			return log.WrapErr(fmt.Errorf("failed to create request: %v", err))
 		}
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
-			return fmt.Errorf("failed to send HTTP request: %v", err)
+			return log.WrapErr(fmt.Errorf("failed to send HTTP request: %v", err))
 		}
 		defer func() {
 			if resp.Body != nil {
@@ -31,17 +32,17 @@ func Download(url string, location PathString) Task {
 			}
 		}()
 		if resp.StatusCode != 200 {
-			return fmt.Errorf("expected status 200 OK, got %s", resp.Status)
+			return log.WrapErr(fmt.Errorf("expected status 200 OK, got %s", resp.Status))
 		}
 
 		out, err := location.Create()
 		if err != nil {
-			return fmt.Errorf("failed to create download file '%s': %w", location, err)
+			return log.WrapErr(fmt.Errorf("failed to create download file '%s': %w", location, err))
 		}
 		defer func() {
 			_ = out.Close()
 		}()
 		_, err = io.Copy(out, resp.Body)
-		return err
+		return log.WrapErr(err)
 	}
 }

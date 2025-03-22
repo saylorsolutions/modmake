@@ -18,13 +18,6 @@ var (
 	_goVersionCache map[int]string
 )
 
-// PinLatest just defers to [GoTools.PinLatestV1].
-//
-// Deprecated: Use PinLatestV1 instead to disambiguate if there's ever a go v2.
-func (g *GoTools) PinLatest(minorVersion int) *GoTools {
-	return g.PinLatestV1(minorVersion)
-}
-
 // PinLatestV1 will replace the cached [GoTools] instance with one pinned to the latest patch version of the specified minor version.
 // To revert back to the system go version, use [GoTools.InvalidateCache].
 //
@@ -40,7 +33,7 @@ func (g *GoTools) PinLatestV1(minorVersion int) *GoTools {
 	}
 	curGoBinPath := Path(curGoPath, "bin")
 	// Get the latest patch version to pin to
-	version, err := queryLatestPatch(minorVersion)
+	version, err := queryLatestPatch(queryGoVersions, minorVersion)
 	if err != nil {
 		panic(err)
 	}
@@ -54,7 +47,7 @@ func (g *GoTools) PinLatestV1(minorVersion int) *GoTools {
 	// Get a direct reference to the executable
 	pinnedGo := curGoBinPath.Join(version)
 	// Download the GOROOT equivalent
-	if err := Exec(pinnedGo.String(), "download").Run(context.Background()); err != nil {
+	if err := Exec(pinnedGo.String(), "download").LogGroup("go download").Run(context.Background()); err != nil {
 		panic(err)
 	}
 	// Initialize the new GoTools instance
@@ -72,31 +65,15 @@ type goVersionEntry struct {
 	Stable  bool   `json:"stable"`
 }
 
-func queryLatestPatch(minorVersion int) (string, error) {
+func queryLatestPatch(queryGoVersions func() ([]goVersionEntry, error), minorVersion int) (string, error) {
 	if _goVersionCache != nil {
 		_goVersionMux.RLock()
 		defer _goVersionMux.RUnlock()
 		return _goVersionCache[minorVersion], nil
 	}
-	req, err := http.NewRequest(http.MethodGet, "https://go.dev/dl/", nil)
+	versions, err := queryGoVersions()
 	if err != nil {
-		return "", err
-	}
-	queryVals := req.URL.Query()
-	queryVals.Set("mode", "json")
-	queryVals.Set("include", "all")
-	req.URL.RawQuery = queryVals.Encode()
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return "", err
-	}
-	if resp.StatusCode != 200 {
-		return "", fmt.Errorf("unexpected status '%s' from go.dev", resp.Status)
-	}
-	var versions []goVersionEntry
-	if err := json.NewDecoder(resp.Body).Decode(&versions); err != nil {
-		return "", fmt.Errorf("failed to parse go.dev versions: %w", err)
+		return "", fmt.Errorf("failed to query go versions: %w", err)
 	}
 
 	var (
@@ -118,10 +95,10 @@ func queryLatestPatch(minorVersion int) (string, error) {
 			continue
 		}
 		patch, err := strconv.Atoi(groups[2])
-		if err != nil || patch <= 0 {
+		if err != nil {
 			continue
 		}
-		if maxCache[minor] < patch {
+		if maxCache[minor] <= patch {
 			maxCache[minor] = patch
 		}
 	}
@@ -130,4 +107,28 @@ func queryLatestPatch(minorVersion int) (string, error) {
 		_goVersionCache[minor] = fmt.Sprintf("go1.%d.%d", minor, patch)
 	}
 	return _goVersionCache[minorVersion], nil
+}
+
+func queryGoVersions() ([]goVersionEntry, error) {
+	req, err := http.NewRequest(http.MethodGet, "https://go.dev/dl/", nil)
+	if err != nil {
+		return nil, err
+	}
+	queryVals := req.URL.Query()
+	queryVals.Set("mode", "json")
+	queryVals.Set("include", "all")
+	req.URL.RawQuery = queryVals.Encode()
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("unexpected status '%s' from go.dev", resp.Status)
+	}
+	var versions []goVersionEntry
+	if err := json.NewDecoder(resp.Body).Decode(&versions); err != nil {
+		return nil, fmt.Errorf("failed to parse go.dev versions: %w", err)
+	}
+	return versions, nil
 }
