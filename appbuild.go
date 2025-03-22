@@ -156,7 +156,10 @@ func (a *AppBuild) pkgTask(v *AppVariant) Task {
 	return nil
 }
 
-func (a *AppBuild) generateBuild() *Build {
+// AsBuild generates a modmake [Build] from the steps in this [AppBuild].
+// This is useful in the case where additional customization is needed.
+// Note that changing the [AppBuild] after calling this method has no effect on the generated Build.
+func (a *AppBuild) AsBuild() *Build {
 	if len(a.variants) == 0 {
 		a.HostVariant()
 	}
@@ -191,10 +194,9 @@ func (a *AppBuild) generateBuild() *Build {
 	return b
 }
 
-// ImportApp imports an AppBuild as a new build, attaching its build and package steps as dependencies of the parent build.
+// ImportApp imports an AppBuild as a new [Build], attaching its build and package steps as dependencies of the parent build's steps.
 func (b *Build) ImportApp(a *AppBuild) {
-	other := a.generateBuild()
-	b.ImportAndLink(a.appName, other)
+	b.ImportAndLink(a.appName, a.AsBuild())
 }
 
 // AppVariant is a variant of an AppBuild with an OS/Arch specified.
