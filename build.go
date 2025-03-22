@@ -66,9 +66,7 @@ func NewBuild() *Build {
 			"build":     build,
 			"package":   pkg,
 		},
-		logger: &stepLogger{
-			name: "root",
-		},
+		logger: &stepLogger{},
 	}
 	tools.build = b
 	generate.build = b

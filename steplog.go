@@ -50,23 +50,23 @@ type stepLogger struct {
 
 func (l *stepLogger) Info(msg string, args ...any) {
 	msg = strings.TrimSuffix(msg, "\n")
-	log.Printf("[%s%s] %s\n", okColor(l.name), okColor(l.groupOutput()), fmt.Sprintf(msg, args...))
+	log.Printf("%s%s\n", l.logPrefix(okColor), fmt.Sprintf(msg, args...))
 }
 
 func (l *stepLogger) Warn(msg string, args ...any) {
 	msg = strings.TrimSuffix(msg, "\n")
-	log.Printf("[%s%s] %s %s\n", warnColor(l.name), warnColor(l.groupOutput()), warnColor("WARN"), fmt.Sprintf(msg, args...))
+	log.Printf("%s%s %s\n", l.logPrefix(warnColor), warnColor("WARN"), fmt.Sprintf(msg, args...))
 }
 
 func (l *stepLogger) Error(msg string, args ...any) {
 	msg = strings.TrimSuffix(msg, "\n")
-	log.Printf("[%s%s] %s %s\n", errColor(l.name), errColor(l.groupOutput()), errColor("ERROR"), fmt.Sprintf(msg, args...))
+	log.Printf("%s%s %s\n", l.logPrefix(errColor), errColor("ERROR"), fmt.Sprintf(msg, args...))
 }
 
 func (l *stepLogger) Debug(msg string, args ...any) {
 	msg = strings.TrimSuffix(msg, "\n")
 	if _stepDebugLog {
-		log.Printf("[%s%s] %s %s\n", debugColor(l.name), debugColor(l.groupOutput()), debugColor("DEBUG"), fmt.Sprintf(msg, args...))
+		log.Printf("%s%s %s\n", l.logPrefix(debugColor), debugColor("DEBUG"), fmt.Sprintf(msg, args...))
 	}
 }
 
@@ -83,6 +83,18 @@ func (l *stepLogger) WrapErr(err error) error {
 		LogName:  l.name,
 		LogGroup: strings.Join(l.groups, "/"),
 	}
+}
+
+func (l *stepLogger) logPrefix(colorize func(...any) string) string {
+	if len(l.name) == 0 {
+		return ""
+	}
+	name := colorize(l.name)
+	group := l.groupOutput()
+	if len(group) > 0 {
+		group = colorize(group)
+	}
+	return fmt.Sprintf("[%s%s] ", name, group)
 }
 
 func (l *stepLogger) groupOutput() string {
