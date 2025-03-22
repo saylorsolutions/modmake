@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"runtime/debug"
@@ -13,13 +12,6 @@ import (
 
 	"github.com/fatih/color"
 	flag "github.com/spf13/pflag"
-)
-
-var (
-	errColor   = color.New(color.FgRed, color.Bold).SprintFunc()
-	okColor    = color.New(color.FgGreen, color.Bold).SprintFunc()
-	warnColor  = color.New(color.FgYellow, color.Bold).SprintFunc()
-	debugColor = color.New(color.FgCyan).SprintFunc()
 )
 
 func sigCtx() (context.Context, context.CancelFunc) {
@@ -43,7 +35,7 @@ func sigCtx() (context.Context, context.CancelFunc) {
 // [GoTools.ToModulePath] may be useful to adhere to this constraint.
 func (b *Build) Execute(args ...string) {
 	if err := b.ExecuteErr(args...); err != nil {
-		log.Fatalf("%s: %v\n", errColor("Error executing build"), err.Error())
+		b.logger.Error("Error executing build: %v\n", err.Error())
 	}
 }
 
@@ -141,7 +133,7 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 	for _, skip := range flagSkip {
 		step, ok := b.StepOk(skip)
 		if !ok {
-			log.Printf("%s: User asked that step '%s' be skipped, but it doesn't exist in this model\n", warnColor("WARN"), skip)
+			b.logger.Warn("User asked that step '%s' be skipped, but it doesn't exist in this model\n", skip)
 			continue
 		}
 		step.Skip()
@@ -149,7 +141,7 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 	for _, noskip := range flagNoSkip {
 		step, ok := b.StepOk(noskip)
 		if !ok {
-			log.Printf("%s: User asked that step '%s' not be skipped, but it doesn't exist in this model\n", warnColor("WARN"), noskip)
+			b.logger.Warn("User asked that step '%s' not be skipped, but it doesn't exist in this model\n", noskip)
 			continue
 		}
 		step.UnSkip()
@@ -157,7 +149,7 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 
 	start := time.Now()
 	if flagDryRun {
-		log.Printf("Running build in %s mode, steps will not run.\n", okColor("DRY RUN"))
+		b.logger.Info("Running build in %s mode, steps will not run.\n", okColor("DRY RUN"))
 	}
 	for i, stepName := range flags.Args() {
 		switch {
@@ -196,6 +188,6 @@ See https://github.com/saylorsolutions/modmake for detailed usage information.
 		}
 	}
 
-	log.Print(okColor(fmt.Sprintf("Ran successfully in %s\n", time.Since(start).Round(time.Millisecond).String())))
+	b.logger.Info(okColor(fmt.Sprintf("Ran successfully in %s\n", time.Since(start).Round(time.Millisecond).String())))
 	return nil
 }

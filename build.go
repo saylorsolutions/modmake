@@ -24,6 +24,7 @@ type Build struct {
 	benchStep    *Step
 	buildStep    *Step
 	packageStep  *Step
+	logger       Logger
 
 	workdir   string
 	stepNames map[string]*Step
@@ -72,6 +73,9 @@ func NewBuild() *Build {
 			"benchmark": bench,
 			"build":     build,
 			"package":   pkg,
+		},
+		logger: &stepLogger{
+			name: "root",
 		},
 	}
 	tools.build = b
