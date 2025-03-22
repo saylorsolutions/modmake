@@ -110,7 +110,7 @@ const (
 	loggerKey = loggerKeyType("logger")
 )
 
-// WithLogger creates a new [Logger], sets the given name, and sets the Logger value in the given context.
+// WithLogger creates a new [Logger], sets the given name, and sets the Logger value in the returned context.
 func WithLogger(ctx context.Context, name string) (context.Context, Logger) {
 	logger := &stepLogger{
 		name: name,
