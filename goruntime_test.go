@@ -3,6 +3,7 @@ package modmake
 import (
 	"context"
 	"errors"
+	"github.com/stretchr/testify/require"
 	"os"
 	"os/exec"
 	"strings"
@@ -76,7 +77,7 @@ func TestGoBuild_Run(t *testing.T) {
 
 func TestScanGoMod(t *testing.T) {
 	cwd, err := os.Getwd()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	_cwd := Path(cwd)
 
 	git := _cwd.Join("package/git")
@@ -91,7 +92,7 @@ func TestScanGoMod(t *testing.T) {
 
 func TestModDownload(t *testing.T) {
 	modInfo, err := Go().modDownload(context.Background(), "github.com/saylorsolutions/modmake@v0.2.2")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotEmpty(t, modInfo.Dir)
 	t.Logf("%#v", modInfo)
 }
@@ -99,7 +100,7 @@ func TestModDownload(t *testing.T) {
 func TestGoTools_GetEnv(t *testing.T) {
 	cmd := exec.Command("go", "env", "GOPATH")
 	output, err := cmd.Output()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	want := strings.TrimSpace(string(output))
 
 	var got string

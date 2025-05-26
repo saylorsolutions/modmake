@@ -90,7 +90,7 @@ func (t *TarArchive) Create() Task {
 func (t *TarArchive) Update() Task {
 	runner := Task(func(ctx context.Context) error {
 		ctx, log := WithGroup(ctx, "tar update")
-		tarFile, err := t.path.OpenFile(os.O_RDWR, 0644)
+		tarFile, err := t.path.OpenFile(os.O_RDWR, 0600)
 		if err != nil {
 			return log.WrapErr(err)
 		}
@@ -168,7 +168,7 @@ func (t *TarArchive) Extract(extractDir PathString) Task {
 		defer func() {
 			_ = src.Close()
 		}()
-		err = extractDir.MkdirAll(0755)
+		err = extractDir.MkdirAll(0700)
 		if err != nil {
 			return log.WrapErr(fmt.Errorf("unable to create extraction directory: %w", err))
 		}
@@ -195,7 +195,7 @@ func (t *TarArchive) Extract(extractDir PathString) Task {
 			err = func() error {
 				output := extractDir.Join(header.Name)
 				outputDir := output.Dir()
-				if err := outputDir.MkdirAll(0755); err != nil {
+				if err := outputDir.MkdirAll(0700); err != nil {
 					return fmt.Errorf("failed to make parent directory for file '%s' at '%s': %w", header.Name, outputDir, err)
 				}
 				out, err := output.Create()
