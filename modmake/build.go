@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	version  = "0.5.1"
+	version  = "0.6.0"
 	docsPath = "/modmake"
 	latestGo = 24
 )
