@@ -54,6 +54,17 @@ func (lint *Linter) Verbose() *Linter {
 	return lint
 }
 
+// Target will target specific files/directories for linting.
+// If no target is specified, then "./..." will be used by default.
+func (lint *Linter) Target(target string, otherTargets ...string) *Linter {
+	targets := []string{target}
+	if len(otherTargets) > 0 {
+		targets = append(targets, otherTargets...)
+	}
+	lint.targetDirs = append(lint.targetDirs, targets...)
+	return lint
+}
+
 // Arg allows passing unmapped arguments to the golangci-lint invocation.
 func (lint *Linter) Arg(args ...string) *Linter {
 	lint.otherArgs = append(lint.otherArgs, args...)
