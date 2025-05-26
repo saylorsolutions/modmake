@@ -92,11 +92,11 @@ func (b *Build) LintLatest() *Linter {
 }
 
 // Lint will enable code linting support for this module, and returns the Linter for further configuration.
-// If a version is not specified, then latest will be used.
-func (b *Build) Lint(version ...string) *Linter {
+// The version parameter must be either "latest" or a string that can describe a version of a go module.
+func (b *Build) Lint(version string) *Linter {
 	lintVersion := defaultLintVersion
 	if len(version) > 0 {
-		lintVersion = version[0]
+		lintVersion = version
 	}
 	if !lintVersionPattern.MatchString(lintVersion) {
 		panic(fmt.Sprintf("invalid linter version %s", lintVersion))
