@@ -139,7 +139,7 @@ func (p PathString) Open() (*os.File, error) {
 
 // OpenFile is a generalized open call like os.OpenFile.
 func (p PathString) OpenFile(flag int, mode os.FileMode) (*os.File, error) {
-	return os.OpenFile(string(p), flag, mode)
+	return os.OpenFile(string(p), flag, mode) //nolint:gosec // This is specifically intended to allow opening a user-defined file.
 }
 
 // Mkdir creates a new directory with the specified name and permissions like os.Mkdir.

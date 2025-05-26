@@ -84,7 +84,7 @@ func (z *ZipArchive) Create() Task {
 func (z *ZipArchive) Update() Task {
 	runner := Task(func(ctx context.Context) error {
 		ctx, log := WithGroup(ctx, "zip update")
-		zipFile, err := z.path.OpenFile(os.O_RDWR, 0644)
+		zipFile, err := z.path.OpenFile(os.O_RDWR, 0600)
 		if err != nil {
 			return log.WrapErr(err)
 		}
@@ -151,7 +151,7 @@ func (z *ZipArchive) Extract(extractDir PathString) Task {
 		if err != nil {
 			return log.WrapErr(fmt.Errorf("unable to get file information for the source zip file: %w", err))
 		}
-		err = extractDir.MkdirAll(0755)
+		err = extractDir.MkdirAll(0700)
 		if err != nil {
 			return log.WrapErr(fmt.Errorf("unable to create extraction directory: %w", err))
 		}
@@ -167,14 +167,14 @@ func (z *ZipArchive) Extract(extractDir PathString) Task {
 			err := func() error {
 				output := extractDir.Join(f.Name)
 				if strings.HasSuffix(output.String(), "/") {
-					err := output.MkdirAll(0755)
+					err := output.MkdirAll(0700)
 					if err != nil {
 						return fmt.Errorf("failed to create parent directory '%s': %w", output, err)
 					}
 					return nil
 				}
 				outputDir := output.Dir()
-				if err := outputDir.MkdirAll(0755); err != nil {
+				if err := outputDir.MkdirAll(0700); err != nil {
 					return fmt.Errorf("failed to make parent directory for file '%s' at '%s': %w", f.Name, outputDir, err)
 				}
 				zipFile, err := f.Open()
@@ -191,7 +191,7 @@ func (z *ZipArchive) Extract(extractDir PathString) Task {
 				defer func() {
 					_ = out.Close()
 				}()
-				_, err = io.Copy(out, zipFile)
+				_, err = io.Copy(out, zipFile) //nolint:gosec // It's the user's responsibility to verify the safety of zip inputs in this case.
 				if err != nil {
 					return fmt.Errorf("failed to extract '%s': %w", output, err)
 				}

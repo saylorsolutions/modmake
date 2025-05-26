@@ -28,7 +28,7 @@ func TestExecScript(t *testing.T) {
 			return Path("script.go.copy").Remove()
 		}),
 	).Run(context.Background())
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestIfNotExists(t *testing.T) {
@@ -37,7 +37,7 @@ func TestIfNotExists(t *testing.T) {
 		executed = true
 		return nil
 	})).Run(context.Background())
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.False(t, executed)
 }
 
@@ -47,7 +47,7 @@ func TestIfExists(t *testing.T) {
 		executed = true
 		return nil
 	})).Run(context.Background())
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.True(t, executed)
 }
 
@@ -64,15 +64,15 @@ func TestCopyFile_Abs(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, f)
 	_, err = f.WriteString("Hello!")
-	assert.NoError(t, err)
-	assert.NoError(t, f.Close())
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
 
-	assert.NoError(t, CopyFile(fname, fname2).Run(context.Background()))
+	require.NoError(t, CopyFile(fname, fname2).Run(context.Background()))
 	assert.True(t, fname2.Exists())
 	assert.True(t, fname.Exists())
 
 	data, err := fname2.Cat()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "Hello!", string(data))
 }
 
@@ -89,15 +89,15 @@ func TestMoveFile(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, f)
 	_, err = f.WriteString("Hello!")
-	assert.NoError(t, err)
-	assert.NoError(t, f.Close())
+	require.NoError(t, err)
+	require.NoError(t, f.Close())
 
-	assert.NoError(t, MoveFile(fname, fname2).Run(context.Background()))
+	require.NoError(t, MoveFile(fname, fname2).Run(context.Background()))
 	assert.True(t, fname2.Exists())
 	assert.False(t, fname.Exists())
 
 	data, err := fname2.Cat()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "Hello!", string(data))
 }
 
@@ -129,7 +129,7 @@ func TestRemoveDir(t *testing.T) {
 			IfExists("dir", Error("RemoveDir should have reported an error")),
 		)),
 	).Run(ctx)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestRemove(t *testing.T) {
@@ -153,5 +153,5 @@ func TestRemove(t *testing.T) {
 			IfExists("file.txt", Error("RemoveFile should have reported an error")),
 		)),
 	).Run(ctx)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

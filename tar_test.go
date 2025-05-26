@@ -16,7 +16,7 @@ func TestTarArchive_Extract(t *testing.T) {
 		assert.NoError(t, os.RemoveAll(tmp))
 	}()
 	inputPath := Path(tmp, "input.txt")
-	require.NoError(t, os.WriteFile(inputPath.String(), []byte("A test file"), 0644))
+	require.NoError(t, os.WriteFile(inputPath.String(), []byte("A test file"), 0600))
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -24,14 +24,14 @@ func TestTarArchive_Extract(t *testing.T) {
 	err = Tar(tarPath).AddFileWithPath(inputPath, "input.txt").Create().Run(ctx)
 	require.NoError(t, err)
 	require.NoError(t, os.Remove(inputPath.String()))
-	require.NoError(t, os.WriteFile(inputPath.String(), []byte("A new message"), 0644))
+	require.NoError(t, os.WriteFile(inputPath.String(), []byte("A new message"), 0600))
 	require.NoError(t, Tar(tarPath).AddFileWithPath(inputPath, "input.txt").Update().Run(ctx))
 
-	assert.NoError(t, Tar(tarPath).Extract(Path(tmp)).Run(ctx), "Failed to extract directory")
+	require.NoError(t, Tar(tarPath).Extract(Path(tmp)).Run(ctx), "Failed to extract directory")
 	fi, err := os.Stat(inputPath.String())
-	assert.NoError(t, err, "Failed to stat the extracted file")
+	require.NoError(t, err, "Failed to stat the extracted file")
 	assert.False(t, fi.IsDir(), "Should be a file, not a directory")
 	data, err := os.ReadFile(inputPath.String())
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, "A new message", string(data))
 }

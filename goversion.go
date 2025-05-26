@@ -29,7 +29,7 @@ func (g *GoTools) PinLatestV1(minorVersion int) *GoTools {
 	// Grab the current system go binary directory
 	curGoPath := curSysInstance.GetEnv("GOPATH")
 	if len(curGoPath) == 0 {
-		panic(fmt.Sprintf("Unable to locate GOPATH for current go binary"))
+		panic("Unable to locate GOPATH for current go binary")
 	}
 	curGoBinPath := Path(curGoPath, "bin")
 	// Get the latest patch version to pin to

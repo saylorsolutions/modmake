@@ -3,6 +3,7 @@ package modmake
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -15,7 +16,7 @@ func TestTempDir(t *testing.T) {
 			assert.True(t, tmp.Exists())
 		})
 	}).Run(context.Background())
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.False(t, dir.Exists())
 
 	dir = ""
@@ -26,6 +27,6 @@ func TestTempDir(t *testing.T) {
 			panic("panic while producing Task")
 		}).Run(context.Background())
 	})
-	assert.NotEqual(t, "", dir.String())
+	assert.NotEmpty(t, dir.String())
 	assert.False(t, dir.Exists(), "Temp directory should still be removed if the Task producer function panics")
 }

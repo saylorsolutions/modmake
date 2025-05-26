@@ -3,6 +3,7 @@ package modmake
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"strings"
 	"testing"
 	"time"
@@ -25,6 +26,6 @@ func TestCommand_Output(t *testing.T) {
 	var buf strings.Builder
 	err := Exec("go", "version").Output(&buf).Run(ctx)
 	t.Logf("Data written to buffer: %s", buf.String())
-	assert.NoError(t, err)
-	assert.True(t, buf.Len() > 0, "The Go version should have been written to buffer")
+	require.NoError(t, err)
+	assert.Positive(t, buf.Len(), "The Go version should have been written to buffer")
 }

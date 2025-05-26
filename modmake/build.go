@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	. "github.com/saylorsolutions/modmake"
+	. "github.com/saylorsolutions/modmake" //nolint:staticcheck
 	"github.com/saylorsolutions/modmake/pkg/git"
 )
 
@@ -15,6 +15,8 @@ const (
 func main() {
 	Go().PinLatestV1(latestGo)
 	b := NewBuild()
+	b.LintLatest().EnableSecurityScanning().
+		Enable("testifylint", "bidichk", "asasalint", "gocritic", "godox", "unparam")
 	b.Generate().DependsOnRunner("mod-tidy", "", Go().ModTidy())
 	b.Generate().DependsOnRunner("gen-docs", "",
 		Script(
