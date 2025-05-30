@@ -209,6 +209,14 @@ func (p PathString) Cat() ([]byte, error) {
 	return data, nil
 }
 
+func (p PathString) ReadFile() ([]byte, error) {
+	return os.ReadFile(p.String())
+}
+
+func (p PathString) WriteFile(data []byte, perm os.FileMode) error {
+	return os.WriteFile(p.String(), data, perm)
+}
+
 // Getwd gets the current working directory as a PathString like os.Getwd.
 func Getwd() (PathString, error) {
 	cwd, err := os.Getwd()
