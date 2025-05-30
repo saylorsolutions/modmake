@@ -189,8 +189,9 @@ func (mini *Minifier) singleFileArgs() []string {
 	}
 }
 
-func (mini *Minifier) invokeMinify(source mm.PathString) mm.Task {
+func (mini *Minifier) minAndMapFile(source mm.PathString) mm.Task {
 	return func(ctx context.Context) error {
+		log := mm.GetLogger(ctx)
 		if mini.mappingFileHandle == nil {
 			panic("unexpected state: mappingFileHandle invalid")
 		}
@@ -209,7 +210,6 @@ func (mini *Minifier) invokeMinify(source mm.PathString) mm.Task {
 			buf strings.Builder
 		)
 		srcStr := source.String()
-		ctx, log := mm.WithGroup(ctx, "minify "+srcStr)
 		err = mini.getMinifiedContent(ctx, &buf, source)
 		if err != nil {
 			return err
@@ -247,7 +247,7 @@ func (mini *Minifier) invokeMinify(source mm.PathString) mm.Task {
 		}
 
 		reduction := (origSize - minifiedSize) / origSize * 100.0
-		log.Info("File '%s' reduced by %0.2f%% and written to '%s'\n", srcStr, reduction, targetFilePath)
+		log.Info("File '%s' size reduced by %0.2f%% and written to '%s'\n", srcStr, reduction, targetFilePath)
 		return nil
 	}
 }

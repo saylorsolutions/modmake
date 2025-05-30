@@ -65,19 +65,19 @@ func getJSFiles(t *testing.T, dir mm.PathString) []string {
 func TestMinify(t *testing.T) {
 	work := setupWorkingDirectory(t)
 	mappingFile := work.tmp.Join("mapping")
-	conf, err := New(mappingFile, "assets",
+	minifier, err := New(mappingFile, "assets",
 		Version("latest"),
 		HashDigits(6),
 		ClearBeforeWrite(),
 		PackageName("testing"),
 	)
 	require.NoError(t, err)
-	conf.tasks = conf.tasks.Then(conf.invokeMinify(work.jsSource))
-	require.NoError(t, conf.Run(context.Background()))
+	minifier.MapFile(work.jsSource)
+	require.NoError(t, minifier.Run(context.Background()))
 	assert.True(t, work.jsSource.IsFile())
 	assert.True(t, work.tmp.IsDir())
-	assert.True(t, conf.assetDir.IsDir())
-	files := getJSFiles(t, conf.assetDir)
+	assert.True(t, minifier.assetDir.IsDir())
+	files := getJSFiles(t, minifier.assetDir)
 	require.Len(t, files, 1)
 	assert.Equal(t, ".js", filepath.Ext(files[0]))
 }
