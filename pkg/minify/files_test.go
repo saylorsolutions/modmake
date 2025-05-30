@@ -16,7 +16,9 @@ import (
 type workingDir struct {
 	tmp        mm.PathString
 	jsSource   mm.PathString
+	jsAlt      mm.PathString
 	cssSource  mm.PathString
+	cssAlt     mm.PathString
 	htmlSource mm.PathString
 	svgSource  mm.PathString
 }
@@ -32,8 +34,12 @@ func setupWorkingDirectory(t *testing.T) *workingDir {
 	assert.True(t, tmpPath.IsDir())
 	jsSource := mm.Path(tmp, "test.js")
 	require.NoError(t, mm.Path("test.js").CopyTo(jsSource))
+	jsAlt := mm.Path(tmp, "test2.js")
+	require.NoError(t, mm.Path("test2.js").CopyTo(jsAlt))
 	cssSource := mm.Path(tmp, "test.css")
 	require.NoError(t, mm.Path("test.css").CopyTo(cssSource))
+	cssAlt := mm.Path(tmp, "test2.css")
+	require.NoError(t, mm.Path("test2.css").CopyTo(cssAlt))
 	htmlSource := mm.Path(tmp, "index.html")
 	require.NoError(t, mm.Path("index.html").CopyTo(htmlSource))
 	svgSource := mm.Path(tmp, "test.svg")
@@ -41,7 +47,9 @@ func setupWorkingDirectory(t *testing.T) *workingDir {
 	return &workingDir{
 		tmp:        tmpPath,
 		jsSource:   jsSource,
+		jsAlt:      jsAlt,
 		cssSource:  cssSource,
+		cssAlt:     cssAlt,
 		htmlSource: htmlSource,
 		svgSource:  svgSource,
 	}
@@ -88,17 +96,21 @@ func TestMinifier_MapFile(t *testing.T) {
 		MapFile(work.jsSource).
 		MapFile(work.cssSource).
 		MapFile(work.htmlSource).
-		MapFile(work.svgSource)
+		MapFile(work.svgSource).
+		MapJSBundle("bundle.js", work.jsSource, work.jsAlt).
+		MapCSSBundle("bundle", work.cssSource, work.cssAlt)
 	require.NoError(t, b.ExecuteErr("minify"))
 
 	require.True(t, assetDir.IsDir())
 	require.True(t, work.tmp.IsDir())
 	jsFiles := getFilesWithExt(t, assetDir, ".js")
-	require.Len(t, jsFiles, 1)
-	assert.True(t, regexp.MustCompile(`^test-[a-f0-9]{6}\.js$`).MatchString(filepath.Base(jsFiles[0])))
+	require.Len(t, jsFiles, 2)
+	assert.True(t, regexp.MustCompile(`^bundle-[a-f0-9]{6}\.js$`).MatchString(filepath.Base(jsFiles[0])))
+	assert.True(t, regexp.MustCompile(`^test-[a-f0-9]{6}\.js$`).MatchString(filepath.Base(jsFiles[1])))
 	cssFiles := getFilesWithExt(t, assetDir, ".css")
-	require.Len(t, cssFiles, 1)
-	assert.True(t, regexp.MustCompile(`^test-[a-f0-9]{6}\.css$`).MatchString(filepath.Base(cssFiles[0])))
+	require.Len(t, cssFiles, 2)
+	assert.True(t, regexp.MustCompile(`^bundle-[a-f0-9]{6}\.css$`).MatchString(filepath.Base(cssFiles[0])))
+	assert.True(t, regexp.MustCompile(`^test-[a-f0-9]{6}\.css$`).MatchString(filepath.Base(cssFiles[1])))
 	htmlFiles := getFilesWithExt(t, assetDir, ".html")
 	require.Len(t, htmlFiles, 1)
 	assert.True(t, regexp.MustCompile(`^index-[a-f0-9]{6}\.html$`).MatchString(filepath.Base(htmlFiles[0])))
@@ -115,8 +127,12 @@ func TestMinifier_MapFile(t *testing.T) {
 	assert.Contains(t, strContent, "//go:embed content/")
 	assert.Contains(t, strContent, "Testjs []byte")
 	assert.Contains(t, strContent, "TestjsName = \"")
+	assert.Contains(t, strContent, "Bundlejs []byte")
+	assert.Contains(t, strContent, "BundlejsName = \"")
 	assert.Contains(t, strContent, "Testcss []byte")
 	assert.Contains(t, strContent, "TestcssName = \"")
+	assert.Contains(t, strContent, "Bundlecss []byte")
+	assert.Contains(t, strContent, "BundlecssName = \"")
 	assert.Contains(t, strContent, "Indexhtml []byte")
 	assert.Contains(t, strContent, "IndexhtmlName = \"")
 	assert.Contains(t, strContent, "Testsvg []byte")

@@ -217,6 +217,12 @@ func (p PathString) WriteFile(data []byte, perm os.FileMode) error {
 	return os.WriteFile(p.String(), data, perm)
 }
 
+// Ext returns the file name extension used by path.
+// The extension is the suffix beginning at the final dot in the final element of path; it is empty if there is no dot.
+func (p PathString) Ext() string {
+	return filepath.Ext(string(p))
+}
+
 // Getwd gets the current working directory as a PathString like os.Getwd.
 func Getwd() (PathString, error) {
 	cwd, err := os.Getwd()

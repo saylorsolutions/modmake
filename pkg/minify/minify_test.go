@@ -9,6 +9,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -116,7 +117,7 @@ func TestEmbedSymbol(t *testing.T) {
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			given, err := embedSymbol(tc.given)
+			given, err := embedSymbolFromSource(tc.given)
 			require.NoError(t, err)
 			assert.Equal(t, tc.expected, given)
 		})
@@ -141,8 +142,41 @@ func TestEmbedSymbol_Neg(t *testing.T) {
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			_, err := embedSymbol(tc.given)
+			_, err := embedSymbolFromSource(tc.given)
 			require.Error(t, err)
+		})
+	}
+}
+
+func TestCountingWriter(t *testing.T) {
+	tests := map[string]struct {
+		inputs []string
+	}{
+		"Empty": {
+			inputs: []string{""},
+		},
+		"One write": {
+			inputs: []string{"one"},
+		},
+		"Multiple writes": {
+			inputs: []string{"one", "two", "three"},
+		},
+	}
+
+	for name, tc := range tests {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			var (
+				buf      strings.Builder
+				counter  = &countingWriter{wrapped: &buf}
+				expected int64
+			)
+			for _, str := range tc.inputs {
+				expected += int64(len(str))
+				_, err := counter.Write([]byte(str))
+				require.NoError(t, err)
+			}
+			assert.Equal(t, expected, counter.count)
 		})
 	}
 }

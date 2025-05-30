@@ -1,6 +1,7 @@
 package minify
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	_ "embed"
@@ -9,6 +10,7 @@ import (
 	"fmt"
 	mm "github.com/saylorsolutions/modmake"
 	"go/token"
+	"hash"
 	"io"
 	"os"
 	"path/filepath"
@@ -191,69 +193,181 @@ func (mini *Minifier) singleFileArgs() []string {
 
 func (mini *Minifier) minAndMapFile(source mm.PathString) mm.Task {
 	return func(ctx context.Context) error {
-		log := mm.GetLogger(ctx)
 		if mini.mappingFileHandle == nil {
 			panic("unexpected state: mappingFileHandle invalid")
 		}
-		if !source.IsFile() {
-			return fmt.Errorf("source file '%s' doesn't exist", source)
-		}
 		if !mini.assetDir.IsDir() {
-			return fmt.Errorf("asset directory '%s' isn't valid", mini.assetDir)
+			panic(fmt.Sprintf("asset directory '%s' isn't valid", mini.assetDir))
 		}
-		fi, err := source.Stat()
-		if err != nil {
-			return fmt.Errorf("failed to stat source file '%s': %w", source, err)
-		}
-		origSize := float64(fi.Size())
-		var (
-			buf strings.Builder
-		)
-		srcStr := source.String()
-		err = mini.getMinifiedContent(ctx, &buf, source)
+		var buf bytes.Buffer
+		origSize, minifiedSize, err := mini.minifyFileToBuffer(ctx, &buf, source)
 		if err != nil {
 			return err
 		}
-		minifiedSize := float64(buf.Len())
-		if minifiedSize == 0 {
-			return fmt.Errorf("no minified data written for file '%s'", source)
-		}
-		hash, err := hashFile(mini.hashDigits, source)
-		if err != nil {
-			return fmt.Errorf("failed to hash file '%s': %w", source, err)
-		}
-		targetFileName := hashedFileName(source, hash)
-		targetFilePath := mini.assetDir.Join(targetFileName)
-		embedIdentifier, err := embedSymbol(source)
+		target, err := mini.getAssetTargetPath(source)
 		if err != nil {
 			return err
 		}
-		relTarget, err := mini.mappingFile.Dir().Rel(targetFilePath)
+		err = target.WriteFile(buf.Bytes(), 0600)
 		if err != nil {
-			return fmt.Errorf("failed to get path to source '%s' relative to mapping file '%s': %w", source, mini.mappingFile, err)
+			return fmt.Errorf("failed to write data to target: %w", err)
 		}
-		err = targetFilePath.WriteFile([]byte(buf.String()), 0600)
+		err = mini.writeTargetMapping(source, target)
 		if err != nil {
 			return err
-		}
-
-		err = mappingTemplate.ExecuteTemplate(mini.mappingFileHandle, "fileMapping", templateFile{
-			MinifiedRelPath: relTarget.ToSlash(),
-			EmbedSymbol:     embedIdentifier,
-			FileName:        targetFileName,
-		})
-		if err != nil {
-			return fmt.Errorf("failed to write embed definition to mapping file: %w", err)
 		}
 
 		reduction := (origSize - minifiedSize) / origSize * 100.0
-		log.Info("File '%s' size reduced by %0.2f%% and written to '%s'\n", srcStr, reduction, targetFilePath)
+		mm.GetLogger(ctx).Info("File '%s' size reduced by %0.2f%% and written to '%s'\n", source, reduction, target)
 		return nil
 	}
 }
 
-func (mini *Minifier) getMinifiedContent(ctx context.Context, buf *strings.Builder, source mm.PathString) error {
-	err := mm.Exec(minifierPath).Stdout(buf).
+func (mini *Minifier) minAndMapBundle(bundleName string, sources ...mm.PathString) mm.Task {
+	if len(sources) == 0 {
+		return mm.Error("no source files given to bundle")
+	}
+	return func(ctx context.Context) error {
+		if len(bundleName) == 0 {
+			panic("missing bundle name")
+		}
+		ext := filepath.Ext(bundleName)
+		if len(ext) == 0 {
+			panic("missing bundle file extension")
+		}
+		if mini.mappingFileHandle == nil {
+			panic("unexpected state: mappingFileHandle invalid")
+		}
+		if !mini.assetDir.IsDir() {
+			panic(fmt.Sprintf("asset directory '%s' isn't valid", mini.assetDir))
+		}
+		var (
+			buf                              bytes.Buffer
+			totalOrigSize, totalMinifiedSize float64
+			hasher                           = newFileHasher()
+		)
+		for _, source := range sources {
+			origSize, minifiedSize, err := mini.minifyFileToBuffer(ctx, &buf, source)
+			if err != nil {
+				return err
+			}
+			hasher.hashFile(source)
+
+			totalOrigSize += origSize
+			totalMinifiedSize += minifiedSize
+			reduction := (origSize - minifiedSize) / origSize * 100.0
+			mm.GetLogger(ctx).Info("Bundle file '%s' size reduced by %0.2f%%\n", source, reduction)
+		}
+		hashDigits, err := hasher.getHashDigits(mini.hashDigits)
+		if err != nil {
+			return err
+		}
+		target := mini.assetDir.Join(hashedFileName(mm.Path(bundleName), hashDigits))
+		err = target.WriteFile(buf.Bytes(), 0600)
+		if err != nil {
+			return fmt.Errorf("failed to write bundle data to target '%s': %w", target, err)
+		}
+		err = mini.writeBundleMapping(bundleName, target)
+		if err != nil {
+			return err
+		}
+		reduction := (totalOrigSize - totalMinifiedSize) / totalOrigSize * 100.0
+		mm.GetLogger(ctx).Info("Total size reduced by %0.2f%% and written to '%s'\n", reduction, target)
+		return nil
+	}
+}
+
+func (mini *Minifier) writeTargetMapping(source mm.PathString, target mm.PathString) error {
+	embedIdentifier, err := embedSymbolFromSource(source)
+	if err != nil {
+		return err
+	}
+	relTarget, err := mini.mappingFile.Dir().Rel(target)
+	if err != nil {
+		return fmt.Errorf("failed to get path to source '%s' relative to mapping file '%s': %w", source, mini.mappingFile, err)
+	}
+
+	err = mappingTemplate.ExecuteTemplate(mini.mappingFileHandle, "fileMapping", templateFile{
+		MinifiedRelPath: relTarget.ToSlash(),
+		EmbedSymbol:     embedIdentifier,
+		FileName:        target.Base().String(),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to write embed mapping to mapping file: %w", err)
+	}
+	return nil
+}
+
+func (mini *Minifier) writeBundleMapping(bundleName string, target mm.PathString) error {
+	embedIdentifier, err := embedSymbol(bundleName)
+	if err != nil {
+		return err
+	}
+	relTarget, err := mini.mappingFile.Dir().Rel(target)
+	if err != nil {
+		return fmt.Errorf("failed to get path to bundle target '%s' relative to mapping file '%s': %w", target, mini.mappingFile, err)
+	}
+
+	err = mappingTemplate.ExecuteTemplate(mini.mappingFileHandle, "fileMapping", templateFile{
+		MinifiedRelPath: relTarget.ToSlash(),
+		EmbedSymbol:     embedIdentifier,
+		FileName:        target.Base().String(),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to write embed mapping to mapping file: %w", err)
+	}
+	return nil
+}
+
+func (mini *Minifier) getAssetTargetPath(source mm.PathString) (mm.PathString, error) {
+	hashDigits, err := newFileHasher().hashFile(source).getHashDigits(mini.hashDigits)
+	if err != nil {
+		return "", fmt.Errorf("failed to hash file '%s': %w", source, err)
+	}
+	return mini.assetDir.Join(hashedFileName(source, hashDigits)), nil
+}
+
+func (mini *Minifier) minifyFileToBuffer(ctx context.Context, buf *bytes.Buffer, source mm.PathString) (origSize float64, minifiedSize float64, err error) {
+	return mini.minifyFile(ctx, buf, source)
+}
+
+type countingWriter struct {
+	wrapped io.Writer
+	count   int64
+}
+
+func (w *countingWriter) Write(data []byte) (int, error) {
+	count, err := w.wrapped.Write(data)
+	w.count += int64(count)
+	if err != nil {
+		return count, err
+	}
+	return count, nil
+}
+
+func (mini *Minifier) minifyFile(ctx context.Context, out io.Writer, source mm.PathString) (origSize float64, minifiedSize float64, err error) {
+	counter := &countingWriter{wrapped: out}
+	fi, err := source.Stat()
+	if err != nil {
+		return 0, 0, fmt.Errorf("failed to stat source file '%s': %w", source, err)
+	}
+	if fi.IsDir() {
+		return 0, 0, fmt.Errorf("source '%s' is a directory", source)
+	}
+	origSize = float64(fi.Size())
+	err = mini.getMinifiedContent(ctx, counter, source)
+	if err != nil {
+		return 0, 0, err
+	}
+	minifiedSize = float64(counter.count)
+	if minifiedSize == 0 {
+		return 0, 0, fmt.Errorf("no minified data written for file '%s'", source)
+	}
+	return origSize, minifiedSize, nil
+}
+
+func (mini *Minifier) getMinifiedContent(ctx context.Context, out io.Writer, source mm.PathString) error {
+	err := mm.Exec(minifierPath).Stdout(out).
 		Arg(mini.singleFileArgs()...).
 		TrailingArg(source.String()).
 		LogGroup("minify").
@@ -294,11 +408,15 @@ func installTask(version string) mm.Task {
 	}
 }
 
-func embedSymbol(source mm.PathString) (string, error) {
+func embedSymbolFromSource(source mm.PathString) (string, error) {
 	base := source.Base().String()
+	return embedSymbol(base)
+}
+
+func embedSymbol(fileName string) (string, error) {
 	var buf strings.Builder
 	readFirst := false
-	for _, r := range base {
+	for _, r := range fileName {
 		if !readFirst {
 			if !unicode.IsLetter(r) {
 				continue
@@ -320,41 +438,68 @@ func embedSymbol(source mm.PathString) (string, error) {
 	}
 	id := buf.String()
 	if len(id) == 0 || !token.IsIdentifier(id) {
-		return "", fmt.Errorf("unable to derive embed symbol from file name '%s'", source)
+		return "", fmt.Errorf("unable to derive embed symbol from file name '%s'", fileName)
 	}
 	return id, nil
 }
 
-func hashedFileName(source mm.PathString, hash string) string {
+type fileHasher struct {
+	hash.Hash
+	err error
+}
+
+func (f *fileHasher) hashFile(source mm.PathString) *fileHasher {
+	if f.err != nil {
+		return f
+	}
+	src, err := source.Open()
+	if err != nil {
+		f.err = fmt.Errorf("failed to open '%s' for reading: %w", source, err)
+		return f
+	}
+	defer func() {
+		_ = src.Close()
+	}()
+	if err := f.hashReader(src).err; err != nil {
+		f.err = fmt.Errorf("failed to read from '%s': %w", source, err)
+		return f
+	}
+	return f
+}
+
+func (f *fileHasher) hashReader(r io.Reader) *fileHasher {
+	_, err := io.Copy(f.Hash, r)
+	if err != nil {
+		f.err = err
+		return f
+	}
+	return f
+}
+
+func (f *fileHasher) getHashDigits(digits int) (string, error) {
+	if f.err != nil {
+		return "", f.err
+	}
+	sum := f.Sum(nil)
+	return string([]rune(hex.EncodeToString(sum))[:digits]), nil
+}
+
+func newFileHasher() *fileHasher {
+	return &fileHasher{
+		Hash: sha256.New(),
+	}
+}
+
+func hashedFileName(source mm.PathString, hashDigits string) string {
 	base := source.Base().String()
 	ext := filepath.Ext(base)
 	if len(ext) == 0 {
-		return fmt.Sprintf("%s%s%s", base, hashSeparator, hash)
+		return fmt.Sprintf("%s%s%s", base, hashSeparator, hashDigits)
 	}
 	var buf strings.Builder
 	extIdx := strings.LastIndex(base, ext)
 	buf.Write([]byte(base)[:extIdx])
-	buf.WriteString(hashSeparator + hash)
+	buf.WriteString(hashSeparator + hashDigits)
 	buf.WriteString(ext)
 	return buf.String()
-}
-
-func hashFile(digits int, path mm.PathString) (string, error) {
-	input, err := path.Open()
-	if err != nil {
-		return "", err
-	}
-	defer func() {
-		_ = input.Close()
-	}()
-	var hash []byte
-	hasher := sha256.New()
-	_, err = io.Copy(hasher, input)
-	if err != nil {
-		return "", fmt.Errorf("failed to hash file '%s': %w", path.String(), err)
-	}
-	hash = hasher.Sum(hash)
-	hexBytes := make([]byte, len(hash)*2)
-	hex.Encode(hexBytes, hash)
-	return string(hexBytes[:digits]), nil
 }
