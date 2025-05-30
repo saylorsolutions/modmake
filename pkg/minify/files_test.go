@@ -109,7 +109,7 @@ func TestMinifier_MapFile(t *testing.T) {
 	require.True(t, mappingFile.IsFile())
 	content, err := mappingFile.ReadFile()
 	require.NoError(t, err)
-	require.Positive(t, len(content))
+	require.NotEmpty(t, content)
 	strContent := string(content)
 	assert.Contains(t, strContent, "package testing")
 	assert.Contains(t, strContent, "//go:embed content/")
