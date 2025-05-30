@@ -65,9 +65,11 @@ func getJSFiles(t *testing.T, dir mm.PathString) []string {
 func TestMinify(t *testing.T) {
 	work := setupWorkingDirectory(t)
 	mappingFile := work.tmp.Join("mapping")
-	conf, err := NewConfig(mappingFile, "assets",
+	conf, err := New(mappingFile, "assets",
+		Version("latest"),
+		HashDigits(6),
 		ClearBeforeWrite(),
-		MappingFilePackage("testing"),
+		PackageName("testing"),
 	)
 	require.NoError(t, err)
 	conf.tasks = conf.tasks.Then(conf.invokeMinify(work.jsSource))
@@ -78,4 +80,69 @@ func TestMinify(t *testing.T) {
 	files := getJSFiles(t, conf.assetDir)
 	require.Len(t, files, 1)
 	assert.Equal(t, ".js", filepath.Ext(files[0]))
+}
+
+func TestEmbedSymbol(t *testing.T) {
+	tests := map[string]struct {
+		given    mm.PathString
+		expected string
+	}{
+		"Already an embed symbol": {
+			given:    "TestJS",
+			expected: "TestJS",
+		},
+		"Realistic JS asset": {
+			given:    "src/js/index.js",
+			expected: "Indexjs",
+		},
+		"Relative asset": {
+			given:    "./index.html",
+			expected: "Indexhtml",
+		},
+		"Starts with number": {
+			given:    "src/js/01_index.js",
+			expected: "Indexjs",
+		},
+		"Reserved word": {
+			given:    "map",
+			expected: "Map",
+		},
+		"Spaces in path": {
+			given:    "./\tsr\rc/ j s/ ind\tex\n.j\rs ",
+			expected: "Indexjs",
+		},
+	}
+
+	for name, tc := range tests {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			given, err := embedSymbol(tc.given)
+			require.NoError(t, err)
+			assert.Equal(t, tc.expected, given)
+		})
+	}
+}
+
+func TestEmbedSymbol_Neg(t *testing.T) {
+	tests := map[string]struct {
+		given mm.PathString
+	}{
+		"All numbers": {
+			given: "12345",
+		},
+		"All underscore": {
+			given: "_",
+		},
+		"Empty string": {
+			given: "",
+		},
+	}
+
+	for name, tc := range tests {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			_, err := embedSymbol(tc.given)
+			require.Error(t, err)
+		})
+	}
 }

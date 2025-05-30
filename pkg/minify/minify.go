@@ -1,7 +1,6 @@
 package minify
 
 import (
-	"bytes"
 	"context"
 	"crypto/sha256"
 	_ "embed"
@@ -21,7 +20,9 @@ import (
 )
 
 const (
+	hashSeparator = "-"
 	minifyV2Path  = "github.com/tdewolff/minify/v2/cmd/minify@%s"
+	// EnvMinifyPath defines an environment variable that can be used to override the invocation path of minify.
 	EnvMinifyPath = "MM_MINIFY_PATH"
 )
 
@@ -29,15 +30,15 @@ var (
 	minifyVersionPattern = regexp.MustCompile(`^(latest|v2\.\d+\.\d+)$`)
 	minifierPath         string
 	minifierInitOnce     sync.Once
-	stripSpacePattern    = regexp.MustCompile(`\s`)
+	minifierInstallOnce  sync.Once
 
 	//go:embed mappingFile.got
 	mappingTemplateText string
 	mappingTemplate     = template.Must(template.New("mappingTemplate").Parse(mappingTemplateText))
 )
 
-// ConfigFunc is a function that is able to define values for Configuration.
-type ConfigFunc func(conf *Configuration) error
+// ConfigFunc is a function that is able to define policy values for Minifier.
+type ConfigFunc func(mini *Minifier) error
 
 type templateFile struct {
 	Package         string
@@ -46,31 +47,31 @@ type templateFile struct {
 	FileName        string
 }
 
-// Configuration defines consistent policies for minifying web assets.
-// The type is immutable after creation with NewConfig.
-type Configuration struct {
+// Minifier defines consistent policies for minifying web assets.
+// The type is immutable after creation with New.
+type Minifier struct {
 	mappingFile       mm.PathString
+	assetDir          mm.PathString
 	mappingFileHandle *os.File
 	closeFile         sync.Once
 	hashDigits        int
 	minifyVersion     string
-	tasks             mm.Task
-	assetDir          mm.PathString
 	clearBeforeWrite  bool
 	packageName       string
+	tasks             mm.Task
 }
 
 // HashDigits sets the number of hash digits to use for minified files.
 // Digits must be between 4-32, inclusive.
 func HashDigits(digits int) ConfigFunc {
-	return func(conf *Configuration) error {
+	return func(mini *Minifier) error {
 		if digits < 4 {
 			return errors.New("hash digits must be at least 4, recommend at least 6 (default)")
 		}
 		if digits > 32 {
 			return errors.New("hash digits cannot be greater than 32")
 		}
-		conf.hashDigits = digits
+		mini.hashDigits = digits
 		return nil
 	}
 }
@@ -78,50 +79,51 @@ func HashDigits(digits int) ConfigFunc {
 // Version sets the version of minify to use.
 // Defaults to "latest".
 func Version(version string) ConfigFunc {
-	return func(conf *Configuration) error {
+	return func(mini *Minifier) error {
 		if !minifyVersionPattern.MatchString(version) {
 			return fmt.Errorf("invalid version string '%s'", version)
 		}
-		conf.minifyVersion = version
+		mini.minifyVersion = version
 		return nil
 	}
 }
 
-// MappingFilePackage sets the package name used in the mapping file.
+// PackageName sets the package name used in the mapping file.
 // The default when no package is specified is the parent directory name.
-func MappingFilePackage(packageName string) ConfigFunc {
-	return func(conf *Configuration) error {
+func PackageName(packageName string) ConfigFunc {
+	return func(mini *Minifier) error {
 		if !token.IsIdentifier(packageName) {
 			return fmt.Errorf("package name '%s' is not valid", packageName)
 		}
-		conf.packageName = packageName
+		mini.packageName = packageName
 		return nil
 	}
 }
 
-// ClearBeforeWrite will make this Configuration clear the asset directory before writing new files.
+// ClearBeforeWrite will make this Minifier clear the asset directory before writing any new files.
 func ClearBeforeWrite() ConfigFunc {
-	return func(conf *Configuration) error {
-		conf.clearBeforeWrite = true
+	return func(mini *Minifier) error {
+		mini.clearBeforeWrite = true
 		return nil
 	}
 }
 
-func installTask(version string) mm.Task {
-	return func(ctx context.Context) error {
-		ctx, _ = mm.WithGroup(ctx, "install-minify")
-		return mm.Go().Install(fmt.Sprintf(minifyV2Path, version)).Run(ctx)
+// New is used to create a new Minifier.
+// It allows specifying policies for minifying web assets.
+func New(mappingFile mm.PathString, assetDirName string, configFuncs ...ConfigFunc) (*Minifier, error) {
+	if len(mappingFile) == 0 {
+		return nil, errors.New("empty mapping file path")
 	}
-}
-
-func NewConfig(mappingFile mm.PathString, assetDirName string, configFuncs ...ConfigFunc) (*Configuration, error) {
+	if len(assetDirName) == 0 {
+		return nil, errors.New("empty asset directory name")
+	}
 	assetDir := mappingFile.Dir().Join(assetDirName)
 	mappingFileStr := mappingFile.String()
 	if !strings.HasSuffix(mappingFileStr, ".go") {
 		mappingFileStr += ".go"
 		mappingFile = mm.Path(mappingFileStr)
 	}
-	conf := &Configuration{
+	mini := &Minifier{
 		mappingFile:   mappingFile,
 		assetDir:      assetDir,
 		hashDigits:    6,
@@ -129,42 +131,42 @@ func NewConfig(mappingFile mm.PathString, assetDirName string, configFuncs ...Co
 	}
 	var errs []error
 	for _, fn := range configFuncs {
-		if err := fn(conf); err != nil {
+		if err := fn(mini); err != nil {
 			errs = append(errs, err)
 		}
 	}
 	if len(errs) > 0 {
 		return nil, errors.Join(errs...)
 	}
-	if len(conf.packageName) == 0 {
+	if len(mini.packageName) == 0 {
 		dir, err := mappingFile.Dir().Abs()
 		if err != nil {
 			return nil, err
 		}
-		conf.packageName = dir.Base().String()
+		mini.packageName = dir.Base().String()
 	}
-	conf.tasks = installTask(conf.minifyVersion)
-	if conf.clearBeforeWrite {
-		conf.tasks = conf.tasks.Then(mm.WithoutContext(func() error {
+	mini.tasks = installTask(mini.minifyVersion)
+	if mini.clearBeforeWrite {
+		mini.tasks = mini.tasks.Then(mm.WithoutContext(func() error {
 			return assetDir.RemoveAll()
 		}))
 	}
-	conf.tasks = conf.tasks.Then(mm.WithoutContext(func() error {
+	mini.tasks = mini.tasks.Then(mm.WithoutContext(func() error {
 		err := assetDir.Mkdir(0700)
 		if err != nil {
 			return fmt.Errorf("failed to create asset directory '%s': %w", assetDir, err)
 		}
-		conf.mappingFileHandle, err = conf.mappingFile.Create()
+		mini.mappingFileHandle, err = mini.mappingFile.Create()
 		if err != nil {
-			return fmt.Errorf("failed to create mapping file '%s': %w", conf.mappingFile, err)
+			return fmt.Errorf("failed to create mapping file '%s': %w", mini.mappingFile, err)
 		}
-		err = mappingTemplate.ExecuteTemplate(conf.mappingFileHandle, "fileHeader", &templateFile{
-			Package: conf.packageName,
+		err = mappingTemplate.ExecuteTemplate(mini.mappingFileHandle, "fileHeader", &templateFile{
+			Package: mini.packageName,
 		})
 		if err != nil {
-			conf.closeFile.Do(func() {
-				_ = conf.mappingFileHandle.Close()
-				conf.mappingFileHandle = nil
+			mini.closeFile.Do(func() {
+				_ = mini.mappingFileHandle.Close()
+				mini.mappingFileHandle = nil
 			})
 			return fmt.Errorf("failed to write mapping file header: %w", err)
 		}
@@ -174,10 +176,10 @@ func NewConfig(mappingFile mm.PathString, assetDirName string, configFuncs ...Co
 		defaultPath := mm.Path(mm.Go().GetEnv("GOBIN"), "minify").String()
 		minifierPath = mm.F(fmt.Sprintf("${%s:%s}", EnvMinifyPath, defaultPath))
 	})
-	return conf, nil
+	return mini, nil
 }
 
-func (conf *Configuration) args() []string {
+func (mini *Minifier) singleFileArgs() []string {
 	return []string{
 		"--all",
 		"--js-version", "0",
@@ -187,13 +189,116 @@ func (conf *Configuration) args() []string {
 	}
 }
 
+func (mini *Minifier) invokeMinify(source mm.PathString) mm.Task {
+	return func(ctx context.Context) error {
+		if mini.mappingFileHandle == nil {
+			panic("unexpected state: mappingFileHandle invalid")
+		}
+		if !source.IsFile() {
+			return fmt.Errorf("source file '%s' doesn't exist", source)
+		}
+		if !mini.assetDir.IsDir() {
+			return fmt.Errorf("asset directory '%s' isn't valid", mini.assetDir)
+		}
+		fi, err := source.Stat()
+		if err != nil {
+			return fmt.Errorf("failed to stat source file '%s': %w", source, err)
+		}
+		origSize := float64(fi.Size())
+		var (
+			buf strings.Builder
+		)
+		srcStr := source.String()
+		ctx, log := mm.WithGroup(ctx, "minify "+srcStr)
+		err = mini.getMinifiedContent(ctx, &buf, source)
+		if err != nil {
+			return err
+		}
+		minifiedSize := float64(buf.Len())
+		if minifiedSize == 0 {
+			return fmt.Errorf("no minified data written for file '%s'", source)
+		}
+		hash, err := hashFile(mini.hashDigits, source)
+		if err != nil {
+			return fmt.Errorf("failed to hash file '%s': %w", source, err)
+		}
+		targetFileName := hashedFileName(source, hash)
+		targetFilePath := mini.assetDir.Join(targetFileName)
+		embedIdentifier, err := embedSymbol(source)
+		if err != nil {
+			return err
+		}
+		relTarget, err := mini.mappingFile.Dir().Rel(targetFilePath)
+		if err != nil {
+			return fmt.Errorf("failed to get path to source '%s' relative to mapping file '%s': %w", source, mini.mappingFile, err)
+		}
+		err = targetFilePath.WriteFile([]byte(buf.String()), 0600)
+		if err != nil {
+			return err
+		}
+
+		err = mappingTemplate.ExecuteTemplate(mini.mappingFileHandle, "fileMapping", templateFile{
+			MinifiedRelPath: relTarget.ToSlash(),
+			EmbedSymbol:     embedIdentifier,
+			FileName:        targetFileName,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to write embed definition to mapping file: %w", err)
+		}
+
+		reduction := (origSize - minifiedSize) / origSize * 100.0
+		log.Info("File '%s' reduced by %0.2f%% and written to '%s'\n", srcStr, reduction, targetFilePath)
+		return nil
+	}
+}
+
+func (mini *Minifier) getMinifiedContent(ctx context.Context, buf *strings.Builder, source mm.PathString) error {
+	err := mm.Exec(minifierPath).Stdout(buf).
+		Arg(mini.singleFileArgs()...).
+		TrailingArg(source.String()).
+		LogGroup("minify").
+		Run(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to invoke minify: %w", err)
+	}
+	return nil
+}
+
+func (mini *Minifier) Run(ctx context.Context) error {
+	return mm.Print("Minifying files").Then(mini.tasks).Finally(func(terr error) error {
+		var err error
+		mini.closeFile.Do(func() {
+			if mini.mappingFileHandle != nil {
+				err = errors.Join(terr, mini.mappingFileHandle.Close())
+				mini.mappingFileHandle = nil
+			}
+		})
+		return err
+	}).Run(ctx)
+}
+
+// Apply will link Minifier operations to the 'generate' step of a Modmake Build.
+// Further operations may be added to the Minifier after calling Apply, but before the generate step is ran.
+func (mini *Minifier) Apply(b *mm.Build) {
+	b.Generate().DependsOnRunner("minify", "Minifies web asssets", mini)
+}
+
+func installTask(version string) mm.Task {
+	return func(ctx context.Context) error {
+		var err error
+		minifierInstallOnce.Do(func() {
+			ctx, _ = mm.WithGroup(ctx, "install-minify")
+			err = mm.Go().Install(fmt.Sprintf(minifyV2Path, version)).Run(ctx)
+		})
+		return err
+	}
+}
+
 func embedSymbol(source mm.PathString) (string, error) {
 	base := source.Base().String()
-	base = stripSpacePattern.ReplaceAllString(base, "")
 	var buf strings.Builder
-	baseRunes := []rune(base)
 	readFirst := false
-	for _, r := range baseRunes {
+	for _, r := range base {
 		if !readFirst {
 			if !unicode.IsLetter(r) {
 				continue
@@ -220,109 +325,16 @@ func embedSymbol(source mm.PathString) (string, error) {
 	return id, nil
 }
 
-func (conf *Configuration) invokeMinify(source mm.PathString) mm.Task {
-	return func(ctx context.Context) error {
-		if conf.mappingFileHandle == nil {
-			panic("unexpected state: mappingFileHandle invalid")
-		}
-		if !source.IsFile() {
-			return fmt.Errorf("source file '%s' doesn't exist", source)
-		}
-		if !conf.assetDir.IsDir() {
-			return fmt.Errorf("asset directory '%s' isn't valid", conf.assetDir)
-		}
-		fi, err := source.Stat()
-		if err != nil {
-			return fmt.Errorf("failed to stat source file '%s': %w", source, err)
-		}
-		origSize := float64(fi.Size())
-		var (
-			buf bytes.Buffer
-		)
-		srcStr := source.String()
-		ctx, log := mm.WithGroup(ctx, "minify "+srcStr)
-		err = conf.getMinifiedContent(ctx, &buf, source)
-		if err != nil {
-			return err
-		}
-		minifiedSize := float64(buf.Len())
-		if minifiedSize == 0 {
-			return fmt.Errorf("no minified data written for file '%s'", source)
-		}
-		hash, err := hashFile(conf.hashDigits, source)
-		if err != nil {
-			return fmt.Errorf("failed to hash file '%s': %w", source, err)
-		}
-		targetFileName := hashedFileName(source, hash)
-		targetFilePath := conf.assetDir.Join(targetFileName)
-		embedIdentifier, err := embedSymbol(source)
-		if err != nil {
-			return err
-		}
-		relTarget, err := conf.mappingFile.Dir().Rel(targetFilePath)
-		if err != nil {
-			return fmt.Errorf("failed to get path to source '%s' relative to mapping file '%s': %w", source, conf.mappingFile, err)
-		}
-		err = targetFilePath.WriteFile(buf.Bytes(), 0600)
-		if err != nil {
-			return err
-		}
-
-		err = mappingTemplate.ExecuteTemplate(conf.mappingFileHandle, "fileMapping", templateFile{
-			MinifiedRelPath: relTarget.ToSlash(),
-			EmbedSymbol:     embedIdentifier,
-			FileName:        targetFileName,
-		})
-		err = mappingTemplate.ExecuteTemplate(conf.mappingFileHandle, "fileMapping", templateFile{
-			MinifiedRelPath: relTarget.ToSlash(),
-			EmbedSymbol:     embedIdentifier,
-			FileName:        targetFileName,
-		})
-		if err != nil {
-			return fmt.Errorf("failed to write embed definition to mapping file: %w", err)
-		}
-
-		reduction := (origSize - minifiedSize) / origSize * 100.0
-		log.Info("File '%s' reduced by %0.2f%% and written to '%s'\n", srcStr, reduction, targetFilePath)
-		return nil
-	}
-}
-
-func (conf *Configuration) getMinifiedContent(ctx context.Context, buf *bytes.Buffer, source mm.PathString) error {
-	err := mm.Exec(minifierPath).Stdout(buf).
-		Arg(conf.args()...).
-		TrailingArg(source.String()).
-		LogGroup("minify").
-		Run(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to invoke minify: %w", err)
-	}
-	return nil
-}
-
-func (conf *Configuration) Run(ctx context.Context) error {
-	return conf.tasks.Finally(func(terr error) error {
-		var err error
-		conf.closeFile.Do(func() {
-			if conf.mappingFileHandle != nil {
-				err = errors.Join(terr, conf.mappingFileHandle.Close())
-				conf.mappingFileHandle = nil
-			}
-		})
-		return err
-	}).Run(ctx)
-}
-
 func hashedFileName(source mm.PathString, hash string) string {
 	base := source.Base().String()
 	ext := filepath.Ext(base)
 	if len(ext) == 0 {
-		return fmt.Sprintf("%s_%s", base, hash)
+		return fmt.Sprintf("%s%s%s", base, hashSeparator, hash)
 	}
 	var buf strings.Builder
 	extIdx := strings.LastIndex(base, ext)
 	buf.Write([]byte(base)[:extIdx])
-	buf.WriteString("." + hash)
+	buf.WriteString(hashSeparator + hash)
 	buf.WriteString(ext)
 	return buf.String()
 }
