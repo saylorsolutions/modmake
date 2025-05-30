@@ -26,7 +26,7 @@ func main() {
 				Env("MD_LATEST_GO", fmt.Sprintf("1.%d", latestGo)).
 				Env("MD_SUPPORTED_GO", fmt.Sprintf("1.%d", latestGo-2)).
 				Env("MD_MODMAKE_VERSION", "v"+version).
-				Env("MD_GODOC_DIRS", ".,./pkg/git").
+				Env("MD_GODOC_DIRS", ".,./pkg/git,./pkg/minify").
 				Env("MD_GEN_DIR", "./docs"),
 		),
 	)
