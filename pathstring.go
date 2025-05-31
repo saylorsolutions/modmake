@@ -209,10 +209,16 @@ func (p PathString) Cat() ([]byte, error) {
 	return data, nil
 }
 
+// ReadFile reads the named file and returns the contents.
+// A successful call returns err == nil, not err == EOF.
+// Because ReadFile reads the whole file, it does not treat an EOF from Read as an error to be reported.
 func (p PathString) ReadFile() ([]byte, error) {
 	return os.ReadFile(p.String())
 }
 
+// WriteFile writes data to the named file, creating it if necessary.
+// If the file does not exist, WriteFile creates it with permissions perm (before umask); otherwise WriteFile truncates it before writing, without changing permissions.
+// Since WriteFile requires multiple system calls to complete, a failure mid-operation can leave the file in a partially written state.
 func (p PathString) WriteFile(data []byte, perm os.FileMode) error {
 	return os.WriteFile(p.String(), data, perm)
 }

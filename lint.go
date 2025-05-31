@@ -19,9 +19,6 @@ var (
 	linterInitOnce     sync.Once
 )
 
-func init() {
-}
-
 // Linter provides a means to configure the linter in various ways.
 // The current version uses golangci-lint, and the [Linter.Arg] method is provided to pass arguments specific to that tool.
 type Linter struct {

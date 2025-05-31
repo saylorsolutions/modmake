@@ -83,7 +83,7 @@ func TestMinify(t *testing.T) {
 	assert.Equal(t, ".js", filepath.Ext(files[0]))
 }
 
-func TestEmbedSymbol(t *testing.T) {
+func TestEmbedSymbolFromSource(t *testing.T) {
 	tests := map[string]struct {
 		given    mm.PathString
 		expected string
@@ -124,7 +124,7 @@ func TestEmbedSymbol(t *testing.T) {
 	}
 }
 
-func TestEmbedSymbol_Neg(t *testing.T) {
+func TestEmbedSymbolFromSource_Neg(t *testing.T) {
 	tests := map[string]struct {
 		given mm.PathString
 	}{
