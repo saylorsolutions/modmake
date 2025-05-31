@@ -4,15 +4,19 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"sync"
 )
 
 const (
 	defaultLintVersion    = "latest"
 	linterV2VersionString = "github.com/golangci/golangci-lint/v2/cmd/golangci-lint@%s"
+	EnvLinterPath         = "MM_LINTER_PATH"
 )
 
 var (
 	lintVersionPattern = regexp.MustCompile(`^(latest|v2\.\d+\.\d+)$`)
+	linterPath         string
+	linterInitOnce     sync.Once
 )
 
 // Linter provides a means to configure the linter in various ways.
@@ -72,6 +76,13 @@ func (lint *Linter) Arg(args ...string) *Linter {
 }
 
 func (lint *Linter) Run(ctx context.Context) error {
+	linterInitOnce.Do(func() {
+		linterPath = F("${" + EnvLinterPath + "}")
+		if len(linterPath) == 0 {
+			linterPath = Path(Go().GetEnv("GOBIN"), "golangci-lint").String()
+		}
+	})
+
 	ctx, log := WithGroup(ctx, "lint")
 	var args []string
 	for _, enabled := range lint.enabledChecks {
@@ -90,20 +101,23 @@ func (lint *Linter) Run(ctx context.Context) error {
 		lint.targetDirs = []string{"./..."}
 	}
 	log.Info("Running linter")
-	return Exec(Path(Go().GetEnv("GOBIN"), "golangci-lint").String()).
+	return Exec(linterPath).
 		Arg(args...).
 		TrailingArg("run").
 		TrailingArg(lint.targetDirs...).
 		Run(ctx)
 }
 
-// LintLatest will enable code linting support for this module using the latest linter version.
+// LintLatest is the same as [Build.Lint], but will use "latest" as the version.
 func (b *Build) LintLatest() *Linter {
 	return b.Lint("latest")
 }
 
 // Lint will enable code linting support for this module, and returns the Linter for further configuration.
 // The version parameter must be either "latest" or a string that can describe a version of a go module.
+//
+// The default path for invoking the linter is "${GOBIN}/golangci-lint".
+// The environment variable MM_LINTER_PATH (see EnvLinterPath) can be used to override the invocation path to the golangci-lint executable, in case GOBIN is undefined or not on the PATH.
 func (b *Build) Lint(version string) *Linter {
 	lintVersion := defaultLintVersion
 	if len(version) > 0 {

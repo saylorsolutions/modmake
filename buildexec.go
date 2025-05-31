@@ -50,7 +50,7 @@ func (b *Build) ExecuteErr(args ...string) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			stack := debug.Stack()
-			err = fmt.Errorf("caught panic while running build: %v\n%s", r, string(stack))
+			err = errors.Join(err, fmt.Errorf("caught panic while running build: %v\n%s", r, string(stack)))
 		}
 	}()
 	if err := Go().ModuleRoot().Chdir(); err != nil {

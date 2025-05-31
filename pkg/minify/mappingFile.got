@@ -1,0 +1,24 @@
+{{- define "fileHeader" -}}
+package {{.Package}}
+
+import (
+	_ "embed"
+)
+
+{{ end }}
+
+{{- define "fileMapping" }}
+{{- $file := . -}}
+var (
+	//go:embed {{$file.MinifiedRelPath}}
+	{{$file.EmbedSymbol}} []byte
+	{{$file.EmbedSymbol}}Name = "{{$file.FileName}}"
+)
+
+{{ end }}
+
+{{- define "multiFileMapping" }}
+{{- range $i, $file := . }}
+{{- template "fileMapping" $file }}
+{{- end }}
+{{- end }}
