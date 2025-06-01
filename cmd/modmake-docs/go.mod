@@ -4,7 +4,7 @@ go 1.23
 
 require (
 	github.com/a-h/templ v0.3.833
-	github.com/saylorsolutions/modmake v0.4.3
+	github.com/saylorsolutions/modmake v0.5.1
 	github.com/saylorsolutions/x v0.0.0-20250222201750-84a7c10fbce8
 	github.com/spf13/pflag v1.0.6
 	github.com/stretchr/testify v1.10.0

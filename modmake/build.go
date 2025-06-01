@@ -17,7 +17,7 @@ func main() {
 	b := NewBuild()
 	b.LintLatest().EnableSecurityScanning().
 		Enable("testifylint", "bidichk", "asasalint", "gocritic", "godox", "unparam")
-	b.Generate().DependsOnRunner("mod-tidy", "", Go().ModTidy())
+	b.Generate().DependsOnRunner("tidy", "", tidyModules())
 	b.Generate().DependsOnRunner("gen-docs", "",
 		Script(
 			CallBuild("./cmd/modmake-docs/modmake", "test"),
@@ -52,4 +52,13 @@ func main() {
 	b.ImportApp(a)
 
 	b.Execute()
+}
+
+func tidyModules() Task {
+	return Script(
+		Go().ModTidy().WorkDir("./cmd/modmake"),
+		Go().ModTidy().WorkDir("./cmd/modmake-docs"),
+		Go().ModTidy(),
+		Go().WorkSync(),
+	)
 }

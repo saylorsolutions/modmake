@@ -283,8 +283,14 @@ func (g *GoTools) GetUpdated(pkg string) *Command {
 	return g.Command("get", "-u").Arg(pkg)
 }
 
+// ModTidy will download missing module cache information, and tidy up dependency details.
 func (g *GoTools) ModTidy() *Command {
 	return g.Command("mod", "tidy")
+}
+
+// WorkSync will synchronize dependencies between modules in a Go workspace project.
+func (g *GoTools) WorkSync() *Command {
+	return g.Command("work", "sync")
 }
 
 // moduleInfo is a struct used to capture the JSON output of a module download.
