@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
 )
@@ -62,12 +63,12 @@ func TestProcessGate_Stop(t *testing.T) {
 		return errors.New("test error")
 	})
 
-	assert.NoError(t, gate.Start())
+	require.NoError(t, gate.Start())
 	time.Sleep(100 * time.Millisecond)
 	assert.Equal(t, 1, executed)
 	err := gate.Start()
-	assert.Error(t, err)
-	assert.NotErrorIs(t, err, ErrLocked, "The next call to start should report the error returned from the previous execution")
+	require.Error(t, err)
+	require.NotErrorIs(t, err, ErrLocked, "The next call to start should report the error returned from the previous execution")
 	time.Sleep(100 * time.Millisecond)
 	assert.Equal(t, 1, executed, "The task should not have run with a previous run returning an error")
 	assert.ErrorIs(t, gate.Stop(), ErrLocked, "The call to stop should report the gate is locked, due to the previous error")

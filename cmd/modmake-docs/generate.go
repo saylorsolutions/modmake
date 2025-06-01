@@ -49,7 +49,7 @@ func doGenerate(params templates.Params) error {
 		fileName := relGenDir(path)
 		if d.IsDir() {
 			log.Println("Creating dir:", fileName)
-			if err := os.MkdirAll(fileName, 0755); err != nil {
+			if err := os.MkdirAll(fileName, 0700); err != nil {
 				return fmt.Errorf("failed to create directory '%s': %w", path, err)
 			}
 			return nil
@@ -73,7 +73,7 @@ func doGenerate(params templates.Params) error {
 }
 
 func writeFile(filename, desc string, data io.Reader) error {
-	f, err := os.Create(filename)
+	f, err := os.Create(filename) //nolint:gosec // "Potential file inclusion via variable" is fine, since this is deterministically sourced from project files.
 	if err != nil {
 		return fmt.Errorf("failed to create '%s' in current directory: %w", filename, err)
 	}
