@@ -15,7 +15,9 @@ const (
 func main() {
 	Go().PinLatestV1(latestGo)
 	b := NewBuild()
-	b.LintLatest().EnableSecurityScanning().
+	b.LintLatest().
+		Target("./...", "./cmd/modmake", "./cmd/modmake-docs").
+		EnableSecurityScanning().
 		Enable("testifylint", "bidichk", "asasalint", "gocritic", "godox", "unparam")
 	b.Generate().DependsOnRunner("tidy", "", tidyModules())
 	b.Generate().DependsOnRunner("gen-docs", "",
@@ -56,8 +58,6 @@ func main() {
 
 func tidyModules() Task {
 	return Script(
-		Go().ModTidy().WorkDir("./cmd/modmake"),
-		Go().ModTidy().WorkDir("./cmd/modmake-docs"),
 		Go().ModTidy(),
 		Go().WorkSync(),
 	)
