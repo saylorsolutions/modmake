@@ -60,6 +60,9 @@ func (lint *Linter) Verbose() *Linter {
 
 // Target will target specific files/directories for linting.
 // If no target is specified, then "./..." will be used by default.
+//
+// Note that - when used in a multi-module workspace - "./..." will not cross module boundaries.
+// Sub-module folders must be added explicitly to be scanned.
 func (lint *Linter) Target(target string, otherTargets ...string) *Linter {
 	targets := []string{target}
 	if len(otherTargets) > 0 {

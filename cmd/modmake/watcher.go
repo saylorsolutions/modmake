@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/fsnotify/fsnotify"
-	. "github.com/saylorsolutions/modmake"
+	. "github.com/saylorsolutions/modmake" //nolint:staticcheck // This is a DSL-type API
 	"io/fs"
 	"log"
 	"path/filepath"

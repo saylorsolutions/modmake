@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	. "github.com/saylorsolutions/modmake"
+	. "github.com/saylorsolutions/modmake" //nolint:staticcheck // This is a DSL-type API
 	"log"
 	"os"
 	"strings"

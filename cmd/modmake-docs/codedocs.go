@@ -27,18 +27,18 @@ func generateCodeDocs(ctx context.Context, params templates.Params) error {
 	}
 	godocDir := filepath.Join(genPath, "godoc")
 	log.Println("Creating directory:", godocDir)
-	if err := os.MkdirAll(godocDir, 0755); err != nil {
+	if err := os.MkdirAll(godocDir, 0700); err != nil {
 		return fmt.Errorf("failed to create godoc directory: %w", err)
 	}
 	godocIndex := filepath.Join(godocDir, "index.html")
 	log.Println("Creating file:", godocIndex)
-	if err := os.WriteFile(godocIndex, godocbuf.Bytes(), 0644); err != nil {
+	if err := os.WriteFile(godocIndex, godocbuf.Bytes(), 0600); err != nil {
 		return fmt.Errorf("failed to write generated godoc index.html: %w", err)
 	}
 	for _, pkg := range mod.Packages {
 		genPath := filepath.Join(genPath, "godoc", filepath.FromSlash(pkg.ImportName))
 		log.Println("Creating directory:", genPath)
-		if err := os.MkdirAll(genPath, 0755); err != nil {
+		if err := os.MkdirAll(genPath, 0700); err != nil {
 			return fmt.Errorf("failed to create directory for go doc generation '%s': %w", genPath, err)
 		}
 		var buf bytes.Buffer
@@ -47,7 +47,7 @@ func generateCodeDocs(ctx context.Context, params templates.Params) error {
 		}
 		genFilePath := filepath.Join(genPath, "index.html")
 		log.Println("Creating file:", genFilePath)
-		if err := os.WriteFile(genFilePath, buf.Bytes(), 0644); err != nil {
+		if err := os.WriteFile(genFilePath, buf.Bytes(), 0600); err != nil {
 			return fmt.Errorf("failed to write data to new package index file in '%s': %w", genPath, err)
 		}
 	}

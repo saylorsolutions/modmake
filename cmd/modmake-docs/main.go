@@ -2,7 +2,6 @@ package main
 
 import (
 	"embed"
-	_ "embed"
 	"github.com/saylorsolutions/modmake/cmd/modmake-docs/internal/templates"
 	"log"
 	"os"
@@ -56,7 +55,7 @@ func main() {
 	case "generate":
 		cmdErr = doGenerate(params)
 	case "serve":
-		cmdErr = doServe(flags, params)
+		cmdErr = doServe(params)
 	default:
 		log.Println("Command not recognized:", command)
 		os.Exit(1)
