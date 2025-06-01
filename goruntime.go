@@ -340,7 +340,7 @@ func (g *GoTools) GenerateAll() *Command {
 }
 
 func (g *GoTools) Benchmark(pattern string) *Command {
-	return g.Command("test", "-bench="+pattern, "-run=^$", "-v")
+	return g.Command("test", "-bench="+pattern, "-run=^$", "-v", "./...")
 }
 
 func (g *GoTools) BenchmarkAll() *Command {
