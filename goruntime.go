@@ -169,7 +169,16 @@ func (g *GoTools) goTool() string {
 
 // GetEnv will call "go env $key", and return the value of the named environment variable.
 // If an error occurs, then the call will panic.
+//
+// If the value of GOBIN is requested, then GoTools.GOBIN will be invoked instead.
 func (g *GoTools) GetEnv(key string) string {
+	if key == "GOBIN" {
+		return g.GOBIN().String()
+	}
+	return g.getEnv(key)
+}
+
+func (g *GoTools) getEnv(key string) string {
 	var output bytes.Buffer
 	timeout, cancelFunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFunc()
@@ -178,6 +187,38 @@ func (g *GoTools) GetEnv(key string) string {
 		panic(err)
 	}
 	return strings.TrimSpace(output.String())
+}
+
+// GOBIN resolves the installation path of tools the same way that 'go install' does for installing them, allowing for more consistent tool invocation behavior.
+//
+// The order of resolution is as follows:
+//
+//   - If the GOBIN environment variable is defined, then this path will be returned.
+//   - If the GOPATH environment variable is defined, then "$GOPATH/bin" will be returned.
+//   - If the user's home directory can be resolved, then the "go/bin" path relative to the user's home directory will be returned.
+//   - If none of the above paths can be returned, then the current working directory will be returned.
+//
+// See 'go help install' for more details.
+func (g *GoTools) GOBIN() PathString {
+	gobin := g.getEnv("GOBIN")
+	if len(gobin) > 0 {
+		return Path(gobin)
+	}
+	// Fall back to $GOPATH/bin
+	gopath := g.GetEnv("GOPATH")
+	if len(gopath) > 0 {
+		return Path(gopath, "bin")
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		// Unable to resolve user's home directory, fall back to current working directory.
+		cwd, err := os.Getwd()
+		if err != nil {
+			return Path(".")
+		}
+		return Path(cwd)
+	}
+	return Path(home, "go/bin")
 }
 
 // ModuleRoot returns a filesystem path to the root of the current module.
@@ -193,7 +234,8 @@ func (g *GoTools) ModuleName() string {
 // ToModulePackage is specifically provided to construct a package reference for [GoBuild.SetVariable] by prepending the module name to the package name, separated by '/'.
 // This is not necessary for setting variables in the main package, as 'main' can be used instead.
 //
-//	// When run in a module named 'example.com/me/myproject', this will output 'example.com/me/myproject/other'.
+//	// When run in a module named 'example.com/me/myproject',
+//	// this will output 'example.com/me/myproject/other'.
 //	Go().ToModulePackage("other")
 //
 // See [GoBuild.SetVariable] for more details.

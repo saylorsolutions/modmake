@@ -175,7 +175,7 @@ func New(mappingFile mm.PathString, assetDirName string, configFuncs ...ConfigFu
 		return nil
 	}))
 	minifierInitOnce.Do(func() {
-		defaultPath := mm.Path(mm.Go().GetEnv("GOBIN"), "minify").String()
+		defaultPath := mm.Go().GOBIN().Join("minify").String()
 		minifierPath = mm.F(fmt.Sprintf("${%s:%s}", EnvMinifyPath, defaultPath))
 	})
 	return mini, nil
@@ -386,6 +386,7 @@ func (mini *Minifier) Run(ctx context.Context) error {
 				err = errors.Join(terr, mini.mappingFileHandle.Close())
 				mini.mappingFileHandle = nil
 			}
+			err = terr
 		})
 		return err
 	}).Run(ctx)
