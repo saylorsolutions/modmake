@@ -82,7 +82,7 @@ func (lint *Linter) Run(ctx context.Context) error {
 	linterInitOnce.Do(func() {
 		linterPath = F("${" + EnvLinterPath + "}")
 		if len(linterPath) == 0 {
-			linterPath = Path(Go().GetEnv("GOBIN"), "golangci-lint").String()
+			linterPath = Go().GOBIN().Join("golangci-lint").String()
 		}
 	})
 
@@ -119,8 +119,8 @@ func (b *Build) LintLatest() *Linter {
 // Lint will enable code linting support for this module, and returns the Linter for further configuration.
 // The version parameter must be either "latest" or a string that can describe a version of a go module.
 //
-// The default path for invoking the linter is "${GOBIN}/golangci-lint".
-// The environment variable MM_LINTER_PATH (see EnvLinterPath) can be used to override the invocation path to the golangci-lint executable, in case GOBIN is undefined or not on the PATH.
+// The default path for invoking the linter is "${GOBIN}/golangci-lint", using [GoTools.GOBIN].
+// The environment variable MM_LINTER_PATH (see EnvLinterPath) can be used to override the invocation path to the golangci-lint executable.
 func (b *Build) Lint(version string) *Linter {
 	lintVersion := defaultLintVersion
 	if len(version) > 0 {
