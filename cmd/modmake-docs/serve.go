@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func doServe(flags *AppFlags, params templates.Params) error {
+func doServe(params templates.Params) error {
 	var (
 		buf       bytes.Buffer
 		mainBytes []byte
@@ -77,7 +77,7 @@ func doServe(flags *AppFlags, params templates.Params) error {
 		}
 	}))
 	fmt.Println("Serving docs site")
-	return http.ListenAndServe(":8080", mux)
+	return http.ListenAndServe(":8080", mux) //nolint:gosec // This is just a local server, no timeout needed.
 }
 
 func logg(next http.Handler) http.HandlerFunc {
@@ -100,7 +100,6 @@ type loggingWriter struct {
 	http.ResponseWriter
 	savedStatus  int
 	bytesWritten int
-	writeError   error
 }
 
 func (lw *loggingWriter) Write(bytes []byte) (int, error) {
@@ -126,8 +125,4 @@ func (lw *loggingWriter) status() int {
 
 func (lw *loggingWriter) written() int {
 	return lw.bytesWritten
-}
-
-func (lw *loggingWriter) writeErr() error {
-	return lw.writeError
 }

@@ -3,6 +3,7 @@ package modmake
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -35,7 +36,7 @@ func TestStepLifecycle(t *testing.T) {
 	step.BeforeRun(Print("Running before hook"))
 	step.Does(Print("Running the 'example' step"))
 	step.AfterRun(Print("Running after hook"))
-	assert.NoError(t, step.Run(context.Background()))
+	require.NoError(t, step.Run(context.Background()))
 }
 
 func TestStep_ResetState(t *testing.T) {
@@ -50,18 +51,18 @@ func TestStep_ResetState(t *testing.T) {
 		bExecuted++
 	}))
 	stepA.DependsOn(stepB)
-	assert.NoError(t, stepA.Run(ctx))
+	require.NoError(t, stepA.Run(ctx))
 	assert.Equal(t, 1, aExecuted)
 	assert.Equal(t, 1, bExecuted)
-	assert.NoError(t, stepA.Run(ctx))
+	require.NoError(t, stepA.Run(ctx))
 	assert.Equal(t, 1, aExecuted)
 	assert.Equal(t, 1, bExecuted)
-	assert.NoError(t, stepB.Run(ctx))
+	require.NoError(t, stepB.Run(ctx))
 	assert.Equal(t, 1, bExecuted)
 	stepA.ResetState()
-	assert.NoError(t, stepA.Run(ctx))
+	require.NoError(t, stepA.Run(ctx))
 	assert.Equal(t, 2, aExecuted)
 	assert.Equal(t, 2, bExecuted)
-	assert.NoError(t, stepB.Run(ctx))
+	require.NoError(t, stepB.Run(ctx))
 	assert.Equal(t, 2, bExecuted)
 }

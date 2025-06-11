@@ -12,9 +12,9 @@ import (
 func TestParser_ParsePackageDir(t *testing.T) {
 	p := docparser.New()
 	docs, err := p.ParsePackageDir(".")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	data, err := json.MarshalIndent(docs, "", "  ")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	t.Log("\n" + string(data))
 	assert.NotNil(t, docs.Types["Constant"])
 	assert.NotNil(t, docs.Types["Function"])
@@ -34,7 +34,7 @@ func TestParser_ParsePackageDir_Internal(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, docs)
 	data, err := json.MarshalIndent(docs, "", "  ")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	t.Log("\n" + string(data))
 
 	assert.Equal(t, "AnotherConst", docs.Constants[0].ConstantName)

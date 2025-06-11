@@ -95,10 +95,10 @@ func TestF_DynamicVariables(t *testing.T) {
 		value          = "some value"
 	)
 	oldEnv := Environment()
-	require.Equal(t, "", oldEnv[nonExistentKey])
-	assert.NoError(t, os.Setenv(nonExistentKey, value))
+	require.Empty(t, oldEnv[nonExistentKey])
+	require.NoError(t, os.Setenv(nonExistentKey, value))
 	newEnv := Environment()
-	assert.Equal(t, "", oldEnv[nonExistentKey])
+	assert.Empty(t, oldEnv[nonExistentKey])
 	assert.NotEqual(t, oldEnv[nonExistentKey], newEnv[nonExistentKey])
 	assert.Equal(t, value, newEnv[nonExistentKey])
 }

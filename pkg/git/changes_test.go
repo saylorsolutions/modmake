@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"log"
 	"testing"
 )
@@ -58,7 +59,7 @@ func TestChanges(t *testing.T) {
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
 			files, insertions, deletions, err := parseShortStat(tc.Line)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, tc.Files, files)
 			assert.Equal(t, tc.Insertions, insertions)
 			assert.Equal(t, tc.Deletions, deletions)

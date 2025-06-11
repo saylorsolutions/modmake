@@ -2,18 +2,18 @@ package templates
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"strings"
 	"testing"
 )
 
 func TestMain_Render(t *testing.T) {
 	ctx, buf, params := testParams()
-	assert.NoError(t, Main(params).Render(ctx, &buf))
+	require.NoError(t, Main(params).Render(ctx, &buf))
 	t.Log(buf.String())
 }
 
-func testParams() (context.Context, strings.Builder, Params) {
+func testParams() (context.Context, strings.Builder, Params) { //nolint:unparam // False positive
 	p := Params{
 		LatestGoVersion:          "1.22",
 		LatestSupportedGoVersion: "1.20",

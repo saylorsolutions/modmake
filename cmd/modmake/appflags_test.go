@@ -2,13 +2,14 @@ package main
 
 import (
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
 func TestParseSeparate(t *testing.T) {
 	flags := setupFlags()
 	err := flags.Parse([]string{"-e", "VAR=VAL", "-e", "OTHER=VAL", "--", "--skip-dependencies", "client:build"})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.False(t, flags.help)
 	assert.Equal(t, []string{"VAR=VAL", "OTHER=VAL"}, flags.envVars)

@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	. "github.com/saylorsolutions/modmake"
+	. "github.com/saylorsolutions/modmake" //nolint:staticcheck // This is a DSL-type API
 	"log"
 	"os"
 	"strings"
@@ -21,11 +21,6 @@ var (
 )
 
 func main() {
-	panicFatal("Failed to query module/filesystem details. Are you running this in a Go project with Go tools installed?", func() {
-		Go()
-	})
-	modRoot := Go().ModuleRoot()
-	errFatal(fmt.Sprintf("Failed to change the working directory to module root '%s'", modRoot), modRoot.Chdir())
 	flags := setupFlags()
 	if err := flags.Parse(os.Args[1:]); err != nil {
 		log.Println("Sorry, I don't understand what you mean:", err)
@@ -33,7 +28,16 @@ func main() {
 		flags.Usage()
 		os.Exit(1)
 	}
+	if flags.printVersion {
+		fmt.Printf("version: '%s', modmake branch: '%s', commit hash: '%s'\n", runtimeVersion, gitBranch, gitHash)
+		return
+	}
 
+	panicFatal("Failed to query module/filesystem details. Are you running this in a Go project with Go tools installed?", func() {
+		Go()
+	})
+	modRoot := Go().ModuleRoot()
+	errFatal(fmt.Sprintf("Failed to change the working directory to module root '%s'", modRoot), modRoot.Chdir())
 	ctx := signalCtx()
 	if err := run(ctx, flags); err != nil {
 		log.Println("Failed to run modmake:", err)
@@ -45,10 +49,6 @@ func run(ctx context.Context, flags *appFlags) error {
 	modRoot := Go().ModuleRoot()
 	if flags.help || len(os.Args) == 1 {
 		flags.Usage()
-		return nil
-	}
-	if flags.printVersion {
-		fmt.Printf("version: '%s', modmake branch: '%s', commit hash: '%s'\n", runtimeVersion, gitBranch, gitHash)
 		return nil
 	}
 	if len(os.Args) == 2 && strings.ToLower(os.Args[1]) == "init" {

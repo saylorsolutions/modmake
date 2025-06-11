@@ -1,3 +1,4 @@
+//nolint:gosec // This isn't intended to be secure (and isn't), since it's just part of a usage example of Modmake.
 package main
 
 import (

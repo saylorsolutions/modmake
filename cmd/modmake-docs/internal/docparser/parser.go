@@ -28,7 +28,7 @@ func New() *Parser {
 }
 
 func (p *Parser) runGo(args ...string) *exec.Cmd {
-	return exec.Command(p.goExec, args...)
+	return exec.Command(p.goExec, args...) //nolint:gosec
 }
 
 type parserState int

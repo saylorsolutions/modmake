@@ -3,6 +3,7 @@ package modmake
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"strings"
 	"testing"
 )
@@ -70,7 +71,7 @@ func TestAppVariant_Package(t *testing.T) {
 			})
 		})
 	task := a.pkgTask(v)
-	assert.NoError(t, task.Run(context.Background()))
+	require.NoError(t, task.Run(context.Background()))
 	assert.NotNil(t, task, "Calling Package should override the package Task")
 	assert.True(t, packageCalled, "The new package task should have been called")
 }

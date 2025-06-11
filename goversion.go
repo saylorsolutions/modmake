@@ -26,12 +26,7 @@ var (
 func (g *GoTools) PinLatestV1(minorVersion int) *GoTools {
 	Go().InvalidateCache()
 	curSysInstance := Go()
-	// Grab the current system go binary directory
-	curGoPath := curSysInstance.GetEnv("GOPATH")
-	if len(curGoPath) == 0 {
-		panic(fmt.Sprintf("Unable to locate GOPATH for current go binary"))
-	}
-	curGoBinPath := Path(curGoPath, "bin")
+	curGoBinPath := curSysInstance.GOBIN()
 	// Get the latest patch version to pin to
 	version, err := queryLatestPatch(queryGoVersions, minorVersion)
 	if err != nil {

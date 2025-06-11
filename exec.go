@@ -188,7 +188,7 @@ func (i *Command) Run(ctx context.Context) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	cmd := exec.CommandContext(ctx, i.cmd, append(append(i.initialArgs, i.args...), i.trailingArgs...)...)
+	cmd := exec.CommandContext(ctx, i.cmd, append(append(i.initialArgs, i.args...), i.trailingArgs...)...) //nolint:gosec // This is intended to allow arbitrary inputs.
 	cmd.Env = i.env
 	cmd.Stdout = i.stdout
 	cmd.Stderr = i.stderr
