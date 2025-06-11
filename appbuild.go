@@ -68,10 +68,10 @@ func PackageZip() AppPackageFunc {
 // This is the default packaging for the AppBuild generated install step.
 func PackageGoInstall() AppPackageFunc {
 	return func(binaryPath, _ PathString, app, _, version string) Task {
-		gopathBin := Go().GOBIN()
+		gobindir := Go().GOBIN()
 		return Task(func(ctx context.Context) error {
-			return binaryPath.CopyTo(gopathBin.JoinPath(binaryPath.Base()))
-		}).Then(Print(warnColor("Ensure that " + gopathBin.String() + " is on your PATH to easily access " + app)))
+			return binaryPath.CopyTo(gobindir.JoinPath(binaryPath.Base()))
+		}).Then(Print(warnColor("Ensure that " + gobindir.String() + " is on your PATH to easily access " + app)))
 	}
 }
 
