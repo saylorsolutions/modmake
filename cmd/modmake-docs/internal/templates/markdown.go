@@ -47,7 +47,7 @@ func (o *overrides) writeLines(w util.BufWriter, source []byte, n ast.Node) {
 	l := n.Lines().Len()
 	for i := 0; i < l; i++ {
 		line := n.Lines().At(i)
-		o.Renderer.Writer.RawWrite(w, line.Value(source))
+		o.Writer.RawWrite(w, line.Value(source))
 	}
 }
 

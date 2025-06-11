@@ -17,7 +17,7 @@ func main() {
 	Go().PinLatestV1(latestGo)
 	b := NewBuild()
 	b.LintLatest().
-		Target("./...", "./cmd/modmake", "./cmd/modmake-docs").
+		Target("./...", "./cmd/modmake/...", "./cmd/modmake-docs/...").
 		EnableSecurityScanning().
 		Enable("testifylint", "bidichk", "asasalint", "gocritic", "godox", "unparam")
 	b.Generate().DependsOnRunner("tidy", "", tidyModules())

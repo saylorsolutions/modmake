@@ -28,4 +28,4 @@ func (t *SomeType) DoTheThing() {}
 // DoTheThing does the thing.
 func DoTheThing() {}
 
-func shouldNotAppearInResults() {}
+func shouldNotAppearInResults() {} //nolint:unused
