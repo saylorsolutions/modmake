@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	. "github.com/saylorsolutions/modmake" //nolint:staticcheck
 	"github.com/saylorsolutions/modmake/pkg/git"
@@ -53,6 +54,9 @@ func main() {
 	a.Variant("darwin", "arm64")
 	b.ImportApp(a)
 
+	b.AddNewStep("publish", "Publishes release tags from main", publishTags()).
+		DependsOn(b.Package())
+
 	b.Execute()
 }
 
@@ -60,5 +64,20 @@ func tidyModules() Task {
 	return Script(
 		Go().ModTidy(),
 		Go().WorkSync(),
+	)
+}
+
+func publishTags() Task {
+	return Script(
+		Task(func(ctx context.Context) error {
+			curBranch := git.BranchName()
+			if curBranch != "main" {
+				return fmt.Errorf("must publish from main, not %s", curBranch)
+			}
+			return nil
+		}),
+		git.Exec("tag", "v"+version),
+		git.Exec("tag", "cmd/modmake/v"+version),
+		git.Exec("push", "--tags"),
 	)
 }
