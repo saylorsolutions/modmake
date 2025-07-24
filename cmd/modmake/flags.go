@@ -35,7 +35,7 @@ func setupFlags() *appFlags {
 
 	flags.Usage = func() {
 		fmt.Printf(`modmake is a convenience CLI that allows easily auto-discovering and running a modmake build.
-It's not strictly necessary and, if you're more comfortable with plain 'go run' and terminal commands, it might just get in your way.
+It's not strictly necessary and - if you're more comfortable with plain 'go run' and terminal commands - it might just get in your way.
 
 Here are some reasons you may want to use this:
 * You don't want to think about go tools or terminal semantics.
@@ -46,7 +46,11 @@ Here are some reasons you may want to use this:
 * You want to easily set one or more environment variables for the build, maybe so they act as parameters.
 * You want to run a Modmake step repeatedly when files change.
 
-USAGE: modmake MODMAKE_FLAGS [-- BUILD_FLAGS] BUILD_STEPS
+QUICKSTART:
+A new Modmake build can be created for a project with this CLI using 'modmake init'.
+The new build will be created at '${MODULE_ROOT}/modmake/build.go', and the same version of the Modmake library as the CLI will be installed.
+
+CLI USAGE: modmake MODMAKE_FLAGS [-- BUILD_FLAGS] BUILD_STEPS
 
 >>> Note that if you use any BUILD_FLAGS, '--' is necessary to disambiguate between flags for this CLI and flags for the build.
     Running modmake with no flags/arguments will print this usage information.
