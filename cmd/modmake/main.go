@@ -7,7 +7,9 @@ import (
 	. "github.com/saylorsolutions/modmake" //nolint:staticcheck // This is a DSL-type API
 	"log"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 )
 
 const (
@@ -38,11 +40,13 @@ func main() {
 	})
 	modRoot := Go().ModuleRoot()
 	errFatal(fmt.Sprintf("Failed to change the working directory to module root '%s'", modRoot), modRoot.Chdir())
-	ctx := signalCtx()
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	if err := run(ctx, flags); err != nil {
+		cancel()
 		log.Println("Failed to run modmake:", err)
 		log.Fatalln("Try 'modmake --help' to get usage information")
 	}
+	cancel()
 }
 
 func run(ctx context.Context, flags *appFlags) error {
