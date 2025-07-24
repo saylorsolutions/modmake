@@ -36,6 +36,7 @@ func sigCtx() (context.Context, context.CancelFunc) {
 func (b *Build) Execute(args ...string) {
 	if err := b.ExecuteErr(args...); err != nil {
 		b.logger.Error("Error executing build: %v\n", err.Error())
+		os.Exit(1)
 	}
 }
 
