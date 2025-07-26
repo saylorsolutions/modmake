@@ -141,10 +141,7 @@ func New(mappingFile mm.PathString, assetDirName string, configFuncs ...ConfigFu
 		return nil, errors.Join(errs...)
 	}
 	if len(mini.packageName) == 0 {
-		dir, err := mappingFile.Dir().Abs()
-		if err != nil {
-			return nil, err
-		}
+		dir := mappingFile.Dir().Abs()
 		mini.packageName = dir.Base().String()
 	}
 	mini.tasks = installTask(mini.minifyVersion)
@@ -282,7 +279,7 @@ func (mini *Minifier) writeTargetMapping(source mm.PathString, target mm.PathStr
 	if err != nil {
 		return err
 	}
-	relTarget, err := mini.mappingFile.Dir().Rel(target)
+	relTarget, err := mini.mappingFile.Dir().RelErr(target)
 	if err != nil {
 		return fmt.Errorf("failed to get path to source '%s' relative to mapping file '%s': %w", source, mini.mappingFile, err)
 	}
@@ -303,7 +300,7 @@ func (mini *Minifier) writeBundleMapping(bundleName string, target mm.PathString
 	if err != nil {
 		return err
 	}
-	relTarget, err := mini.mappingFile.Dir().Rel(target)
+	relTarget, err := mini.mappingFile.Dir().RelErr(target)
 	if err != nil {
 		return fmt.Errorf("failed to get path to bundle target '%s' relative to mapping file '%s': %w", target, mini.mappingFile, err)
 	}

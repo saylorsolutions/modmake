@@ -94,7 +94,7 @@ func CallBuild(buildLocation PathString, args ...string) *Command {
 		panic("No build steps specified")
 	}
 	gt := goToolsAt(buildLocation)
-	rel, err := gt.ModuleRoot().Rel(buildLocation)
+	rel, err := gt.ModuleRoot().RelErr(buildLocation)
 	if err != nil {
 		panic(fmt.Sprintf("Unable to determine relative location to '%s' from module root path: %v", buildLocation, err))
 	}

@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // PathString is a string that represents a filesystem path.
@@ -26,6 +27,14 @@ func Path(path string, segments ...string) PathString {
 	return PathString(filepath.Join(append([]string{path}, _segments...)...))
 }
 
+func (p PathString) trimString() string {
+	return strings.TrimSpace(string(p))
+}
+
+func (p PathString) IsBlank() bool {
+	return len(p.trimString()) == 0
+}
+
 // Join will append path segments to this PathString and return a new PathString.
 func (p PathString) Join(segments ...string) PathString {
 	if len(segments) == 0 {
@@ -33,7 +42,7 @@ func (p PathString) Join(segments ...string) PathString {
 	}
 	_segments := make([]string, len(segments))
 	for i, segment := range segments {
-		_segments[i] = filepath.FromSlash(segment)
+		_segments[i] = filepath.FromSlash(strings.TrimSpace(segment))
 	}
 	return PathString(filepath.Join(append([]string{string(p)}, _segments...)...))
 }
@@ -49,7 +58,7 @@ func (p PathString) JoinPath(segments ...PathString) PathString {
 
 // ToSlash will change the PathString to use slash separators if the OS representation is different.
 func (p PathString) ToSlash() string {
-	return filepath.ToSlash(string(p))
+	return filepath.ToSlash(p.trimString())
 }
 
 // Base calls filepath.Base on the string representation of this PathString, returning the last element of the path.
@@ -57,6 +66,9 @@ func (p PathString) ToSlash() string {
 // If the path is empty, Base returns ".".
 // If the path consists entirely of separators, Base returns a single separator.
 func (p PathString) Base() PathString {
+	if p.IsBlank() {
+		return "."
+	}
 	return PathString(filepath.Base(string(p)))
 }
 
@@ -67,22 +79,48 @@ func (p PathString) Base() PathString {
 // If the path consists entirely of separators, Dir returns a single separator.
 // The returned path does not end in a separator unless it is the root directory.
 func (p PathString) Dir() PathString {
-	return Path(filepath.Dir(string(p)))
+	return Path(filepath.Dir(p.String()))
 }
 
 // Abs attempts to translate the PathString into an absolute path using filepath.Abs.
-func (p PathString) Abs() (PathString, error) {
-	abs, err := filepath.Abs(p.String())
-	return Path(abs), err
+//
+// This was changed to panic on error instead of returning it, since this is more suitable for build scripts.
+// To get the previous behavior of returning an error instead, use [PathString.AbsErr].
+func (p PathString) Abs() PathString {
+	abs, err := p.AbsErr()
+	if err != nil {
+		panic(err)
+	}
+	return abs
 }
 
-// Rel attempts to construct a relative path to other, with the current PathString as the base, much like filepath.Rel.
-func (p PathString) Rel(other PathString) (PathString, error) {
-	a, err := p.Abs()
+func (p PathString) AbsErr() (PathString, error) {
+	abs, err := filepath.Abs(p.String())
 	if err != nil {
 		return "", err
 	}
-	b, err := other.Abs()
+	return Path(abs), nil
+}
+
+// Rel attempts to construct a relative path to other, with the current PathString as the base, much like filepath.Rel.
+//
+// This was changed to panic on error instead of returning it, since this is more suitable for build scripts.
+// To get the previous behavior of returning an error instead, use [PathString.RelErr].
+func (p PathString) Rel(other PathString) PathString {
+	rel, err := p.RelErr(other)
+	if err != nil {
+		panic(err)
+	}
+	return rel
+}
+
+// RelErr attempts to construct a relative path to other, with the current PathString as the base, much like filepath.Rel.
+func (p PathString) RelErr(other PathString) (PathString, error) {
+	a, err := p.AbsErr()
+	if err != nil {
+		return "", err
+	}
+	b, err := other.AbsErr()
 	if err != nil {
 		return "", err
 	}
