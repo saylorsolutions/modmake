@@ -9,21 +9,21 @@ import (
 )
 
 func TestDockerRun_String(t *testing.T) {
-	inst := testDocker(t)
+	testDocker(t)
 	tests := map[string]struct {
-		run      *docker.Run
+		run      *docker.DockerRun
 		expected string
 	}{
 		"Base": {
-			run:      inst.Run("postgres:latest"),
+			run:      docker.Run("postgres:latest"),
 			expected: "echo run postgres:latest",
 		},
 		"Port binding": {
-			run:      inst.Run("postgres:latest").ExposePort(5432, 5432),
+			run:      docker.Run("postgres:latest").ExposePort(5432, 5432),
 			expected: "echo run -p 5432:5432 postgres:latest",
 		},
 		"Bind mount": {
-			run: testDocker(t).Run("postgres:latest").
+			run: docker.Run("postgres:latest").
 				ExposePort(5432, 5432).
 				BindMount("./mount", "/var/lib/postgresql/data"),
 			expected: fmt.Sprintf("echo run -v %s:/var/lib/postgresql/data -p 5432:5432 postgres:latest",

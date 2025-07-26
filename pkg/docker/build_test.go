@@ -8,30 +8,29 @@ import (
 	"testing"
 )
 
-func testDocker(t *testing.T) *docker.Inst {
+func testDocker(t *testing.T) {
 	require.NoError(t, os.Setenv(docker.EnvDockerPath, "echo"))
 	t.Cleanup(func() {
 		assert.NoError(t, os.Unsetenv(docker.EnvDockerPath))
 	})
-	return docker.Docker()
 }
 
 func TestDockerBuild_String(t *testing.T) {
-	d := testDocker(t)
+	testDocker(t)
 	tests := map[string]struct {
-		build    *docker.Build
+		build    *docker.DockerBuild
 		expected string
 	}{
 		"Basic build": {
-			build:    d.Build(""),
+			build:    docker.Build(""),
 			expected: "echo build -f Dockerfile .",
 		},
 		"Tagged": {
-			build:    d.Build("").Tag("my-image:0.1.0"),
+			build:    docker.Build("").Tag("my-image:0.1.0"),
 			expected: "echo build -f Dockerfile -t my-image:0.1.0 .",
 		},
 		"Formatted tag": {
-			build:    d.Build("").Tagf("my-image:%s", "0.1.0"),
+			build:    docker.Build("").Tagf("my-image:%s", "0.1.0"),
 			expected: "echo build -f Dockerfile -t my-image:0.1.0 .",
 		},
 	}

@@ -6,11 +6,11 @@ import (
 	"github.com/saylorsolutions/modmake"
 )
 
-func (d *Inst) Build(dockerfilePath modmake.PathString) *Build {
+func (d *Inst) Build(dockerfilePath modmake.PathString) *DockerBuild {
 	if len(dockerfilePath) == 0 {
 		dockerfilePath = modmake.Path(".", "Dockerfile")
 	}
-	return &Build{
+	return &DockerBuild{
 		inst:           d,
 		dockerfilePath: dockerfilePath,
 		contextDir:     modmake.Path("."),
@@ -19,7 +19,7 @@ func (d *Inst) Build(dockerfilePath modmake.PathString) *Build {
 	}
 }
 
-type Build struct {
+type DockerBuild struct {
 	inst           *Inst
 	enableDebug    bool
 	noCache        bool
@@ -33,57 +33,57 @@ type Build struct {
 	imageTag       string
 }
 
-func (b *Build) ContextDir(dir modmake.PathString) *Build {
+func (b *DockerBuild) ContextDir(dir modmake.PathString) *DockerBuild {
 	b.contextDir = dir
 	return b
 }
 
-func (b *Build) BuildArg(key, val string) *Build {
+func (b *DockerBuild) BuildArg(key, val string) *DockerBuild {
 	b.buildArgs[key] = val
 	return b
 }
 
-func (b *Build) EnableDebugLogging() *Build {
+func (b *DockerBuild) EnableDebugLogging() *DockerBuild {
 	b.enableDebug = true
 	return b
 }
 
-func (b *Build) WriteImageIDTo(idFile modmake.PathString) *Build {
+func (b *DockerBuild) WriteImageIDTo(idFile modmake.PathString) *DockerBuild {
 	b.writeImageID = idFile
 	return b
 }
 
-func (b *Build) Label(imageLabel string) *Build {
+func (b *DockerBuild) Label(imageLabel string) *DockerBuild {
 	b.labels = append(b.labels, imageLabel)
 	return b
 }
 
-func (b *Build) NoCache() *Build {
+func (b *DockerBuild) NoCache() *DockerBuild {
 	b.noCache = true
 	return b
 }
 
-func (b *Build) Pull() *Build {
+func (b *DockerBuild) Pull() *DockerBuild {
 	b.pullRefs = true
 	return b
 }
 
-func (b *Build) Secret(id, value string) *Build {
+func (b *DockerBuild) Secret(id, value string) *DockerBuild {
 	b.buildSecrets[id] = value
 	return b
 }
 
-func (b *Build) Tag(imageTag string) *Build {
+func (b *DockerBuild) Tag(imageTag string) *DockerBuild {
 	b.imageTag = imageTag
 	return b
 }
 
-func (b *Build) Tagf(tagFormat string, args ...any) *Build {
+func (b *DockerBuild) Tagf(tagFormat string, args ...any) *DockerBuild {
 	b.imageTag = fmt.Sprintf(tagFormat, args...)
 	return b
 }
 
-func (b *Build) Command() *modmake.Command {
+func (b *DockerBuild) Command() *modmake.Command {
 	cmd := modmake.Exec(b.inst.dockerPath.String(), "build").
 		Arg("-f", b.dockerfilePath.String()).
 		TrailingArg(b.contextDir.String())
@@ -115,14 +115,14 @@ func (b *Build) Command() *modmake.Command {
 	return cmd
 }
 
-func (b *Build) Task() modmake.Task {
+func (b *DockerBuild) Task() modmake.Task {
 	return b.Run
 }
 
-func (b *Build) Run(ctx context.Context) error {
+func (b *DockerBuild) Run(ctx context.Context) error {
 	return b.Command().Run(ctx)
 }
 
-func (b *Build) String() string {
+func (b *DockerBuild) String() string {
 	return b.Command().String()
 }

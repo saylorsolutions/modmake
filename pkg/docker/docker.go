@@ -23,7 +23,7 @@ type Inst struct {
 	dockerPath modmake.PathString
 }
 
-func Docker() *Inst {
+func instance() *Inst {
 	dockerOverride, ok := os.LookupEnv(EnvDockerPath)
 	if ok && len(dockerOverride) > 0 {
 		return &Inst{
@@ -39,10 +39,19 @@ func Docker() *Inst {
 	}
 }
 
-func (d *Inst) Exec(subcommand string, args ...string) *modmake.Command {
-	return modmake.Exec(append([]string{d.dockerPath.String(), subcommand}, args...)...)
+// Do allows making arbitrary calls to the docker CLI.
+func Do(subcommand string, args ...string) *modmake.Command {
+	return modmake.Exec(append([]string{instance().dockerPath.String(), subcommand}, args...)...)
 }
 
-func (d *Inst) Tag(sourceTag, targetTag string) *modmake.Command {
-	return d.Exec("tag", sourceTag, targetTag)
+func Tag(sourceTag, targetTag string) *modmake.Command {
+	return Do("tag", sourceTag, targetTag)
+}
+
+func Run(imageName string) *DockerRun {
+	return instance().Run(imageName)
+}
+
+func Build(dockerfilePath modmake.PathString) *DockerBuild {
+	return instance().Build(dockerfilePath)
 }
