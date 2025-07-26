@@ -38,3 +38,11 @@ func Docker() *Inst {
 		dockerPath: modmake.Path(path),
 	}
 }
+
+func (d *Inst) Exec(subcommand string, args ...string) *modmake.Command {
+	return modmake.Exec(append([]string{d.dockerPath.String(), subcommand}, args...)...)
+}
+
+func (d *Inst) Tag(sourceTag, targetTag string) *modmake.Command {
+	return d.Exec("tag", sourceTag, targetTag)
+}
