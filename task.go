@@ -2,6 +2,7 @@ package modmake
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync/atomic"
 	"time"
@@ -163,5 +164,20 @@ func (t Task) LogGroup(group string) Task {
 			return log.WrapErr(err)
 		}
 		return nil
+	}
+}
+
+// Defer is used to explicitly defer a portion of a Build to the execution phase.
+// This can be helpful for situations where a Task will try to resolve executables that won't be available in all contexts.
+//
+// Panics from configuration errors will be caught and returned as an error.
+func Defer(task Task) Task {
+	return func(ctx context.Context) (rerr error) {
+		defer func() {
+			if r := recover(); r != nil {
+				rerr = errors.Join(rerr, fmt.Errorf("caught panic in deferred Task: %v", r))
+			}
+		}()
+		return task.Run(ctx)
 	}
 }

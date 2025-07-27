@@ -86,7 +86,8 @@ func (b *DockerBuild) Tagf(tagFormat string, args ...any) *DockerBuild {
 func (b *DockerBuild) Command() *modmake.Command {
 	cmd := modmake.Exec(b.inst.dockerPath.String(), "build").
 		Arg("-f", b.dockerfilePath.String()).
-		TrailingArg(b.contextDir.String())
+		TrailingArg(b.contextDir.String()).
+		LogGroup("docker-build")
 	cmd.CaptureStdin()
 	for key, val := range b.buildArgs {
 		cmd.Arg("--build-arg", fmt.Sprintf("%s=%s", key, val))

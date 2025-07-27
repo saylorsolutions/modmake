@@ -353,7 +353,7 @@ func (d *DockerRun) RunCommand(cmd string, args ...string) modmake.Task {
 }
 
 func (d *DockerRun) Command() *modmake.Command {
-	exec := modmake.Exec(d.inst.dockerPath.String(), "run").TrailingArg(d.imageName)
+	exec := modmake.Exec(d.inst.dockerPath.String(), "run").TrailingArg(d.imageName).LogGroup("docker-run")
 	switch {
 	case d.runInteractive:
 		fallthrough
