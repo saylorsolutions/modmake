@@ -6,12 +6,11 @@ import (
 	"github.com/saylorsolutions/modmake"
 )
 
-func (d *Inst) Build(dockerfilePath modmake.PathString) *DockerBuild {
+func Build(dockerfilePath modmake.PathString) *DockerBuild {
 	if len(dockerfilePath) == 0 {
 		dockerfilePath = modmake.Path(".", "Dockerfile")
 	}
 	return &DockerBuild{
-		inst:           d,
 		dockerfilePath: dockerfilePath,
 		contextDir:     modmake.Path("."),
 		buildArgs:      map[string]any{},
@@ -20,7 +19,6 @@ func (d *Inst) Build(dockerfilePath modmake.PathString) *DockerBuild {
 }
 
 type DockerBuild struct {
-	inst           *Inst
 	enableDebug    bool
 	noCache        bool
 	pullRefs       bool
@@ -83,8 +81,9 @@ func (b *DockerBuild) Tagf(tagFormat string, args ...any) *DockerBuild {
 	return b
 }
 
+// Command resolves the docker CLI, builds the build Command, and returns it for further customization.
 func (b *DockerBuild) Command() *modmake.Command {
-	cmd := modmake.Exec(b.inst.dockerPath.String(), "build").
+	cmd := modmake.Exec(resolveDockerPath().String(), "build").
 		Arg("-f", b.dockerfilePath.String()).
 		TrailingArg(b.contextDir.String()).
 		LogGroup("docker-build")

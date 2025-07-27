@@ -10,6 +10,7 @@ If you require an unsupported flag, then build your base command and call Comman
 package docker
 
 import (
+	"context"
 	"github.com/saylorsolutions/modmake"
 	"os"
 	"os/exec"
@@ -19,39 +20,26 @@ const (
 	EnvDockerPath = "MODMAKE_DOCKER_PATH"
 )
 
-type Inst struct {
-	dockerPath modmake.PathString
-}
-
-func instance() *Inst {
+func resolveDockerPath() modmake.PathString {
 	dockerOverride, ok := os.LookupEnv(EnvDockerPath)
 	if ok && len(dockerOverride) > 0 {
-		return &Inst{
-			dockerPath: modmake.Path(dockerOverride),
-		}
+		return modmake.Path(dockerOverride)
 	}
 	path, err := exec.LookPath("docker")
 	if err != nil {
 		panic(err)
 	}
-	return &Inst{
-		dockerPath: modmake.Path(path),
-	}
+	return modmake.Path(path)
 }
 
 // Do allows making arbitrary calls to the docker CLI.
-func Do(subcommand string, args ...string) *modmake.Command {
-	return modmake.Exec(append([]string{instance().dockerPath.String(), subcommand}, args...)...)
+func Do(subcommand string, args ...string) modmake.Task {
+	return func(ctx context.Context) error {
+		return modmake.Exec(append([]string{resolveDockerPath().String(), subcommand}, args...)...).Run(ctx)
+	}
 }
 
-func Tag(sourceTag, targetTag string) *modmake.Command {
+// Tag creates a Task to tag a Docker image.
+func Tag(sourceTag, targetTag string) modmake.Task {
 	return Do("tag", sourceTag, targetTag)
-}
-
-func Run(imageName string) *DockerRun {
-	return instance().Run(imageName)
-}
-
-func Build(dockerfilePath modmake.PathString) *DockerBuild {
-	return instance().Build(dockerfilePath)
 }

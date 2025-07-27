@@ -12,7 +12,6 @@ import (
 )
 
 type DockerRun struct {
-	inst            *Inst
 	runDetatched    bool
 	runInteractive  bool
 	allocateTTY     bool
@@ -50,13 +49,12 @@ type DockerRun struct {
 	restartPolicy   string
 }
 
-func (d *Inst) Run(imageName string) *DockerRun {
+func Run(imageName string) *DockerRun {
 	imageName = strings.TrimSpace(imageName)
 	if len(imageName) == 0 {
 		panic("empty image name")
 	}
 	return &DockerRun{
-		inst:          d,
 		imageName:     imageName,
 		volumeMapping: map[modmake.PathString]modmake.PathString{},
 		env:           map[string]string{},
@@ -352,8 +350,9 @@ func (d *DockerRun) RunCommand(cmd string, args ...string) modmake.Task {
 	}
 }
 
+// Command resolves the docker CLI, builds the run Command, and returns it for further customization.
 func (d *DockerRun) Command() *modmake.Command {
-	exec := modmake.Exec(d.inst.dockerPath.String(), "run").TrailingArg(d.imageName).LogGroup("docker-run")
+	exec := modmake.Exec(resolveDockerPath().String(), "run").TrailingArg(d.imageName).LogGroup("docker-run")
 	switch {
 	case d.runInteractive:
 		fallthrough
