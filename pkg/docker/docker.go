@@ -11,9 +11,10 @@ package docker
 
 import (
 	"context"
-	"github.com/saylorsolutions/modmake"
 	"os"
 	"os/exec"
+
+	"github.com/saylorsolutions/modmake"
 )
 
 const (

@@ -3,16 +3,17 @@ package docker
 import (
 	"context"
 	"fmt"
-	"github.com/saylorsolutions/modmake"
 	"net"
 	"runtime"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/saylorsolutions/modmake"
 )
 
-type DockerRun struct {
-	runDetatched    bool
+type Runner struct {
+	runDetached     bool
 	runInteractive  bool
 	allocateTTY     bool
 	attachStdin     bool
@@ -49,12 +50,12 @@ type DockerRun struct {
 	restartPolicy   string
 }
 
-func Run(imageName string) *DockerRun {
+func Run(imageName string) *Runner {
 	imageName = strings.TrimSpace(imageName)
 	if len(imageName) == 0 {
 		panic("empty image name")
 	}
-	return &DockerRun{
+	return &Runner{
 		imageName:     imageName,
 		volumeMapping: map[modmake.PathString]modmake.PathString{},
 		env:           map[string]string{},
@@ -62,52 +63,52 @@ func Run(imageName string) *DockerRun {
 	}
 }
 
-func (d *DockerRun) AddHost(host string, ip net.IP) *DockerRun {
+func (d *Runner) AddHost(host string, ip net.IP) *Runner {
 	d.hostMapping[host] = ip
 	return d
 }
 
-func (d *DockerRun) AttachStdin() *DockerRun {
+func (d *Runner) AttachStdin() *Runner {
 	d.attachStdin = true
 	return d
 }
 
-func (d *DockerRun) AttachStdout() *DockerRun {
+func (d *Runner) AttachStdout() *Runner {
 	d.attachStdout = true
 	return d
 }
 
-func (d *DockerRun) AttachStderr() *DockerRun {
+func (d *Runner) AttachStderr() *Runner {
 	d.attachStderr = true
 	return d
 }
 
-func (d *DockerRun) AddCapability(cap string) *DockerRun {
+func (d *Runner) AddCapability(cap string) *Runner {
 	d.capAdd = append(d.capAdd, cap)
 	return d
 }
 
-func (d *DockerRun) DropCapability(cap string) *DockerRun {
+func (d *Runner) DropCapability(cap string) *Runner {
 	d.capDrop = append(d.capDrop, cap)
 	return d
 }
 
-func (d *DockerRun) CPUs(numCpus float64) *DockerRun {
+func (d *Runner) CPUs(numCpus float64) *Runner {
 	d.numCpus = numCpus
 	return d
 }
 
-func (d *DockerRun) CPUShares(shares int) *DockerRun {
+func (d *Runner) CPUShares(shares int) *Runner {
 	d.cpuShares = shares
 	return d
 }
 
-func (d *DockerRun) UseWindowsContainerPaths() *DockerRun {
+func (d *Runner) UseWindowsContainerPaths() *Runner {
 	d.winPaths = true
 	return d
 }
 
-func (d *DockerRun) normalizeWinPaths(path modmake.PathString) string {
+func (d *Runner) normalizeWinPaths(path modmake.PathString) string {
 	if d.winPaths {
 		if runtime.GOOS == "windows" {
 			return path.String()
@@ -118,7 +119,7 @@ func (d *DockerRun) normalizeWinPaths(path modmake.PathString) string {
 }
 
 // BindMount defines a volume mount mapping a host path to a container path.
-func (d *DockerRun) BindMount(hostPath, mountPath modmake.PathString) *DockerRun {
+func (d *Runner) BindMount(hostPath, mountPath modmake.PathString) *Runner {
 	if hostPath.IsBlank() {
 		panic("blank host path")
 	}
@@ -130,32 +131,32 @@ func (d *DockerRun) BindMount(hostPath, mountPath modmake.PathString) *DockerRun
 	return d
 }
 
-func (d *DockerRun) BindMountReadOnly(hostPath, mountPath modmake.PathString) *DockerRun {
+func (d *Runner) BindMountReadOnly(hostPath, mountPath modmake.PathString) *Runner {
 	mountPath = modmake.Path(strings.TrimSuffix(d.normalizeWinPaths(mountPath), ":ro") + ":ro")
 	return d.BindMount(hostPath, mountPath)
 }
 
-func (d *DockerRun) Detach() *DockerRun {
+func (d *Runner) Detach() *Runner {
 	d.runInteractive = false
 	d.allocateTTY = false
 	d.attachStdin = false
 	d.attachStdout = false
 	d.attachStderr = false
-	d.runDetatched = true
+	d.runDetached = true
 	return d
 }
 
-func (d *DockerRun) SetEnv(key, val string) *DockerRun {
+func (d *Runner) SetEnv(key, val string) *Runner {
 	d.env[key] = val
 	return d
 }
 
-func (d *DockerRun) EnvFile(envFile modmake.PathString) *DockerRun {
+func (d *Runner) EnvFile(envFile modmake.PathString) *Runner {
 	d.envFile = envFile
 	return d
 }
 
-func (d *DockerRun) ExposePort(host, container int) *DockerRun {
+func (d *Runner) ExposePort(host, container int) *Runner {
 	d.ports[host] = container
 	return d
 }
@@ -230,98 +231,98 @@ func (hc *HealthCheck) CheckTimeout(timeout time.Duration) *HealthCheck {
 	return hc
 }
 
-func (d *DockerRun) SetHealthCheck(check *HealthCheck) *DockerRun {
+func (d *Runner) SetHealthCheck(check *HealthCheck) *Runner {
 	d.healthCheck = check
 	return d
 }
 
-func (d *DockerRun) NoHealthCheck() *DockerRun {
+func (d *Runner) NoHealthCheck() *Runner {
 	d.healthCheck = disabledHealthCheck()
 	return d
 }
 
-func (d *DockerRun) SetHostName(hostName string) *DockerRun {
+func (d *Runner) SetHostName(hostName string) *Runner {
 	d.hostName = hostName
 	return d
 }
 
-func (d *DockerRun) Interactive() *DockerRun {
+func (d *Runner) Interactive() *Runner {
 	d.runInteractive = true
 	return d
 }
 
-func (d *DockerRun) SetIP(ip net.IP) *DockerRun {
+func (d *Runner) SetIP(ip net.IP) *Runner {
 	d.containerIP = ip
 	return d
 }
 
-func (d *DockerRun) SetIPv6(ip net.IP) *DockerRun {
+func (d *Runner) SetIPv6(ip net.IP) *Runner {
 	d.containerIPv6 = ip
 	return d
 }
 
-func (d *DockerRun) SetLabel(label string) *DockerRun {
+func (d *Runner) SetLabel(label string) *Runner {
 	d.labels = append(d.labels, label)
 	return d
 }
 
-func (d *DockerRun) MemoryLimit(limitBytes int) *DockerRun {
+func (d *Runner) MemoryLimit(limitBytes int) *Runner {
 	d.memoryLimit = limitBytes
 	return d
 }
 
-func (d *DockerRun) ReserveMemory(softLimitBytes int) *DockerRun {
+func (d *Runner) ReserveMemory(softLimitBytes int) *Runner {
 	d.memReserve = softLimitBytes
 	return d
 }
 
-func (d *DockerRun) ContainerName(name string) *DockerRun {
+func (d *Runner) ContainerName(name string) *Runner {
 	d.containerName = name
 	return d
 }
 
-func (d *DockerRun) JoinNetwork(networkName string) *DockerRun {
+func (d *Runner) JoinNetwork(networkName string) *Runner {
 	d.network = networkName
 	return d
 }
 
-func (d *DockerRun) Privileged() *DockerRun {
+func (d *Runner) Privileged() *Runner {
 	d.runPrivileged = true
 	return d
 }
 
-func (d *DockerRun) PullBeforeRunning() *DockerRun {
+func (d *Runner) PullBeforeRunning() *Runner {
 	d.pullBefore = true
 	return d
 }
 
-func (d *DockerRun) PullQuietlyBeforeRunning() *DockerRun {
+func (d *Runner) PullQuietlyBeforeRunning() *Runner {
 	d.pullBefore = true
 	d.pullQuiet = true
 	return d
 }
 
-func (d *DockerRun) RestartPolicy(policy string) *DockerRun {
+func (d *Runner) RestartPolicy(policy string) *Runner {
 	d.restartPolicy = policy
 	return d
 }
 
-func (d *DockerRun) RemoveAfterExit() *DockerRun {
+func (d *Runner) RemoveAfterExit() *Runner {
 	d.removeAfterExit = true
 	return d
 }
 
-func (d *DockerRun) StopTimeout(timeout time.Duration) *DockerRun {
+func (d *Runner) StopTimeout(timeout time.Duration) *Runner {
 	d.stopTimeout = timeout
 	return d
 }
 
-func (d *DockerRun) AllocateTTY() *DockerRun {
+func (d *Runner) AllocateTTY() *Runner {
 	d.allocateTTY = true
 	return d
 }
 
-func (d *DockerRun) InteractiveTTY() *DockerRun {
+func (d *Runner) InteractiveTTY() *Runner {
 	d.allocateTTY = true
 	d.runInteractive = true
 	return d
@@ -329,18 +330,18 @@ func (d *DockerRun) InteractiveTTY() *DockerRun {
 
 // SetUser sets the running user (and possibly group) with this pattern:
 // <name|uid>[:<group|gid>]
-func (d *DockerRun) SetUser(user string) *DockerRun {
+func (d *Runner) SetUser(user string) *Runner {
 	d.setUser = user
 	return d
 }
 
-func (d *DockerRun) SetWorkingDir(containerPath modmake.PathString) *DockerRun {
+func (d *Runner) SetWorkingDir(containerPath modmake.PathString) *Runner {
 	d.workingDir = containerPath
 	return d
 }
 
 // RunCommand produces a Task that runs the specified command in the container.
-func (d *DockerRun) RunCommand(cmd string, args ...string) modmake.Task {
+func (d *Runner) RunCommand(cmd string, args ...string) modmake.Task {
 	return func(ctx context.Context) error {
 		d.command = append([]string{cmd}, args...)
 		defer func() {
@@ -351,13 +352,13 @@ func (d *DockerRun) RunCommand(cmd string, args ...string) modmake.Task {
 }
 
 // Command resolves the docker CLI, builds the run Command, and returns it for further customization.
-func (d *DockerRun) Command() *modmake.Command {
+func (d *Runner) Command() *modmake.Command {
 	exec := modmake.Exec(resolveDockerPath().String(), "run").TrailingArg(d.imageName).LogGroup("docker-run")
 	switch {
 	case d.runInteractive:
 		fallthrough
 	case d.attachStdin:
-		if !d.runDetatched {
+		if !d.runDetached {
 			exec.CaptureStdin()
 		}
 	}
@@ -391,7 +392,7 @@ func (d *DockerRun) Command() *modmake.Command {
 	for host, cont := range d.volumeMapping {
 		exec.Arg("-v", fmt.Sprintf("%s:%s", host.String(), cont.ToSlash()))
 	}
-	if d.runDetatched {
+	if d.runDetached {
 		exec.Arg("-d")
 	}
 	for key, val := range d.env {
@@ -463,14 +464,14 @@ func (d *DockerRun) Command() *modmake.Command {
 	return exec
 }
 
-func (d *DockerRun) Task() modmake.Task {
+func (d *Runner) Task() modmake.Task {
 	return d.Run
 }
 
-func (d *DockerRun) Run(ctx context.Context) error {
+func (d *Runner) Run(ctx context.Context) error {
 	return d.Command().Run(ctx)
 }
 
-func (d *DockerRun) String() string {
+func (d *Runner) String() string {
 	return d.Command().String()
 }

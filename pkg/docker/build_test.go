@@ -1,11 +1,12 @@
 package docker_test
 
 import (
+	"os"
+	"testing"
+
 	"github.com/saylorsolutions/modmake/pkg/docker"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"os"
-	"testing"
 )
 
 func testDocker(t *testing.T) {
@@ -18,7 +19,7 @@ func testDocker(t *testing.T) {
 func TestDockerBuild_String(t *testing.T) {
 	testDocker(t)
 	tests := map[string]struct {
-		build    *docker.DockerBuild
+		build    *docker.Builder
 		expected string
 	}{
 		"Basic build": {

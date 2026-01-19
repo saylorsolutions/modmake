@@ -2,16 +2,17 @@ package docker_test
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/saylorsolutions/modmake"
 	"github.com/saylorsolutions/modmake/pkg/docker"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestDockerRun_String(t *testing.T) {
 	testDocker(t)
 	tests := map[string]struct {
-		run      *docker.DockerRun
+		run      *docker.Runner
 		expected string
 	}{
 		"Base": {
