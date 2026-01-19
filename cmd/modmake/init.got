@@ -1,16 +1,16 @@
 package main
 
 import (
-	. "github.com/saylorsolutions/modmake" //nolint:staticcheck
+. "github.com/saylorsolutions/modmake" //nolint:staticcheck
 )
 
 const (
-	version = "0.1.0"
+version = "0.1.0"
 )
 
 func main() {
-	b := NewBuild()
-	// Add build steps here.
+b := NewBuild()
+// Add build steps here.
 
-	b.Execute()
+b.Execute()
 }

@@ -30,15 +30,16 @@ Besides accomplishing the goals set out above, there are some key benefits with 
 * Low barrier of entry with a [consistent starting point](example/helloworld/README.md).
 * Go code works on many OS/architecture combinations, and Modmake inherits that ability.
 * Modmake includes a lot of common-use functionality with more to come:
-  * Using the Go toolchain, resolved from `GOROOT`.
-  * File system operations like creating, copying, moving, deleting files and directories with [PathString](https://github.com/saylorsolutions/modmake/blob/main/pathstring.go).
-  * Compressing and packaging with zip/tar.
-  * `go install`ing and executing external tools.
-  * Downloading files over HTTP.
-  * Git operations like getting the current branch and commit hash.
-  * Orchestrating build operations in terms of [build steps](https://saylorsolutions.github.io/modmake/#build-model_steps) and their dependencies.
+    * Using the Go toolchain, resolved from `GOROOT`.
+    * File system operations like creating, copying, moving, deleting files and directories with [PathString](https://github.com/saylorsolutions/modmake/blob/main/pathstring.go).
+    * Compressing and packaging with zip/tar.
+    * `go install`ing and executing external tools.
+    * Downloading files over HTTP.
+    * Git operations like getting the current branch and commit hash.
+    * Orchestrating build operations in terms of [build steps](https://saylorsolutions.github.io/modmake/#build-model_steps) and their dependencies.
 
- ## Additional Functionality
+## Additional Functionality
 
- I've started creating bolt-on functionality that can help fill more build gaps.
- * [modmake-docker](https://github.com/saylorsolutions/modmake-docker?tab=readme-ov-file) provides Docker build and run support.
+I've started creating bolt-on functionality that can help fill more build gaps.
+
+* [modmake-docker](https://github.com/saylorsolutions/modmake-docker?tab=readme-ov-file) provides Docker build and run support.

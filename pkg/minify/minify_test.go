@@ -3,14 +3,15 @@ package minify
 import (
 	"context"
 	_ "embed"
-	mm "github.com/saylorsolutions/modmake"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	mm "github.com/saylorsolutions/modmake"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (

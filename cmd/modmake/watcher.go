@@ -3,13 +3,14 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/fsnotify/fsnotify"
-	. "github.com/saylorsolutions/modmake" //nolint:staticcheck // This is a DSL-type API
 	"io/fs"
 	"log"
 	"path/filepath"
 	"strings"
 	"sync"
+
+	"github.com/fsnotify/fsnotify"
+	. "github.com/saylorsolutions/modmake" //nolint:staticcheck // This is a DSL-type API
 )
 
 func runWatching(_base context.Context, task Task, flags *appFlags) (rerr error) {

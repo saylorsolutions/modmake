@@ -2,6 +2,7 @@ package templates
 
 import (
 	"fmt"
+
 	"github.com/a-h/templ"
 	"github.com/saylorsolutions/modmake/cmd/modmake-docs/internal/docparser"
 )

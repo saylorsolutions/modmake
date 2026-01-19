@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/saylorsolutions/modmake"
-	flag "github.com/spf13/pflag"
 	"strings"
 	"time"
+
+	"github.com/saylorsolutions/modmake"
+	flag "github.com/spf13/pflag"
 )
 
 type appFlags struct {

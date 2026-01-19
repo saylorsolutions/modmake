@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+
 	. "github.com/saylorsolutions/modmake" //nolint:staticcheck
 	"github.com/saylorsolutions/modmake/pkg/git"
 )

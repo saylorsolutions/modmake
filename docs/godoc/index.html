@@ -1,21 +1,55 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><title>Modmake Docs - Code Documentation</title><link rel="stylesheet" href="/modmake/main.css"></head><body><nav class="header"><div><img src="/modmake/img/img.svg" alt="logo"><h3>Modmake</h3></div><div><a href="https://github.com/saylorsolutions/modmake" target="_blank">GitHub</a> <a href="https://github.com/saylorsolutions/modmake/blob/main/example/helloworld/README.md" target="_blank">Examples</a> <a href="/modmake/godoc" target="_blank">GoDoc</a></div></nav><div id="frame"><section id="content"><h1>Documented packages</h1><ul><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake">modmake - github.com/saylorsolutions/modmake</a><p>Package modmake provides the interface for configuring and executing a Modmake
-build.</p></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker">docker - github.com/saylorsolutions/modmake/pkg/docker</a><p>Package docker provides a means to programmatically call the docker CLI for
-building images and running containers.
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Modmake Docs - Code Documentation</title>
+    <link rel="stylesheet" href="/modmake/main.css">
+</head>
+<body>
+<nav class="header">
+    <div><img src="/modmake/img/img.svg" alt="logo">
+        <h3>Modmake</h3></div>
+    <div><a href="https://github.com/saylorsolutions/modmake" target="_blank">GitHub</a> <a
+            href="https://github.com/saylorsolutions/modmake/blob/main/example/helloworld/README.md" target="_blank">Examples</a>
+        <a href="/modmake/godoc" target="_blank">GoDoc</a></div>
+</nav>
+<div id="frame">
+    <section id="content"><h1>Documented packages</h1>
+        <ul>
+            <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake">modmake -
+                github.com/saylorsolutions/modmake</a>
+                <p>Package modmake provides the interface for configuring and executing a Modmake
+                    build.</p></li>
+            <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker">docker -
+                github.com/saylorsolutions/modmake/pkg/docker</a>
+                <p>Package docker provides a means to programmatically call the docker CLI for
+                    building images and running containers.
 
-By default, the PATH will be consulted to locate the docker CLI, but this can be
-overridden by setting the MODMAKE_DOCKER_PATH environment variable. This is done
-in testing to use &#39;echo&#39; instead.
+                    By default, the PATH will be consulted to locate the docker CLI, but this can be
+                    overridden by setting the MODMAKE_DOCKER_PATH environment variable. This is done
+                    in testing to use &#39;echo&#39; instead.
 
-Most flags are supported, but some less-common flags are not. If you require an
-unsupported flag, then build your base command and call Command to set custom
-arguments on the Modmake Command that is returned.</p></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/git">git - github.com/saylorsolutions/modmake/pkg/git</a><p>Package git provides some helpers for using the Git CLI in Modmake builds.
-This includes:
-  - Updating submodules with &#34;--init&#34; or &#34;--remote&#34;
-  - Cloning repositories
-  - Getting commit and branch details</p></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/minify">minify - github.com/saylorsolutions/modmake/pkg/minify</a><p>Package minify provides support for minifying web assets in preparation for
-deployment.
+                    Most flags are supported, but some less-common flags are not. If you require an
+                    unsupported flag, then build your base command and call Command to set custom
+                    arguments on the Modmake Command that is returned.</p></li>
+            <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/git">git -
+                github.com/saylorsolutions/modmake/pkg/git</a>
+                <p>Package git provides some helpers for using the Git CLI in Modmake builds.
+                    This includes:
+                    - Updating submodules with &#34;--init&#34; or &#34;--remote&#34;
+                    - Cloning repositories
+                    - Getting commit and branch details</p></li>
+            <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/minify">minify -
+                github.com/saylorsolutions/modmake/pkg/minify</a>
+                <p>Package minify provides support for minifying web assets in preparation for
+                    deployment.
 
-This package is made possible by the excellent contributions to the minify
-project. If you find this useful, please check out their repo.
+                    This package is made possible by the excellent contributions to the minify
+                    project. If you find this useful, please check out their repo.
 
-https://github.com/tdewolff/minify</p></li></ul></section></div></body></html>
+                    https://github.com/tdewolff/minify</p></li>
+        </ul>
+    </section>
+</div>
+</body>
+</html>

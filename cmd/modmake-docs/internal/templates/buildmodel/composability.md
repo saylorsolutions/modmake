@@ -2,7 +2,8 @@ Modmake build logic can be composed of many pieces, and there are a few approach
 
 ### Import
 
-The [Import](https://saylorsolutions.github.io/modmake/godoc/github.com/saylorsolutions/modmake#Build_Import) function is one of the main methods used.
+The [Import](https://saylorsolutions.github.io/modmake/godoc/github.com/saylorsolutions/modmake#Build_Import) function
+is one of the main methods used.
 
 * A build can be divided into multiple *sub-builds* that are then imported together.
 * A build must be imported with a name that becomes its prefix.
@@ -21,11 +22,15 @@ b.Step("other:test")
 b.Execute() // Because "other:test" is now an established step, it can be invoked with "go run" too.
 ```
 
-A variant of `Import` is [ImportAndLink](https://saylorsolutions.github.io/modmake/godoc/github.com/saylorsolutions/modmake#Build_ImportAndLink), which intrinsically links the sub-build steps to that of its parent.
+A variant of `Import`
+is [ImportAndLink](https://saylorsolutions.github.io/modmake/godoc/github.com/saylorsolutions/modmake#Build_ImportAndLink),
+which intrinsically links the sub-build steps to that of its parent.
 
 ### CallBuild
 
-Another mechanism is [CallBuild](https://saylorsolutions.github.io/modmake/godoc/github.com/saylorsolutions/modmake#func_CallBuild), which allows invoking steps in an unrelated build.
+Another mechanism
+is [CallBuild](https://saylorsolutions.github.io/modmake/godoc/github.com/saylorsolutions/modmake#func_CallBuild), which
+allows invoking steps in an unrelated build.
 This is a very useful mechanism when working with Git submodules that use modmake.
 
 There's an example for reference.
@@ -36,7 +41,8 @@ This is a more niche method, but it's still nice to have.
 
 `CallRemote` is used to call a Modmake step in a remote build that is in no way associated with your build.
 
-**This is used in the [Modmake build](https://github.com/saylorsolutions/modmake/blob/main/modmake/build.go) to generate this documentation!**
+**This is used in the [Modmake build](https://github.com/saylorsolutions/modmake/blob/main/modmake/build.go) to generate
+this documentation!**
 
 ```go
 b.Tools().DependsOnRunner("install-modmake-docs", "",
@@ -51,7 +57,8 @@ b.Generate().DependsOnRunner("gen-docs", "", Exec("modmake-docs", "generate").
 
 ### AppBuild
 
-[AppBuild](https://saylorsolutions.github.io/modmake/godoc/github.com/saylorsolutions/modmake#AppBuild) is a higher level concept that allows for a lot less typing and more convenience.
+[AppBuild](https://saylorsolutions.github.io/modmake/godoc/github.com/saylorsolutions/modmake#AppBuild) is a higher
+level concept that allows for a lot less typing and more convenience.
 This is a good fit when an app's build follows a common way of producing distributions.
 
 `AppBuild` is great for any of these cases.
@@ -61,7 +68,8 @@ This is a good fit when an app's build follows a common way of producing distrib
 * You don't want to deal with managing build vs. distribution paths yourself.
 * You want a generated `install` step for your app to be used with `CallRemote`.
 
-It follows a similar pattern as a normal build, but it's specifically tailored to producing builds of the same application for different OS/arch combinations with similar expectations.
+It follows a similar pattern as a normal build, but it's specifically tailored to producing builds of the same
+application for different OS/arch combinations with similar expectations.
 Each combination of OS and arch in an `AppBuild` is called a variant.
 They can be individually customized or their build step can be configured at the `AppBuild` level.
 
@@ -88,9 +96,11 @@ b.ImportApp(a)
 ```
 
 * A new `AppBuild` is created with some basic information: name, path, and version.
-* The `AppBuild` above is using a consistent build step configured at the higher level (variants can override this logic).
+* The `AppBuild` above is using a consistent build step configured at the higher level (variants can override this
+  logic).
 * Packaging is not being configured above, so the defaults are used.
-  * For Windows builds, the default is to package the binary in a zip file.
-  * For everything else, the binary is packaged in a tar.gz.
+    * For Windows builds, the default is to package the binary in a zip file.
+    * For everything else, the binary is packaged in a tar.gz.
 * There's also a `HostVariant` that will match your build machine's OS and arch. This is most useful for local testing.
-* An additional step will be generated automatically for each AppBuild: `install`. To reference this step, prefix it with the AppBuild name. `modmake:install` would be used in the code above.
+* An additional step will be generated automatically for each AppBuild: `install`. To reference this step, prefix it
+  with the AppBuild name. `modmake:install` would be used in the code above.

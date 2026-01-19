@@ -1,19 +1,656 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><title>Modmake Docs - github.com/saylorsolutions/modmake/pkg/docker</title><link rel="stylesheet" href="/modmake/main.css"></head><body><nav class="header"><div><img src="/modmake/img/img.svg" alt="logo"><h3>Modmake</h3></div><div><a href="https://github.com/saylorsolutions/modmake" target="_blank">GitHub</a> <a href="https://github.com/saylorsolutions/modmake/blob/main/example/helloworld/README.md" target="_blank">Examples</a> <a href="/modmake/godoc" target="_blank">GoDoc</a></div></nav><div id="frame"><div id="side-panel"><a href="#index">Index</a><a href="#constants">Constants</a><ul><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#const_EnvDockerPath">EnvDockerPath</a></li></ul><a href="#functions">Functions</a><ul><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#func_Docker">Docker</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#func_NewHealthCheck">NewHealthCheck</a></li></ul><a href="#types">Types</a><ul><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build</a> <ul><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_BuildArg">BuildArg</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Command">Command</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_ContextDir">ContextDir</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_EnableDebugLogging">EnableDebugLogging</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Label">Label</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_NoCache">NoCache</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Pull">Pull</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Run">Run</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Secret">Secret</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_String">String</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Tag">Tag</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Tagf">Tagf</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Task">Task</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_WriteImageIDTo">WriteImageIDTo</a></li></ul></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck">HealthCheck</a> <ul><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck_CheckInterval">CheckInterval</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck_CheckRetries">CheckRetries</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck_CheckTimeout">CheckTimeout</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck_StartCheckInterval">StartCheckInterval</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck_StartDelay">StartDelay</a></li></ul></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Inst">Inst</a> <ul><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Inst_Build">Build</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Inst_Run">Run</a></li></ul></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run</a> <ul><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AddCapability">AddCapability</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AddHost">AddHost</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AllocateTTY">AllocateTTY</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AttachStderr">AttachStderr</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AttachStdin">AttachStdin</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AttachStdout">AttachStdout</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_BindMount">BindMount</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_BindMountReadOnly">BindMountReadOnly</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_CPUShares">CPUShares</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_CPUs">CPUs</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Command">Command</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_ContainerName">ContainerName</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Detach">Detach</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_DropCapability">DropCapability</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_EnvFile">EnvFile</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_ExposePort">ExposePort</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Interactive">Interactive</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_InteractiveTTY">InteractiveTTY</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_JoinNetwork">JoinNetwork</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_MemoryLimit">MemoryLimit</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_NoHealthCheck">NoHealthCheck</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Privileged">Privileged</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_PullBeforeRunning">PullBeforeRunning</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_PullQuietlyBeforeRunning">PullQuietlyBeforeRunning</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_RemoveAfterExit">RemoveAfterExit</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_ReserveMemory">ReserveMemory</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_RestartPolicy">RestartPolicy</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Run">Run</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_RunCommand">RunCommand</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetEnv">SetEnv</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetHealthCheck">SetHealthCheck</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetHostName">SetHostName</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetIP">SetIP</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetIPv6">SetIPv6</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetLabel">SetLabel</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetUser">SetUser</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetWorkingDir">SetWorkingDir</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_StopTimeout">StopTimeout</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_String">String</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Task">Task</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_UseWindowsContainerPaths">UseWindowsContainerPaths</a></li></ul></li></ul></div> <section id="content" class="code-docs"><h1>Overview</h1><p>Package docker provides a means to programmatically call the docker CLI for
-building images and running containers.
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Modmake Docs - github.com/saylorsolutions/modmake/pkg/docker</title>
+    <link rel="stylesheet" href="/modmake/main.css">
+</head>
+<body>
+<nav class="header">
+    <div><img src="/modmake/img/img.svg" alt="logo">
+        <h3>Modmake</h3></div>
+    <div><a href="https://github.com/saylorsolutions/modmake" target="_blank">GitHub</a> <a
+            href="https://github.com/saylorsolutions/modmake/blob/main/example/helloworld/README.md" target="_blank">Examples</a>
+        <a href="/modmake/godoc" target="_blank">GoDoc</a></div>
+</nav>
+<div id="frame">
+    <div id="side-panel"><a href="#index">Index</a><a href="#constants">Constants</a>
+        <ul>
+            <li>
+                <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#const_EnvDockerPath">EnvDockerPath</a>
+            </li>
+        </ul>
+        <a href="#functions">Functions</a>
+        <ul>
+            <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#func_Docker">Docker</a></li>
+            <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#func_NewHealthCheck">NewHealthCheck</a>
+            </li>
+        </ul>
+        <a href="#types">Types</a>
+        <ul>
+            <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build</a>
+                <ul>
+                    <li>
+                        <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_BuildArg">BuildArg</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Command">Command</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_ContextDir">ContextDir</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_EnableDebugLogging">EnableDebugLogging</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Label">Label</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_NoCache">NoCache</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Pull">Pull</a></li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Run">Run</a></li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Secret">Secret</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_String">String</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Tag">Tag</a></li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Tagf">Tagf</a></li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Task">Task</a></li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_WriteImageIDTo">WriteImageIDTo</a>
+                    </li>
+                </ul>
+            </li>
+            <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck">HealthCheck</a>
+                <ul>
+                    <li>
+                        <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck_CheckInterval">CheckInterval</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck_CheckRetries">CheckRetries</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck_CheckTimeout">CheckTimeout</a>
+                    </li>
+                    <li>
+                        <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck_StartCheckInterval">StartCheckInterval</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck_StartDelay">StartDelay</a>
+                    </li>
+                </ul>
+            </li>
+            <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Inst">Inst</a>
+                <ul>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Inst_Build">Build</a></li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Inst_Run">Run</a></li>
+                </ul>
+            </li>
+            <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run</a>
+                <ul>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AddCapability">AddCapability</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AddHost">AddHost</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AllocateTTY">AllocateTTY</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AttachStderr">AttachStderr</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AttachStdin">AttachStdin</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AttachStdout">AttachStdout</a>
+                    </li>
+                    <li>
+                        <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_BindMount">BindMount</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_BindMountReadOnly">BindMountReadOnly</a>
+                    </li>
+                    <li>
+                        <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_CPUShares">CPUShares</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_CPUs">CPUs</a></li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Command">Command</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_ContainerName">ContainerName</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Detach">Detach</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_DropCapability">DropCapability</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_EnvFile">EnvFile</a>
+                    </li>
+                    <li>
+                        <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_ExposePort">ExposePort</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Interactive">Interactive</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_InteractiveTTY">InteractiveTTY</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_JoinNetwork">JoinNetwork</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_MemoryLimit">MemoryLimit</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_NoHealthCheck">NoHealthCheck</a>
+                    </li>
+                    <li>
+                        <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Privileged">Privileged</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_PullBeforeRunning">PullBeforeRunning</a>
+                    </li>
+                    <li>
+                        <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_PullQuietlyBeforeRunning">PullQuietlyBeforeRunning</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_RemoveAfterExit">RemoveAfterExit</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_ReserveMemory">ReserveMemory</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_RestartPolicy">RestartPolicy</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Run">Run</a></li>
+                    <li>
+                        <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_RunCommand">RunCommand</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetEnv">SetEnv</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetHealthCheck">SetHealthCheck</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetHostName">SetHostName</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetIP">SetIP</a></li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetIPv6">SetIPv6</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetLabel">SetLabel</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetUser">SetUser</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetWorkingDir">SetWorkingDir</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_StopTimeout">StopTimeout</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_String">String</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Task">Task</a></li>
+                    <li>
+                        <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_UseWindowsContainerPaths">UseWindowsContainerPaths</a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+    <section id="content" class="code-docs"><h1>Overview</h1>
+        <p>Package docker provides a means to programmatically call the docker CLI for
+            building images and running containers.
 
-By default, the PATH will be consulted to locate the docker CLI, but this can be
-overridden by setting the MODMAKE_DOCKER_PATH environment variable. This is done
-in testing to use &#39;echo&#39; instead.
+            By default, the PATH will be consulted to locate the docker CLI, but this can be
+            overridden by setting the MODMAKE_DOCKER_PATH environment variable. This is done
+            in testing to use &#39;echo&#39; instead.
 
-Most flags are supported, but some less-common flags are not. If you require an
-unsupported flag, then build your base command and call Command to set custom
-arguments on the Modmake Command that is returned.</p><a href="/modmake/godoc">All Packages</a><hr><h1 id="index">Index <a href="#index">[link]</a></h1><a href="#constants">Constants</a><ul><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#const_EnvDockerPath">EnvDockerPath</a></li></ul><a href="#functions">Functions</a><ul><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#func_Docker">Docker</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#func_NewHealthCheck">NewHealthCheck</a></li></ul><a href="#types">Types</a><ul><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build</a> <ul><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_BuildArg">BuildArg</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Command">Command</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_ContextDir">ContextDir</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_EnableDebugLogging">EnableDebugLogging</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Label">Label</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_NoCache">NoCache</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Pull">Pull</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Run">Run</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Secret">Secret</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_String">String</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Tag">Tag</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Tagf">Tagf</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Task">Task</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_WriteImageIDTo">WriteImageIDTo</a></li></ul></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck">HealthCheck</a> <ul><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck_CheckInterval">CheckInterval</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck_CheckRetries">CheckRetries</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck_CheckTimeout">CheckTimeout</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck_StartCheckInterval">StartCheckInterval</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck_StartDelay">StartDelay</a></li></ul></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Inst">Inst</a> <ul><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Inst_Build">Build</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Inst_Run">Run</a></li></ul></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run</a> <ul><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AddCapability">AddCapability</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AddHost">AddHost</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AllocateTTY">AllocateTTY</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AttachStderr">AttachStderr</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AttachStdin">AttachStdin</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AttachStdout">AttachStdout</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_BindMount">BindMount</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_BindMountReadOnly">BindMountReadOnly</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_CPUShares">CPUShares</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_CPUs">CPUs</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Command">Command</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_ContainerName">ContainerName</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Detach">Detach</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_DropCapability">DropCapability</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_EnvFile">EnvFile</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_ExposePort">ExposePort</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Interactive">Interactive</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_InteractiveTTY">InteractiveTTY</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_JoinNetwork">JoinNetwork</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_MemoryLimit">MemoryLimit</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_NoHealthCheck">NoHealthCheck</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Privileged">Privileged</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_PullBeforeRunning">PullBeforeRunning</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_PullQuietlyBeforeRunning">PullQuietlyBeforeRunning</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_RemoveAfterExit">RemoveAfterExit</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_ReserveMemory">ReserveMemory</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_RestartPolicy">RestartPolicy</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Run">Run</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_RunCommand">RunCommand</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetEnv">SetEnv</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetHealthCheck">SetHealthCheck</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetHostName">SetHostName</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetIP">SetIP</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetIPv6">SetIPv6</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetLabel">SetLabel</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetUser">SetUser</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetWorkingDir">SetWorkingDir</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_StopTimeout">StopTimeout</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_String">String</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Task">Task</a></li><li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_UseWindowsContainerPaths">UseWindowsContainerPaths</a></li></ul></li></ul><hr><h1 id="constants">Constants <a href="#constants">[link]</a></h1><hr><h2 id="const_EnvDockerPath">EnvDockerPath <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#const_EnvDockerPath">[link]</a></h2><pre><code>EnvDockerPath = &#34;MODMAKE_DOCKER_PATH&#34;</code></pre><p></p><hr><h1 id="functions">Functions <a href="#functions">[link]</a></h1><hr><h2 id="func_Docker">Docker <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#func_Docker">[link]</a></h2><pre><code>func Docker() *Inst</code></pre><p></p><hr><h2 id="func_NewHealthCheck">NewHealthCheck <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#func_NewHealthCheck">[link]</a></h2><pre><code>func NewHealthCheck(cmd string, args ...string) *HealthCheck</code></pre><p></p><hr><h1 id="types">Types <a href="#types">[link]</a></h1><hr><h2 id="Build">Build <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">[link]</a></h2><pre><code>type Build struct {
+            Most flags are supported, but some less-common flags are not. If you require an
+            unsupported flag, then build your base command and call Command to set custom
+            arguments on the Modmake Command that is returned.</p><a href="/modmake/godoc">All Packages</a>
+        <hr>
+        <h1 id="index">Index <a href="#index">[link]</a></h1><a href="#constants">Constants</a>
+        <ul>
+            <li>
+                <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#const_EnvDockerPath">EnvDockerPath</a>
+            </li>
+        </ul>
+        <a href="#functions">Functions</a>
+        <ul>
+            <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#func_Docker">Docker</a></li>
+            <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#func_NewHealthCheck">NewHealthCheck</a>
+            </li>
+        </ul>
+        <a href="#types">Types</a>
+        <ul>
+            <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build</a>
+                <ul>
+                    <li>
+                        <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_BuildArg">BuildArg</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Command">Command</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_ContextDir">ContextDir</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_EnableDebugLogging">EnableDebugLogging</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Label">Label</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_NoCache">NoCache</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Pull">Pull</a></li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Run">Run</a></li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Secret">Secret</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_String">String</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Tag">Tag</a></li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Tagf">Tagf</a></li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Task">Task</a></li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_WriteImageIDTo">WriteImageIDTo</a>
+                    </li>
+                </ul>
+            </li>
+            <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck">HealthCheck</a>
+                <ul>
+                    <li>
+                        <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck_CheckInterval">CheckInterval</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck_CheckRetries">CheckRetries</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck_CheckTimeout">CheckTimeout</a>
+                    </li>
+                    <li>
+                        <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck_StartCheckInterval">StartCheckInterval</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck_StartDelay">StartDelay</a>
+                    </li>
+                </ul>
+            </li>
+            <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Inst">Inst</a>
+                <ul>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Inst_Build">Build</a></li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Inst_Run">Run</a></li>
+                </ul>
+            </li>
+            <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run</a>
+                <ul>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AddCapability">AddCapability</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AddHost">AddHost</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AllocateTTY">AllocateTTY</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AttachStderr">AttachStderr</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AttachStdin">AttachStdin</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AttachStdout">AttachStdout</a>
+                    </li>
+                    <li>
+                        <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_BindMount">BindMount</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_BindMountReadOnly">BindMountReadOnly</a>
+                    </li>
+                    <li>
+                        <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_CPUShares">CPUShares</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_CPUs">CPUs</a></li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Command">Command</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_ContainerName">ContainerName</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Detach">Detach</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_DropCapability">DropCapability</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_EnvFile">EnvFile</a>
+                    </li>
+                    <li>
+                        <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_ExposePort">ExposePort</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Interactive">Interactive</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_InteractiveTTY">InteractiveTTY</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_JoinNetwork">JoinNetwork</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_MemoryLimit">MemoryLimit</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_NoHealthCheck">NoHealthCheck</a>
+                    </li>
+                    <li>
+                        <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Privileged">Privileged</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_PullBeforeRunning">PullBeforeRunning</a>
+                    </li>
+                    <li>
+                        <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_PullQuietlyBeforeRunning">PullQuietlyBeforeRunning</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_RemoveAfterExit">RemoveAfterExit</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_ReserveMemory">ReserveMemory</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_RestartPolicy">RestartPolicy</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Run">Run</a></li>
+                    <li>
+                        <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_RunCommand">RunCommand</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetEnv">SetEnv</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetHealthCheck">SetHealthCheck</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetHostName">SetHostName</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetIP">SetIP</a></li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetIPv6">SetIPv6</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetLabel">SetLabel</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetUser">SetUser</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetWorkingDir">SetWorkingDir</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_StopTimeout">StopTimeout</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_String">String</a>
+                    </li>
+                    <li><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Task">Task</a></li>
+                    <li>
+                        <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_UseWindowsContainerPaths">UseWindowsContainerPaths</a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+        <hr>
+        <h1 id="constants">Constants <a href="#constants">[link]</a></h1>
+        <hr>
+        <h2 id="const_EnvDockerPath">EnvDockerPath <a
+                href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#const_EnvDockerPath">[link]</a></h2>
+        <pre><code>EnvDockerPath = &#34;MODMAKE_DOCKER_PATH&#34;</code></pre>
+        <p></p>
+        <hr>
+        <h1 id="functions">Functions <a href="#functions">[link]</a></h1>
+        <hr>
+        <h2 id="func_Docker">Docker <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#func_Docker">[link]</a>
+        </h2>
+        <pre><code>func Docker() *Inst</code></pre>
+        <p></p>
+        <hr>
+        <h2 id="func_NewHealthCheck">NewHealthCheck <a
+                href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#func_NewHealthCheck">[link]</a></h2>
+        <pre><code>func NewHealthCheck(cmd string, args ...string) *HealthCheck</code></pre>
+        <p></p>
+        <hr>
+        <h1 id="types">Types <a href="#types">[link]</a></h1>
+        <hr>
+        <h2 id="Build">Build <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">[link]</a>
+        </h2>
+        <pre><code>type Build struct {
 	// Has unexported fields.
-}</code></pre><p></p><h3 id="Build_BuildArg"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build.</a>BuildArg <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_BuildArg">[link]</a></h3><pre><code>func (b *Build) BuildArg(key, val string) *Build</code></pre><p></p><h3 id="Build_Command"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build.</a>Command <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Command">[link]</a></h3><pre><code>func (b *Build) Command() *modmake.Command</code></pre><p></p><h3 id="Build_ContextDir"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build.</a>ContextDir <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_ContextDir">[link]</a></h3><pre><code>func (b *Build) ContextDir(dir modmake.PathString) *Build</code></pre><p></p><h3 id="Build_EnableDebugLogging"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build.</a>EnableDebugLogging <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_EnableDebugLogging">[link]</a></h3><pre><code>func (b *Build) EnableDebugLogging() *Build</code></pre><p></p><h3 id="Build_Label"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build.</a>Label <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Label">[link]</a></h3><pre><code>func (b *Build) Label(imageLabel string) *Build</code></pre><p></p><h3 id="Build_NoCache"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build.</a>NoCache <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_NoCache">[link]</a></h3><pre><code>func (b *Build) NoCache() *Build</code></pre><p></p><h3 id="Build_Pull"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build.</a>Pull <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Pull">[link]</a></h3><pre><code>func (b *Build) Pull() *Build</code></pre><p></p><h3 id="Build_Run"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build.</a>Run <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Run">[link]</a></h3><pre><code>func (b *Build) Run(ctx context.Context) error</code></pre><p></p><h3 id="Build_Secret"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build.</a>Secret <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Secret">[link]</a></h3><pre><code>func (b *Build) Secret(id, value string) *Build</code></pre><p></p><h3 id="Build_String"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build.</a>String <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_String">[link]</a></h3><pre><code>func (b *Build) String() string</code></pre><p></p><h3 id="Build_Tag"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build.</a>Tag <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Tag">[link]</a></h3><pre><code>func (b *Build) Tag(imageTag string) *Build</code></pre><p></p><h3 id="Build_Tagf"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build.</a>Tagf <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Tagf">[link]</a></h3><pre><code>func (b *Build) Tagf(tagFormat string, args ...any) *Build</code></pre><p></p><h3 id="Build_Task"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build.</a>Task <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Task">[link]</a></h3><pre><code>func (b *Build) Task() modmake.Task</code></pre><p></p><h3 id="Build_WriteImageIDTo"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build.</a>WriteImageIDTo <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_WriteImageIDTo">[link]</a></h3><pre><code>func (b *Build) WriteImageIDTo(idFile modmake.PathString) *Build</code></pre><p></p><hr><h2 id="HealthCheck">HealthCheck <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck">[link]</a></h2><pre><code>type HealthCheck struct {
+}</code></pre>
+        <p></p>
+        <h3 id="Build_BuildArg"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build.</a>BuildArg
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_BuildArg">[link]</a></h3>
+        <pre><code>func (b *Build) BuildArg(key, val string) *Build</code></pre>
+        <p></p>
+        <h3 id="Build_Command"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build.</a>Command
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Command">[link]</a></h3>
+        <pre><code>func (b *Build) Command() *modmake.Command</code></pre>
+        <p></p>
+        <h3 id="Build_ContextDir"><a
+                href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build.</a>ContextDir <a
+                href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_ContextDir">[link]</a></h3>
+        <pre><code>func (b *Build) ContextDir(dir modmake.PathString) *Build</code></pre>
+        <p></p>
+        <h3 id="Build_EnableDebugLogging"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build.</a>EnableDebugLogging
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_EnableDebugLogging">[link]</a>
+        </h3>
+        <pre><code>func (b *Build) EnableDebugLogging() *Build</code></pre>
+        <p></p>
+        <h3 id="Build_Label"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build.</a>Label
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Label">[link]</a></h3>
+        <pre><code>func (b *Build) Label(imageLabel string) *Build</code></pre>
+        <p></p>
+        <h3 id="Build_NoCache"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build.</a>NoCache
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_NoCache">[link]</a></h3>
+        <pre><code>func (b *Build) NoCache() *Build</code></pre>
+        <p></p>
+        <h3 id="Build_Pull"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build.</a>Pull
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Pull">[link]</a></h3>
+        <pre><code>func (b *Build) Pull() *Build</code></pre>
+        <p></p>
+        <h3 id="Build_Run"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build.</a>Run <a
+                href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Run">[link]</a></h3>
+        <pre><code>func (b *Build) Run(ctx context.Context) error</code></pre>
+        <p></p>
+        <h3 id="Build_Secret"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build.</a>Secret
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Secret">[link]</a></h3>
+        <pre><code>func (b *Build) Secret(id, value string) *Build</code></pre>
+        <p></p>
+        <h3 id="Build_String"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build.</a>String
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_String">[link]</a></h3>
+        <pre><code>func (b *Build) String() string</code></pre>
+        <p></p>
+        <h3 id="Build_Tag"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build.</a>Tag <a
+                href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Tag">[link]</a></h3>
+        <pre><code>func (b *Build) Tag(imageTag string) *Build</code></pre>
+        <p></p>
+        <h3 id="Build_Tagf"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build.</a>Tagf
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Tagf">[link]</a></h3>
+        <pre><code>func (b *Build) Tagf(tagFormat string, args ...any) *Build</code></pre>
+        <p></p>
+        <h3 id="Build_Task"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build.</a>Task
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_Task">[link]</a></h3>
+        <pre><code>func (b *Build) Task() modmake.Task</code></pre>
+        <p></p>
+        <h3 id="Build_WriteImageIDTo"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build">Build.</a>WriteImageIDTo
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Build_WriteImageIDTo">[link]</a></h3>
+        <pre><code>func (b *Build) WriteImageIDTo(idFile modmake.PathString) *Build</code></pre>
+        <p></p>
+        <hr>
+        <h2 id="HealthCheck">HealthCheck <a
+                href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck">[link]</a></h2>
+        <pre><code>type HealthCheck struct {
 	// Has unexported fields.
-}</code></pre><p></p><h3 id="HealthCheck_CheckInterval"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck">HealthCheck.</a>CheckInterval <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck_CheckInterval">[link]</a></h3><pre><code>func (hc *HealthCheck) CheckInterval(interval time.Duration) *HealthCheck</code></pre><p></p><h3 id="HealthCheck_CheckRetries"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck">HealthCheck.</a>CheckRetries <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck_CheckRetries">[link]</a></h3><pre><code>func (hc *HealthCheck) CheckRetries(num int) *HealthCheck</code></pre><p></p><h3 id="HealthCheck_CheckTimeout"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck">HealthCheck.</a>CheckTimeout <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck_CheckTimeout">[link]</a></h3><pre><code>func (hc *HealthCheck) CheckTimeout(timeout time.Duration) *HealthCheck</code></pre><p></p><h3 id="HealthCheck_StartCheckInterval"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck">HealthCheck.</a>StartCheckInterval <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck_StartCheckInterval">[link]</a></h3><pre><code>func (hc *HealthCheck) StartCheckInterval(interval time.Duration) *HealthCheck</code></pre><p></p><h3 id="HealthCheck_StartDelay"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck">HealthCheck.</a>StartDelay <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck_StartDelay">[link]</a></h3><pre><code>func (hc *HealthCheck) StartDelay(delay time.Duration) *HealthCheck</code></pre><p></p><hr><h2 id="Inst">Inst <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Inst">[link]</a></h2><pre><code>type Inst struct {
+}</code></pre>
+        <p></p>
+        <h3 id="HealthCheck_CheckInterval"><a
+                href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck">HealthCheck.</a>CheckInterval
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck_CheckInterval">[link]</a>
+        </h3>
+        <pre><code>func (hc *HealthCheck) CheckInterval(interval time.Duration) *HealthCheck</code></pre>
+        <p></p>
+        <h3 id="HealthCheck_CheckRetries"><a
+                href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck">HealthCheck.</a>CheckRetries
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck_CheckRetries">[link]</a>
+        </h3>
+        <pre><code>func (hc *HealthCheck) CheckRetries(num int) *HealthCheck</code></pre>
+        <p></p>
+        <h3 id="HealthCheck_CheckTimeout"><a
+                href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck">HealthCheck.</a>CheckTimeout
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck_CheckTimeout">[link]</a>
+        </h3>
+        <pre><code>func (hc *HealthCheck) CheckTimeout(timeout time.Duration) *HealthCheck</code></pre>
+        <p></p>
+        <h3 id="HealthCheck_StartCheckInterval"><a
+                href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck">HealthCheck.</a>StartCheckInterval
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck_StartCheckInterval">[link]</a>
+        </h3>
+        <pre><code>func (hc *HealthCheck) StartCheckInterval(interval time.Duration) *HealthCheck</code></pre>
+        <p></p>
+        <h3 id="HealthCheck_StartDelay"><a
+                href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck">HealthCheck.</a>StartDelay
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#HealthCheck_StartDelay">[link]</a>
+        </h3>
+        <pre><code>func (hc *HealthCheck) StartDelay(delay time.Duration) *HealthCheck</code></pre>
+        <p></p>
+        <hr>
+        <h2 id="Inst">Inst <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Inst">[link]</a></h2>
+        <pre><code>type Inst struct {
 	// Has unexported fields.
-}</code></pre><p></p><h3 id="Inst_Build"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Inst">Inst.</a>Build <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Inst_Build">[link]</a></h3><pre><code>func (d *Inst) Build(dockerfilePath modmake.PathString) *Build</code></pre><p></p><h3 id="Inst_Run"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Inst">Inst.</a>Run <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Inst_Run">[link]</a></h3><pre><code>func (d *Inst) Run(imageName string) *Run</code></pre><p></p><hr><h2 id="Run">Run <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">[link]</a></h2><pre><code>type Run struct {
+}</code></pre>
+        <p></p>
+        <h3 id="Inst_Build"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Inst">Inst.</a>Build
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Inst_Build">[link]</a></h3>
+        <pre><code>func (d *Inst) Build(dockerfilePath modmake.PathString) *Build</code></pre>
+        <p></p>
+        <h3 id="Inst_Run"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Inst">Inst.</a>Run <a
+                href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Inst_Run">[link]</a></h3>
+        <pre><code>func (d *Inst) Run(imageName string) *Run</code></pre>
+        <p></p>
+        <hr>
+        <h2 id="Run">Run <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">[link]</a></h2>
+        <pre><code>type Run struct {
 	// Has unexported fields.
-}</code></pre><p></p><h3 id="Run_AddCapability"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>AddCapability <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AddCapability">[link]</a></h3><pre><code>func (d *Run) AddCapability(cap string) *Run</code></pre><p></p><h3 id="Run_AddHost"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>AddHost <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AddHost">[link]</a></h3><pre><code>func (d *Run) AddHost(host string, ip net.IP) *Run</code></pre><p></p><h3 id="Run_AllocateTTY"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>AllocateTTY <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AllocateTTY">[link]</a></h3><pre><code>func (d *Run) AllocateTTY() *Run</code></pre><p></p><h3 id="Run_AttachStderr"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>AttachStderr <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AttachStderr">[link]</a></h3><pre><code>func (d *Run) AttachStderr() *Run</code></pre><p></p><h3 id="Run_AttachStdin"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>AttachStdin <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AttachStdin">[link]</a></h3><pre><code>func (d *Run) AttachStdin() *Run</code></pre><p></p><h3 id="Run_AttachStdout"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>AttachStdout <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AttachStdout">[link]</a></h3><pre><code>func (d *Run) AttachStdout() *Run</code></pre><p></p><h3 id="Run_BindMount"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>BindMount <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_BindMount">[link]</a></h3><pre><code>func (d *Run) BindMount(hostPath, mountPath modmake.PathString) *Run</code></pre><p>BindMount defines a volume mount mapping a host path to a container path.</p><h3 id="Run_BindMountReadOnly"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>BindMountReadOnly <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_BindMountReadOnly">[link]</a></h3><pre><code>func (d *Run) BindMountReadOnly(hostPath, mountPath modmake.PathString) *Run</code></pre><p></p><h3 id="Run_CPUShares"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>CPUShares <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_CPUShares">[link]</a></h3><pre><code>func (d *Run) CPUShares(shares int) *Run</code></pre><p></p><h3 id="Run_CPUs"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>CPUs <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_CPUs">[link]</a></h3><pre><code>func (d *Run) CPUs(numCpus float64) *Run</code></pre><p></p><h3 id="Run_Command"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>Command <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Command">[link]</a></h3><pre><code>func (d *Run) Command() *modmake.Command</code></pre><p></p><h3 id="Run_ContainerName"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>ContainerName <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_ContainerName">[link]</a></h3><pre><code>func (d *Run) ContainerName(name string) *Run</code></pre><p></p><h3 id="Run_Detach"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>Detach <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Detach">[link]</a></h3><pre><code>func (d *Run) Detach() *Run</code></pre><p></p><h3 id="Run_DropCapability"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>DropCapability <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_DropCapability">[link]</a></h3><pre><code>func (d *Run) DropCapability(cap string) *Run</code></pre><p></p><h3 id="Run_EnvFile"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>EnvFile <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_EnvFile">[link]</a></h3><pre><code>func (d *Run) EnvFile(envFile modmake.PathString) *Run</code></pre><p></p><h3 id="Run_ExposePort"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>ExposePort <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_ExposePort">[link]</a></h3><pre><code>func (d *Run) ExposePort(host, container int) *Run</code></pre><p></p><h3 id="Run_Interactive"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>Interactive <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Interactive">[link]</a></h3><pre><code>func (d *Run) Interactive() *Run</code></pre><p></p><h3 id="Run_InteractiveTTY"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>InteractiveTTY <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_InteractiveTTY">[link]</a></h3><pre><code>func (d *Run) InteractiveTTY() *Run</code></pre><p></p><h3 id="Run_JoinNetwork"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>JoinNetwork <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_JoinNetwork">[link]</a></h3><pre><code>func (d *Run) JoinNetwork(networkName string) *Run</code></pre><p></p><h3 id="Run_MemoryLimit"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>MemoryLimit <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_MemoryLimit">[link]</a></h3><pre><code>func (d *Run) MemoryLimit(limitBytes int) *Run</code></pre><p></p><h3 id="Run_NoHealthCheck"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>NoHealthCheck <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_NoHealthCheck">[link]</a></h3><pre><code>func (d *Run) NoHealthCheck() *Run</code></pre><p></p><h3 id="Run_Privileged"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>Privileged <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Privileged">[link]</a></h3><pre><code>func (d *Run) Privileged() *Run</code></pre><p></p><h3 id="Run_PullBeforeRunning"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>PullBeforeRunning <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_PullBeforeRunning">[link]</a></h3><pre><code>func (d *Run) PullBeforeRunning() *Run</code></pre><p></p><h3 id="Run_PullQuietlyBeforeRunning"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>PullQuietlyBeforeRunning <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_PullQuietlyBeforeRunning">[link]</a></h3><pre><code>func (d *Run) PullQuietlyBeforeRunning() *Run</code></pre><p></p><h3 id="Run_RemoveAfterExit"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>RemoveAfterExit <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_RemoveAfterExit">[link]</a></h3><pre><code>func (d *Run) RemoveAfterExit() *Run</code></pre><p></p><h3 id="Run_ReserveMemory"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>ReserveMemory <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_ReserveMemory">[link]</a></h3><pre><code>func (d *Run) ReserveMemory(softLimitBytes int) *Run</code></pre><p></p><h3 id="Run_RestartPolicy"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>RestartPolicy <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_RestartPolicy">[link]</a></h3><pre><code>func (d *Run) RestartPolicy(policy string) *Run</code></pre><p></p><h3 id="Run_Run"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>Run <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Run">[link]</a></h3><pre><code>func (d *Run) Run(ctx context.Context) error</code></pre><p></p><h3 id="Run_RunCommand"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>RunCommand <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_RunCommand">[link]</a></h3><pre><code>func (d *Run) RunCommand(cmd string, args ...string) modmake.Task</code></pre><p>RunCommand produces a Task that runs the specified command in the container.</p><h3 id="Run_SetEnv"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>SetEnv <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetEnv">[link]</a></h3><pre><code>func (d *Run) SetEnv(key, val string) *Run</code></pre><p></p><h3 id="Run_SetHealthCheck"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>SetHealthCheck <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetHealthCheck">[link]</a></h3><pre><code>func (d *Run) SetHealthCheck(check *HealthCheck) *Run</code></pre><p></p><h3 id="Run_SetHostName"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>SetHostName <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetHostName">[link]</a></h3><pre><code>func (d *Run) SetHostName(hostName string) *Run</code></pre><p></p><h3 id="Run_SetIP"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>SetIP <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetIP">[link]</a></h3><pre><code>func (d *Run) SetIP(ip net.IP) *Run</code></pre><p></p><h3 id="Run_SetIPv6"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>SetIPv6 <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetIPv6">[link]</a></h3><pre><code>func (d *Run) SetIPv6(ip net.IP) *Run</code></pre><p></p><h3 id="Run_SetLabel"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>SetLabel <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetLabel">[link]</a></h3><pre><code>func (d *Run) SetLabel(label string) *Run</code></pre><p></p><h3 id="Run_SetUser"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>SetUser <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetUser">[link]</a></h3><pre><code>func (d *Run) SetUser(user string) *Run</code></pre><p>SetUser sets the running user (and possibly group) with this pattern:
-&lt;name|uid&gt;[:&lt;group|gid&gt;]</p><h3 id="Run_SetWorkingDir"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>SetWorkingDir <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetWorkingDir">[link]</a></h3><pre><code>func (d *Run) SetWorkingDir(containerPath modmake.PathString) *Run</code></pre><p></p><h3 id="Run_StopTimeout"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>StopTimeout <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_StopTimeout">[link]</a></h3><pre><code>func (d *Run) StopTimeout(timeout time.Duration) *Run</code></pre><p></p><h3 id="Run_String"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>String <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_String">[link]</a></h3><pre><code>func (d *Run) String() string</code></pre><p></p><h3 id="Run_Task"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>Task <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Task">[link]</a></h3><pre><code>func (d *Run) Task() modmake.Task</code></pre><p></p><h3 id="Run_UseWindowsContainerPaths"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>UseWindowsContainerPaths <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_UseWindowsContainerPaths">[link]</a></h3><pre><code>func (d *Run) UseWindowsContainerPaths() *Run</code></pre><p></p></section></div></body></html>
+}</code></pre>
+        <p></p>
+        <h3 id="Run_AddCapability"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>AddCapability
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AddCapability">[link]</a></h3>
+        <pre><code>func (d *Run) AddCapability(cap string) *Run</code></pre>
+        <p></p>
+        <h3 id="Run_AddHost"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>AddHost
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AddHost">[link]</a></h3>
+        <pre><code>func (d *Run) AddHost(host string, ip net.IP) *Run</code></pre>
+        <p></p>
+        <h3 id="Run_AllocateTTY"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>AllocateTTY
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AllocateTTY">[link]</a></h3>
+        <pre><code>func (d *Run) AllocateTTY() *Run</code></pre>
+        <p></p>
+        <h3 id="Run_AttachStderr"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>AttachStderr
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AttachStderr">[link]</a></h3>
+        <pre><code>func (d *Run) AttachStderr() *Run</code></pre>
+        <p></p>
+        <h3 id="Run_AttachStdin"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>AttachStdin
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AttachStdin">[link]</a></h3>
+        <pre><code>func (d *Run) AttachStdin() *Run</code></pre>
+        <p></p>
+        <h3 id="Run_AttachStdout"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>AttachStdout
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_AttachStdout">[link]</a></h3>
+        <pre><code>func (d *Run) AttachStdout() *Run</code></pre>
+        <p></p>
+        <h3 id="Run_BindMount"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>BindMount
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_BindMount">[link]</a></h3>
+        <pre><code>func (d *Run) BindMount(hostPath, mountPath modmake.PathString) *Run</code></pre>
+        <p>BindMount defines a volume mount mapping a host path to a container path.</p>
+        <h3 id="Run_BindMountReadOnly"><a
+                href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>BindMountReadOnly <a
+                href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_BindMountReadOnly">[link]</a>
+        </h3>
+        <pre><code>func (d *Run) BindMountReadOnly(hostPath, mountPath modmake.PathString) *Run</code></pre>
+        <p></p>
+        <h3 id="Run_CPUShares"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>CPUShares
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_CPUShares">[link]</a></h3>
+        <pre><code>func (d *Run) CPUShares(shares int) *Run</code></pre>
+        <p></p>
+        <h3 id="Run_CPUs"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>CPUs <a
+                href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_CPUs">[link]</a></h3>
+        <pre><code>func (d *Run) CPUs(numCpus float64) *Run</code></pre>
+        <p></p>
+        <h3 id="Run_Command"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>Command
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Command">[link]</a></h3>
+        <pre><code>func (d *Run) Command() *modmake.Command</code></pre>
+        <p></p>
+        <h3 id="Run_ContainerName"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>ContainerName
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_ContainerName">[link]</a></h3>
+        <pre><code>func (d *Run) ContainerName(name string) *Run</code></pre>
+        <p></p>
+        <h3 id="Run_Detach"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>Detach <a
+                href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Detach">[link]</a></h3>
+        <pre><code>func (d *Run) Detach() *Run</code></pre>
+        <p></p>
+        <h3 id="Run_DropCapability"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>DropCapability
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_DropCapability">[link]</a></h3>
+        <pre><code>func (d *Run) DropCapability(cap string) *Run</code></pre>
+        <p></p>
+        <h3 id="Run_EnvFile"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>EnvFile
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_EnvFile">[link]</a></h3>
+        <pre><code>func (d *Run) EnvFile(envFile modmake.PathString) *Run</code></pre>
+        <p></p>
+        <h3 id="Run_ExposePort"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>ExposePort
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_ExposePort">[link]</a></h3>
+        <pre><code>func (d *Run) ExposePort(host, container int) *Run</code></pre>
+        <p></p>
+        <h3 id="Run_Interactive"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>Interactive
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Interactive">[link]</a></h3>
+        <pre><code>func (d *Run) Interactive() *Run</code></pre>
+        <p></p>
+        <h3 id="Run_InteractiveTTY"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>InteractiveTTY
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_InteractiveTTY">[link]</a></h3>
+        <pre><code>func (d *Run) InteractiveTTY() *Run</code></pre>
+        <p></p>
+        <h3 id="Run_JoinNetwork"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>JoinNetwork
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_JoinNetwork">[link]</a></h3>
+        <pre><code>func (d *Run) JoinNetwork(networkName string) *Run</code></pre>
+        <p></p>
+        <h3 id="Run_MemoryLimit"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>MemoryLimit
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_MemoryLimit">[link]</a></h3>
+        <pre><code>func (d *Run) MemoryLimit(limitBytes int) *Run</code></pre>
+        <p></p>
+        <h3 id="Run_NoHealthCheck"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>NoHealthCheck
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_NoHealthCheck">[link]</a></h3>
+        <pre><code>func (d *Run) NoHealthCheck() *Run</code></pre>
+        <p></p>
+        <h3 id="Run_Privileged"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>Privileged
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Privileged">[link]</a></h3>
+        <pre><code>func (d *Run) Privileged() *Run</code></pre>
+        <p></p>
+        <h3 id="Run_PullBeforeRunning"><a
+                href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>PullBeforeRunning <a
+                href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_PullBeforeRunning">[link]</a>
+        </h3>
+        <pre><code>func (d *Run) PullBeforeRunning() *Run</code></pre>
+        <p></p>
+        <h3 id="Run_PullQuietlyBeforeRunning"><a
+                href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>PullQuietlyBeforeRunning
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_PullQuietlyBeforeRunning">[link]</a>
+        </h3>
+        <pre><code>func (d *Run) PullQuietlyBeforeRunning() *Run</code></pre>
+        <p></p>
+        <h3 id="Run_RemoveAfterExit"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>RemoveAfterExit
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_RemoveAfterExit">[link]</a></h3>
+        <pre><code>func (d *Run) RemoveAfterExit() *Run</code></pre>
+        <p></p>
+        <h3 id="Run_ReserveMemory"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>ReserveMemory
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_ReserveMemory">[link]</a></h3>
+        <pre><code>func (d *Run) ReserveMemory(softLimitBytes int) *Run</code></pre>
+        <p></p>
+        <h3 id="Run_RestartPolicy"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>RestartPolicy
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_RestartPolicy">[link]</a></h3>
+        <pre><code>func (d *Run) RestartPolicy(policy string) *Run</code></pre>
+        <p></p>
+        <h3 id="Run_Run"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>Run <a
+                href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Run">[link]</a></h3>
+        <pre><code>func (d *Run) Run(ctx context.Context) error</code></pre>
+        <p></p>
+        <h3 id="Run_RunCommand"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>RunCommand
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_RunCommand">[link]</a></h3>
+        <pre><code>func (d *Run) RunCommand(cmd string, args ...string) modmake.Task</code></pre>
+        <p>RunCommand produces a Task that runs the specified command in the container.</p>
+        <h3 id="Run_SetEnv"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>SetEnv <a
+                href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetEnv">[link]</a></h3>
+        <pre><code>func (d *Run) SetEnv(key, val string) *Run</code></pre>
+        <p></p>
+        <h3 id="Run_SetHealthCheck"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>SetHealthCheck
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetHealthCheck">[link]</a></h3>
+        <pre><code>func (d *Run) SetHealthCheck(check *HealthCheck) *Run</code></pre>
+        <p></p>
+        <h3 id="Run_SetHostName"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>SetHostName
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetHostName">[link]</a></h3>
+        <pre><code>func (d *Run) SetHostName(hostName string) *Run</code></pre>
+        <p></p>
+        <h3 id="Run_SetIP"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>SetIP <a
+                href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetIP">[link]</a></h3>
+        <pre><code>func (d *Run) SetIP(ip net.IP) *Run</code></pre>
+        <p></p>
+        <h3 id="Run_SetIPv6"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>SetIPv6
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetIPv6">[link]</a></h3>
+        <pre><code>func (d *Run) SetIPv6(ip net.IP) *Run</code></pre>
+        <p></p>
+        <h3 id="Run_SetLabel"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>SetLabel
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetLabel">[link]</a></h3>
+        <pre><code>func (d *Run) SetLabel(label string) *Run</code></pre>
+        <p></p>
+        <h3 id="Run_SetUser"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>SetUser
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetUser">[link]</a></h3>
+        <pre><code>func (d *Run) SetUser(user string) *Run</code></pre>
+        <p>SetUser sets the running user (and possibly group) with this pattern:
+            &lt;name|uid&gt;[:&lt;group|gid&gt;]</p>
+        <h3 id="Run_SetWorkingDir"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>SetWorkingDir
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_SetWorkingDir">[link]</a></h3>
+        <pre><code>func (d *Run) SetWorkingDir(containerPath modmake.PathString) *Run</code></pre>
+        <p></p>
+        <h3 id="Run_StopTimeout"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>StopTimeout
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_StopTimeout">[link]</a></h3>
+        <pre><code>func (d *Run) StopTimeout(timeout time.Duration) *Run</code></pre>
+        <p></p>
+        <h3 id="Run_String"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>String <a
+                href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_String">[link]</a></h3>
+        <pre><code>func (d *Run) String() string</code></pre>
+        <p></p>
+        <h3 id="Run_Task"><a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>Task <a
+                href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_Task">[link]</a></h3>
+        <pre><code>func (d *Run) Task() modmake.Task</code></pre>
+        <p></p>
+        <h3 id="Run_UseWindowsContainerPaths"><a
+                href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run">Run.</a>UseWindowsContainerPaths
+            <a href="/modmake/godoc/github.com/saylorsolutions/modmake/pkg/docker#Run_UseWindowsContainerPaths">[link]</a>
+        </h3>
+        <pre><code>func (d *Run) UseWindowsContainerPaths() *Run</code></pre>
+        <p></p></section>
+</div>
+</body>
+</html>

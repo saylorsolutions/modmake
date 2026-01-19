@@ -153,15 +153,17 @@ aside > p {
     font-size: 1.1em;
 }
 
-@media (max-width:650px) {
+@media (max-width: 650px) {
     :root {
         --side-panel-size: 0;
     }
+
     #side-panel {
         padding: 0;
         border-right: inherit;
         display: none;
     }
+
     #content {
         width: 100%;
     }

@@ -8,7 +8,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	mm "github.com/saylorsolutions/modmake"
 	"go/token"
 	"hash"
 	"io"
@@ -19,6 +18,8 @@ import (
 	"sync"
 	"text/template"
 	"unicode"
+
+	mm "github.com/saylorsolutions/modmake"
 )
 
 const (
