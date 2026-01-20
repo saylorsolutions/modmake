@@ -293,6 +293,7 @@ func (s *Step) ResetState() *Step {
 }
 
 // Debounce
+//
 // Deprecated: use a Task if debounce or multiple executions are needed.
 func (s *Step) Debounce(interval time.Duration) Task {
 	if s == nil {
