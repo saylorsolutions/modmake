@@ -3,6 +3,7 @@ package modmake
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"runtime"
 	"strings"
 
@@ -10,8 +11,9 @@ import (
 )
 
 var (
-	BuildPath = F("${MODMAKE_BUILD:build}") // BuildPath defines the root directory where built artifacts are written, defaults to 'build'.
-	DistPath  = F("${MODMAKE_DIST:dist}")   // DistPath defines the root directory where packaged artifacts are written, defaults to 'dist'.
+	BuildPath       = F("${MODMAKE_BUILD:build}") // BuildPath defines the root directory where built artifacts are written, defaults to 'build'.
+	DistPath        = F("${MODMAKE_DIST:dist}")   // DistPath defines the root directory where packaged artifacts are written, defaults to 'dist'.
+	appBuildPattern = regexp.MustCompile(`[^a-z0-9_-]`)
 )
 
 // AppBuildFunc is a function used to customize an AppBuild or AppVariant's build step.
@@ -88,6 +90,12 @@ type AppBuild struct {
 	installPackageFunc AppPackageFunc
 }
 
+func (a *AppBuild) appBuildName() string {
+	name := appBuildPattern.ReplaceAllString(strings.ToLower(a.appName), "")
+	assert.NotEmpty(&name)
+	return name
+}
+
 // NewAppBuild creates a new AppBuild with the given details.
 // Empty values are not allowed and will result in a panic.
 // If mainPath is not prefixed with the module name, then it will be added.
@@ -132,11 +140,11 @@ func (a *AppBuild) Install(pf AppPackageFunc) *AppBuild {
 }
 
 func (a *AppBuild) buildName(v *AppVariant) string {
-	return "build-" + a.appName + "_" + v.variant
+	return "build-" + a.appBuildName() + "_" + v.variant
 }
 
 func (a *AppBuild) packageName(v *AppVariant) string {
-	return "package-" + a.appName + "_" + v.variant
+	return "package-" + a.appBuildName() + "_" + v.variant
 }
 
 func (a *AppBuild) goBuild(v *AppVariant) *GoBuild {
@@ -156,7 +164,8 @@ func (a *AppBuild) goBuild(v *AppVariant) *GoBuild {
 
 func (a *AppBuild) pkgTask(v *AppVariant) Task {
 	if v.packageFunc != nil {
-		return v.packageFunc(v.buildOutput, Path(DistPath, a.appName), a.appName, v.variant, a.version)
+		buildName := a.appBuildName()
+		return v.packageFunc(v.buildOutput, Path(DistPath, buildName), buildName, v.variant, a.version)
 	}
 	return nil
 }
@@ -169,11 +178,12 @@ func (a *AppBuild) AsBuild() *Build {
 		a.HostVariant()
 	}
 	b := NewBuild()
-	b.Package().DependsOnRunner("create-"+a.appName+"-dist", "Ensures the application dist directory exists",
-		RemoveDir(Path(DistPath, a.appName)),
+	buildName := a.appBuildName()
+	b.Package().DependsOnRunner("create-"+buildName+"-dist", "Ensures the application dist directory exists",
+		RemoveDir(Path(DistPath, buildName)),
 	)
 	for _, v := range a.variants {
-		buildStep := NewStep(a.buildName(v), fmt.Sprintf("Builds %s for %s/%s", a.appName, v.os, v.arch))
+		buildStep := NewStep(a.buildName(v), fmt.Sprintf("Builds %s for %s/%s", buildName, v.os, v.arch))
 		buildStep.Does(a.goBuild(v))
 		b.AddStep(buildStep)
 		b.Build().DependsOnRunner("clean-"+a.buildName(v), "Removes previous build output",
@@ -183,17 +193,17 @@ func (a *AppBuild) AsBuild() *Build {
 
 		pkgTask := a.pkgTask(v)
 		if pkgTask != nil {
-			pkgStep := NewStep(a.packageName(v), fmt.Sprintf("Packages %s for %s/%s", a.appName, v.os, v.arch))
+			pkgStep := NewStep(a.packageName(v), fmt.Sprintf("Packages %s for %s/%s", buildName, v.os, v.arch))
 			pkgStep.Does(a.pkgTask(v))
 			pkgStep.DependsOnRunner("ensure-dist-"+a.packageName(v), "Ensures the application dist directory exists",
-				MkdirAll(Path(DistPath, a.appName), 0755),
+				MkdirAll(Path(DistPath, buildName), 0755),
 			)
 			b.AddStep(pkgStep)
 			b.Package().DependsOn(pkgStep)
 		}
 	}
 	installVariant := a.NamedVariant("install", runtime.GOOS, runtime.GOARCH).Package(a.installPackageFunc)
-	installStep := NewStep("install", "Installs "+a.appName).Does(a.pkgTask(installVariant))
+	installStep := NewStep("install", "Installs "+buildName).Does(a.pkgTask(installVariant))
 	installStep.BeforeRun(a.goBuild(installVariant))
 	b.AddStep(installStep)
 	return b
@@ -201,7 +211,7 @@ func (a *AppBuild) AsBuild() *Build {
 
 // ImportApp imports an AppBuild as a new [Build], attaching its build and package steps as dependencies of the parent build's steps.
 func (b *Build) ImportApp(a *AppBuild) {
-	b.ImportAndLink(a.appName, a.AsBuild())
+	b.ImportAndLink(a.appBuildName(), a.AsBuild())
 }
 
 // AppVariant is a variant of an AppBuild with an OS/Arch specified.
@@ -231,18 +241,19 @@ func (a *AppBuild) NamedVariant(variant, os, arch string) *AppVariant {
 	if a.hasVariant(variant) {
 		panic("variant " + variant + " already exists")
 	}
-	exeName := a.appName
+	exeName := strings.TrimSpace(a.appName)
 	pkgFunc := PackageTar()
 	if os == "windows" {
 		exeName += ".exe"
 		pkgFunc = PackageZip()
 	}
+	buildName := a.appBuildName()
 	v := &AppVariant{
 		variant:     variant,
 		os:          os,
 		arch:        arch,
-		buildOutput: Path(BuildPath, fmt.Sprintf("%s_%s", a.appName, variant), exeName),
-		distDir:     Path(DistPath, a.appName),
+		buildOutput: Path(BuildPath, fmt.Sprintf("%s_%s", buildName, variant), exeName),
+		distDir:     Path(DistPath, buildName),
 		packageFunc: pkgFunc,
 	}
 	a.variants = append(a.variants, v)
