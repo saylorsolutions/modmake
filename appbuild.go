@@ -3,6 +3,7 @@ package modmake
 import (
 	"context"
 	"fmt"
+	"os"
 	"regexp"
 	"runtime"
 	"strings"
@@ -162,6 +163,12 @@ func (a *AppBuild) goBuild(v *AppVariant) *GoBuild {
 	return gb
 }
 
+func (a *AppBuild) goBuildTask(v *AppVariant) Task {
+	return a.goBuild(v).Task().Then(WithoutContext(func() error {
+		return os.Chmod(v.buildOutput.String(), 0700) //nolint:gosec // This is an executable file.
+	}))
+}
+
 func (a *AppBuild) pkgTask(v *AppVariant) Task {
 	if v.packageFunc != nil {
 		buildName := a.appBuildName()
@@ -184,7 +191,7 @@ func (a *AppBuild) AsBuild() *Build {
 	)
 	for _, v := range a.variants {
 		buildStep := NewStep(a.buildName(v), fmt.Sprintf("Builds %s for %s/%s", buildName, v.os, v.arch))
-		buildStep.Does(a.goBuild(v))
+		buildStep.Does(a.goBuildTask(v))
 		b.AddStep(buildStep)
 		b.Build().DependsOnRunner("clean-"+a.buildName(v), "Removes previous build output",
 			RemoveDir(v.buildOutput.Dir()).Then(MkdirAll(v.buildOutput.Dir(), 0755)),
@@ -204,7 +211,7 @@ func (a *AppBuild) AsBuild() *Build {
 	}
 	installVariant := a.NamedVariant("install", runtime.GOOS, runtime.GOARCH).Package(a.installPackageFunc)
 	installStep := NewStep("install", "Installs "+buildName).Does(a.pkgTask(installVariant))
-	installStep.BeforeRun(a.goBuild(installVariant))
+	installStep.BeforeRun(a.goBuildTask(installVariant))
 	b.AddStep(installStep)
 	return b
 }
