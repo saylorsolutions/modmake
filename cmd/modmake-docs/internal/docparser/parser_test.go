@@ -2,11 +2,12 @@ package docparser_test
 
 import (
 	"encoding/json"
+	"path/filepath"
+	"testing"
+
 	"github.com/saylorsolutions/modmake/cmd/modmake-docs/internal/docparser"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"path/filepath"
-	"testing"
 )
 
 func TestParser_ParsePackageDir(t *testing.T) {

@@ -3,11 +3,12 @@ package modmake
 import (
 	"context"
 	"errors"
-	"github.com/stretchr/testify/require"
 	"os"
 	"os/exec"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/stretchr/testify/assert"
 )

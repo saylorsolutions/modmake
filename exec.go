@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 type Command struct {
@@ -119,7 +120,7 @@ func (i *Command) WorkDir(workdir PathString) *Command {
 	if i.err != nil {
 		return i
 	}
-	work, err := workdir.Abs()
+	work, err := workdir.AbsErr()
 	if err != nil {
 		i.err = err
 		return i
@@ -205,4 +206,31 @@ func (i *Command) Run(ctx context.Context) error {
 
 func (i *Command) Task() Task {
 	return i.Run
+}
+
+func (i *Command) String() string {
+	return fmt.Sprintf("%s%s%s%s", i.cmd,
+		formatCommandArgs(i.initialArgs),
+		formatCommandArgs(i.args),
+		formatCommandArgs(i.trailingArgs),
+	)
+}
+
+func formatCommandArgs(args []string) string {
+	if len(args) == 0 {
+		return ""
+	}
+	var buf strings.Builder
+	buf.WriteString(" ")
+	for i, arg := range args {
+		if i > 0 {
+			buf.WriteString(" ")
+		}
+		if strings.Contains(arg, " ") {
+			buf.WriteString(fmt.Sprintf(`"%s"`, arg))
+		} else {
+			buf.WriteString(arg)
+		}
+	}
+	return buf.String()
 }

@@ -1,9 +1,10 @@
 package git
 
 import (
-	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestTools_BranchName(t *testing.T) {

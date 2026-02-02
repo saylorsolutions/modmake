@@ -1,8 +1,9 @@
 package minify
 
 import (
-	mm "github.com/saylorsolutions/modmake"
 	"path/filepath"
+
+	mm "github.com/saylorsolutions/modmake"
 )
 
 // MapFile will attempt to minify the given file and add embed entries into the configured mapping file.

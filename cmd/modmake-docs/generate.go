@@ -4,14 +4,15 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/saylorsolutions/modmake/cmd/modmake-docs/internal/templates"
-	"github.com/saylorsolutions/modmake/cmd/modmake-docs/static"
 	"io"
 	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/saylorsolutions/modmake/cmd/modmake-docs/internal/templates"
+	"github.com/saylorsolutions/modmake/cmd/modmake-docs/static"
 )
 
 func doGenerate(params templates.Params) error {

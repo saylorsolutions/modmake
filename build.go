@@ -94,7 +94,7 @@ func CallBuild(buildLocation PathString, args ...string) *Command {
 		panic("No build steps specified")
 	}
 	gt := goToolsAt(buildLocation)
-	rel, err := gt.ModuleRoot().Rel(buildLocation)
+	rel, err := gt.ModuleRoot().RelErr(buildLocation)
 	if err != nil {
 		panic(fmt.Sprintf("Unable to determine relative location to '%s' from module root path: %v", buildLocation, err))
 	}
@@ -221,7 +221,7 @@ func (b *Build) Steps() []string {
 }
 
 // Import will import all steps in the given build, with the given prefix applied and a colon separator.
-// No dependencies on the imported steps will be applied to the current build, dependencies must be applied on the parent Build after importing.
+// No dependencies on the imported steps will be applied to the current build, and dependencies must be applied on the parent Build after importing.
 //
 // This is used to integrate build steps of components in the same go module.
 // For building a separate go module (like a Git submodule, for example), use CallBuild.
@@ -229,9 +229,6 @@ func (b *Build) Import(prefix string, other *Build) {
 	for name, step := range other.stepNames {
 		step.name = prefix + ":" + name
 		b.AddStep(step)
-	}
-	for k := range standardStepNames {
-		b.Step(k).DependsOn(b.Step(prefix + ":" + k))
 	}
 }
 

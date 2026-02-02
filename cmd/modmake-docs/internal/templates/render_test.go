@@ -2,9 +2,10 @@ package templates
 
 import (
 	"context"
-	"github.com/stretchr/testify/require"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestMain_Render(t *testing.T) {

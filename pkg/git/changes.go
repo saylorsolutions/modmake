@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/saylorsolutions/modmake"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/saylorsolutions/modmake"
 )
 
 var shortStatPattern = regexp.MustCompile(`^(\d+) files? changed(, (\d+) insertions?\(\+\))?(, (\d+) deletions?\(-\))?$`)

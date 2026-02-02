@@ -2,10 +2,11 @@ package modmake
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewAppBuild(t *testing.T) {
@@ -160,4 +161,27 @@ func TestAppPackageFunc_Then(t *testing.T) {
 		})
 	})
 	a.Then(b)(Path(""), Path(""), "", "", "")
+}
+
+func TestAppBuild_appBuildName(t *testing.T) {
+	tests := map[string]string{
+		"AppName":    "appname",
+		"App Name":   "appname",
+		" APP NAME ": "appname",
+		"App - Name": "app-name",
+		"App_Name":   "app_name",
+		"APP123":     "app123",
+		"123APP":     "123app",
+	}
+
+	for name, expected := range tests {
+		t.Run(name, func(t *testing.T) {
+			require.NotPanics(t, func() {
+				b := NewBuild()
+				a := NewAppBuild(name, "./cmd/modmake", "0.0.0")
+				assert.Equal(t, expected, a.appBuildName())
+				b.ImportApp(a)
+			})
+		})
+	}
 }

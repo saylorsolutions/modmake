@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	. "github.com/saylorsolutions/modmake" //nolint:staticcheck // This is a DSL-type API
 	"log"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
+
+	. "github.com/saylorsolutions/modmake" //nolint:staticcheck // This is a DSL-type API
 )
 
 const (

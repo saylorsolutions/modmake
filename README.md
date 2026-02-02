@@ -30,15 +30,21 @@ Besides accomplishing the goals set out above, there are some key benefits with 
 * Low barrier of entry with a [consistent starting point](example/helloworld/README.md).
 * Go code works on many OS/architecture combinations, and Modmake inherits that ability.
 * Modmake includes a lot of common-use functionality with more to come:
-  * Using the Go toolchain, resolved from `GOROOT`.
-  * File system operations like creating, copying, moving, deleting files and directories with [PathString](https://github.com/saylorsolutions/modmake/blob/main/pathstring.go).
-  * Compressing and packaging with zip/tar.
-  * `go install`ing and executing external tools.
-  * Downloading files over HTTP.
-  * Git operations like getting the current branch and commit hash.
-  * Orchestrating build operations in terms of [build steps](https://saylorsolutions.github.io/modmake/#build-model_steps) and their dependencies.
+    * Using the Go toolchain, resolved from `GOROOT`.
+    * File system operations like creating, copying, moving, deleting files and directories with [PathString](https://github.com/saylorsolutions/modmake/blob/main/pathstring.go).
+    * Compressing and packaging with zip/tar.
+    * `go install`ing and executing external tools.
+    * Downloading files over HTTP.
+    * Git operations like getting the current branch and commit hash.
+    * Orchestrating build operations in terms of [build steps](https://saylorsolutions.github.io/modmake/#build-model_steps) and their dependencies.
 
- ## Additional Functionality
+## Additional Functionality
 
- I've started creating bolt-on functionality that can help fill more build gaps.
- * [modmake-docker](https://github.com/saylorsolutions/modmake-docker?tab=readme-ov-file) provides Docker build and run support.
+Additional packages are in the [pkg](pkg) directory for added functionality and different use-cases:
+
+- **docker**: Adds common Docker command support for building images, running containers, and executing commands inside running containers.
+    - These commands assume that the `docker` CLI tool is installed and runnable by the active user without privilege escalation (i.e. `sudo`).
+    If you run into permission issues, see the [Docker post-installation steps](https://docs.docker.com/engine/install/linux-postinstall).
+- **git**: Provides a means to interact with the system `git` command line tool.
+- **minify**: Provides a way to compress and bundle web assets without pulling in Node and a lot of other dependencies.
+    - This is made possible with the [tdewolff/minify project](https://github.com/tdewolff/minify).

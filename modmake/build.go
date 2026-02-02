@@ -3,14 +3,15 @@ package main
 import (
 	"context"
 	"fmt"
+
 	. "github.com/saylorsolutions/modmake" //nolint:staticcheck
 	"github.com/saylorsolutions/modmake/pkg/git"
 )
 
 const (
-	version  = "0.6.1"
+	version  = "0.7.0"
 	docsPath = "/modmake"
-	latestGo = 24
+	latestGo = 25
 )
 
 func main() {
@@ -29,7 +30,7 @@ func main() {
 				Env("MD_LATEST_GO", fmt.Sprintf("1.%d", latestGo)).
 				Env("MD_SUPPORTED_GO", fmt.Sprintf("1.%d", latestGo-2)).
 				Env("MD_MODMAKE_VERSION", "v"+version).
-				Env("MD_GODOC_DIRS", ".,./pkg/git,./pkg/minify").
+				Env("MD_GODOC_DIRS", ".,./pkg/git,./pkg/minify,./pkg/docker").
 				Env("MD_GEN_DIR", "./docs"),
 		),
 	)
