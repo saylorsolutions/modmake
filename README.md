@@ -40,6 +40,11 @@ Besides accomplishing the goals set out above, there are some key benefits with 
 
 ## Additional Functionality
 
-I've started creating bolt-on functionality that can help fill more build gaps.
+Additional packages are in the [pkg](pkg) directory for added functionality and different use-cases:
 
-* [modmake-docker](https://github.com/saylorsolutions/modmake-docker?tab=readme-ov-file) provides Docker build and run support.
+- **docker**: Adds common Docker command support for building images, running containers, and executing commands inside running containers.
+    - These commands assume that the `docker` CLI tool is installed and runnable by the active user without privilege escalation (i.e. `sudo`).
+    If you run into permission issues, see the [Docker post-installation steps](https://docs.docker.com/engine/install/linux-postinstall).
+- **git**: Provides a means to interact with the system `git` command line tool.
+- **minify**: Provides a way to compress and bundle web assets without pulling in Node and a lot of other dependencies.
+    - This is made possible with the [tdewolff/minify project](https://github.com/tdewolff/minify).
