@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/saylorsolutions/modmake/cmd/modmake-docs/internal/docparser"
-	"github.com/saylorsolutions/modmake/cmd/modmake-docs/internal/templates"
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/saylorsolutions/modmake/cmd/modmake-docs/internal/docparser"
+	"github.com/saylorsolutions/modmake/cmd/modmake-docs/internal/templates"
 )
 
 func generateCodeDocs(ctx context.Context, params templates.Params) error {

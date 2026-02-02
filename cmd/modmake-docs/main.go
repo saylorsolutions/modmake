@@ -2,9 +2,10 @@ package main
 
 import (
 	"embed"
-	"github.com/saylorsolutions/modmake/cmd/modmake-docs/internal/templates"
 	"log"
 	"os"
+
+	"github.com/saylorsolutions/modmake/cmd/modmake-docs/internal/templates"
 )
 
 var (

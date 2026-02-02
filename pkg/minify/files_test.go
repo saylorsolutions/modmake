@@ -2,15 +2,16 @@ package minify_test
 
 import (
 	_ "embed"
-	mm "github.com/saylorsolutions/modmake"
-	"github.com/saylorsolutions/modmake/pkg/minify"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
 	"testing"
+
+	mm "github.com/saylorsolutions/modmake"
+	"github.com/saylorsolutions/modmake/pkg/minify"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type workingDir struct {

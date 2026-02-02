@@ -3,9 +3,10 @@ package modmake_test
 import (
 	"context"
 	"errors"
+	"testing"
+
 	mm "github.com/saylorsolutions/modmake"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestGetLogger(t *testing.T) {

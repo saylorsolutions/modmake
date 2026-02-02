@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/fatih/color"
 	"io"
 	"log"
 	"os"
 	"strings"
+
+	"github.com/fatih/color"
 )
 
 func init() {

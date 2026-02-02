@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/saylorsolutions/modmake/cmd/modmake-docs/internal/templates"
-	"github.com/saylorsolutions/modmake/cmd/modmake-docs/static"
 	"io/fs"
 	"log"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/saylorsolutions/modmake/cmd/modmake-docs/internal/templates"
+	"github.com/saylorsolutions/modmake/cmd/modmake-docs/static"
 )
 
 func doServe(params templates.Params) error {

@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
+	"path/filepath"
+	"strings"
+
 	"github.com/saylorsolutions/modmake/cmd/modmake-docs/internal/templates"
 	"github.com/saylorsolutions/x/env"
 	flag "github.com/spf13/pflag"
-	"path/filepath"
-	"strings"
 )
 
 const (

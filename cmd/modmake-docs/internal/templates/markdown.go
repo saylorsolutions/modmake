@@ -3,6 +3,8 @@ package templates
 import (
 	"bytes"
 	"context"
+	"io"
+
 	"github.com/a-h/templ"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/ast"
@@ -10,7 +12,6 @@ import (
 	"github.com/yuin/goldmark/renderer"
 	"github.com/yuin/goldmark/renderer/html"
 	"github.com/yuin/goldmark/util"
-	"io"
 )
 
 func Markdown(data []byte) templ.Component {

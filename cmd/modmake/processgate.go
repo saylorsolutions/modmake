@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/saylorsolutions/modmake"
 	"log"
 	"os/exec"
 	"sync/atomic"
 	"time"
+
+	"github.com/saylorsolutions/modmake"
 )
 
 type gateState = int32

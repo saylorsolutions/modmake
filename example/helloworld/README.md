@@ -68,7 +68,8 @@ package - Bundles one or more built artifacts into one or more distributable pac
 
 This includes a graph of the build's steps.
 Notice that there are some steps added by default.
-This is to provide a consistent structure to builds with a reasonable starting dependency graph that can be extended as needed.
+This is to provide a consistent structure to builds with a reasonable starting dependency graph that can be extended as
+needed.
 
 To just get the build graph, run this from the root of the repository.
 
@@ -96,6 +97,7 @@ Use -v to print defined steps with no operation or dependent operation
 ```
 
 There are a few things you might notice.
+
 * The `test` step depends on `generate`, so it's listed below `test` with an arrow (`->`) next to it.
 * The `generate` step has a dependency on `tools`, indicated by the arrow (`->`) under `generate`.
 * The `tools` step has no dependencies and doesn't perform an operation, so it's not listed except as a dependency.
@@ -139,10 +141,12 @@ go run example/helloworld/build.go build
 ```
 
 If you see "Hello, modmake!", then you've run the build step.
-Notice that the `benchmark` step is letting us know that it is skipped, and the `test` step ran without it being referenced in the command.
+Notice that the `benchmark` step is letting us know that it is skipped, and the `test` step ran without it being
+referenced in the command.
 This is because `test` is a transitive dependency of `build` through `benchmark`.
 When a step is skipped, its dependencies are not.
 
 > To "unskip" a step, you could use either reference it directly as a step to run, or use `--no-skip step-name`.
 
-Take a look at the [pingpong example](../pingpong/README.md) for a more interesting build, including custom steps and importing multiple builds.
+Take a look at the [pingpong example](../pingpong/README.md) for a more interesting build, including custom steps and
+importing multiple builds.

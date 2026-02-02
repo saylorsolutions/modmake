@@ -84,9 +84,11 @@ server:tools *
 ```
 
 A few things to note:
+
 * Steps for both client and server builds are imported into a parent build with prefixes.
 * The paths in the client and server builds are relative to the root of the repository.
-* Running `build` will build both the client and server. This is done by making `build` depend on both `client:build` and `server:build`.
+* Running `build` will build both the client and server. This is done by making `build` depend on both `client:build`
+  and `server:build`.
 * Nothing depends on `client:run` and `server:run`. These were added with each `Build`'s `AddStep` method.
 
 ## Run the Programs

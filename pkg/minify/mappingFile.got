@@ -18,7 +18,7 @@ var (
 {{ end }}
 
 {{- define "multiFileMapping" }}
-{{- range $i, $file := . }}
-{{- template "fileMapping" $file }}
-{{- end }}
+    {{- range $i, $file := . }}
+        {{- template "fileMapping" $file }}
+    {{- end }}
 {{- end }}

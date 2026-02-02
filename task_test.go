@@ -2,11 +2,12 @@ package modmake
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"log"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestTask_Then(t *testing.T) {
